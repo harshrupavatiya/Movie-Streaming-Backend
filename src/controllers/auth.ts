@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import validateSignUpData from "../validators/signupData";
+import { AuthRequest } from "../types/api";
 
 // LOGIN
 export const login = async (req: Request, res: Response): Promise<any> => {
@@ -10,7 +11,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     const { email, password } = req.body;
 
     // Check if user email exists
-    const user = await User.findOne({ email }).select("-password");
+    const user = await User.findOne({ email });
 
     // If user does not exist with the given email
     if (!user) {
@@ -88,4 +89,10 @@ export const signUp = async (
   } catch (err: any) {
     return res.status(500).json({ message: err.message });
   }
+};
+
+export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
+  res.cookie("token", null, { expires: new Date(Date.now()) });
+
+  res.status(200).json({ message: "User logout successfully" });
 };
