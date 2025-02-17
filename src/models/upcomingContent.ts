@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema } from "mongoose";
-import { IUpcomingContent } from "../types/db";
+import { IUpcomingContent } from "../types/db.model";
 
 const upcomingContentSchema = new Schema<IUpcomingContent>(
   {

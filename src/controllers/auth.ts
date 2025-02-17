@@ -34,7 +34,6 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    // TODO: remove unnessesory fields from response data
     const { _id, name, contactNo } = user;
 
     return res.status(200).json({
@@ -91,7 +90,10 @@ export const signUp = async (
   }
 };
 
+// Logout
 export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
+
+  // set token as null in cookie
   res.cookie("token", null, { expires: new Date(Date.now()) });
 
   res.status(200).json({ message: "User logout successfully" });
