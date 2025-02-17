@@ -1,0 +1,1 @@
+export const MailFrom = "Filmster || Cloudmate Technologies";
