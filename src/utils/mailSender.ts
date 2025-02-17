@@ -1,13 +1,9 @@
 import nodemailer from "nodemailer";
 import { MailFrom } from "./constants";
+import dotenv from "dotenv";
+dotenv.config();
 
-interface MailOptions {
-  email: string;
-  title: string;
-  body: string;
-}
-
-const mailSender = async ({ email, title, body }: MailOptions): Promise<void> => {
+const mailSender = async ( email: string, title: string, body: string ): Promise<void> => {
   try {
     // created mail transporter
     const transporter = nodemailer.createTransport({
@@ -18,6 +14,7 @@ const mailSender = async ({ email, title, body }: MailOptions): Promise<void> =>
       },
     });
 
+    console.log("mail sender 2");
     // sending mail via transporter
     const info = await transporter.sendMail({
       from: MailFrom,
@@ -25,10 +22,11 @@ const mailSender = async ({ email, title, body }: MailOptions): Promise<void> =>
       subject: title,
       html: body,
     });
+    console.log("mail sender 3")
 
     console.log("Email sent:", info);
   } catch (error) {
-    console.error("Error sending email:", (error as Error).message);
+    console.error("Error sending email:", (error as Error));
   }
 };
 
