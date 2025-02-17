@@ -3,6 +3,7 @@ import connectDB from "./config/db";
 import cookieParser from "cookie-parser";
 
 import authRouter from "./routes/auth";
+import OTP from "./models/otp";
 
 // Create Express server
 const app = express();
@@ -22,8 +23,7 @@ const port = process.env.PORT || 3000;
 // Connect database
 connectDB()
   .then(() => {
-    console.log("Database connnected successfully.");
-
+    console.log("Database connected successfully.");
     // Start the server
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);
