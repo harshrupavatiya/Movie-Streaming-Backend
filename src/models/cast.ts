@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema } from "mongoose";
-import { ICast } from "../types/db";
+import { ICast } from "../types/db.model";
 
 const castSchema = new Schema<ICast>(
   {

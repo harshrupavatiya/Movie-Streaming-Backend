@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema } from "mongoose";
-import { IOTP } from "../types/db";
+import { IOTP } from "../types/db.model";
 const otpSchema = new mongoose.Schema({
   email: {
     type: String,

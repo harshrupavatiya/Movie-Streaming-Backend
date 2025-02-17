@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema } from "mongoose";
-import { IEpisode, ISeason, ISeries } from "../types/db";
+import { IEpisode, ISeason, ISeries } from "../types/db.model";
 
 const episodeSchema = new Schema<IEpisode>(
   {
