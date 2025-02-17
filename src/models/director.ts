@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema } from "mongoose";
-import { IDirector } from "../types/db";
+import { IDirector } from "../types/db.model";
 
 const directorSchema = new Schema<IDirector>(
   {
