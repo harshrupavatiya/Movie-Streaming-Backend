@@ -1,9 +1,10 @@
 import mongoose, { Model, Schema } from "mongoose";
 import { IUser } from "../types/db.model";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
 import dotenv from "dotenv";
+import type { StringValue } from "ms";
 
 dotenv.config();
 
@@ -79,11 +80,21 @@ const userSchema = new Schema<IUser>(
 );
 
 // Method for get JWT token
-userSchema.methods.getJWT = async function (): Promise<string> {
+userSchema.methods.getJWT = async function (
+  duration: StringValue
+): Promise<string> {
   const user = this as IUser;
-  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET as string, {
-    expiresIn: "7d",
-  });
+
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined in environment variables");
+  }
+
+  const options: SignOptions = {
+    expiresIn: duration,
+  };
+
+  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, options);
+
   return token;
 };
 
