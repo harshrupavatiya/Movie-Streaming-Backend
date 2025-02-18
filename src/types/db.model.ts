@@ -1,4 +1,5 @@
 import mongoose, { Document } from "mongoose";
+import { StringValue } from "ms";
 
 interface ISubscription {
   plan: "free" | "basic" | "premium";
@@ -21,7 +22,7 @@ export interface IUser extends Document {
   subscription?: ISubscription;
   watchlist: mongoose.Types.ObjectId[];
   role: "user" | "admin";
-  getJWT(): Promise<string>;
+  getJWT(duration: StringValue): Promise<string>;
   validatePassword(passwordInputByUser: string): Promise<boolean>;
 }
 
