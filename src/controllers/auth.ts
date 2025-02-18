@@ -33,7 +33,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     }
 
     // generate user token
-    const token = await user.getJWT();
+    const token = await user.getJWT("7d");
 
     // set token into cookie
     res.cookie("token", token, {
@@ -158,3 +158,8 @@ export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
 
   res.status(200).json({ message: "User logout successfully" });
 };
+
+// Forgot Password
+export const forgotPassword = async(req: Request, res: Response): Promise<any> => {
+  
+}
