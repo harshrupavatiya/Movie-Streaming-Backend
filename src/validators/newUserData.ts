@@ -1,7 +1,7 @@
 import { Request } from "express";
 import validator from "validator";
 
-const validateSignUpData = (req: Request): void => {
+export const validateUserData = (req: Request): void => {
   // Extract data
   const { name, email, password, contactNo } = req.body;
 
@@ -23,4 +23,17 @@ const validateSignUpData = (req: Request): void => {
   }
 };
 
-export default validateSignUpData;
+export const validateSignUpData = (req: Request): void => {
+  // validate name, email, contactNo, password
+  validateUserData(req);
+
+  const { otp } = req.body;
+
+  // validating OTP
+  if (!validator.isNumeric(otp)) {
+    throw new Error("Invalid OTP format");
+  }
+  if (otp < 100000 || otp > 999999) {
+    throw new Error("OTP should be in 6 digits");
+  }
+};

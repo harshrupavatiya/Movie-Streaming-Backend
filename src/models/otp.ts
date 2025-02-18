@@ -22,12 +22,11 @@ const otpSchema = new Schema<IOTP>({
 // a function -->send emails
 async function sendVerificationEmail(email: string, otp: number):Promise<void> {
   try {
-    const mailResponse = await mailSender(
+    await mailSender(
       email,
       "verification from Filmster",
       otpTemplate(otp)
     );
-    console.log("Email sent Successfully: ", mailResponse);
   } catch (error) {
     console.log("error occurred while sending mails: ", error);
     throw error;
