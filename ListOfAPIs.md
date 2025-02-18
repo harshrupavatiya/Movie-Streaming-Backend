@@ -1,12 +1,12 @@
 # Total APIs
 
-- [] Auth
+- [ ] Auth
   - [x] login
   - [x] logout
-  - [ ] signup (save userInfo after varifing received OTP from user)
-  - [ ] sendOTP (send OTP after varifing userInfo)
+  - [x] signup (save userInfo after verifying received OTP from user)
+  - [x] sendOTP (send OTP after verifying userInfo)
   - [ ] forgotPassword
 
 - [ ] User
   - [ ] getUserData
-  - [ ] upadateProfile
+  - [ ] updateProfile
