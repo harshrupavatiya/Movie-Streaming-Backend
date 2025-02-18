@@ -3,7 +3,6 @@ import connectDB from "./config/db";
 import cookieParser from "cookie-parser";
 
 import authRouter from "./routes/auth";
-import OTP from "./models/otp";
 
 // Create Express server
 const app = express();

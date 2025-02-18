@@ -1,8 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
 import bcrypt from "bcrypt";
-import validateSignUpData from "../validators/signupData";
+import {
+  validateSignUpData,
+  validateUserData,
+} from "../validators/newUserData";
 import { AuthRequest } from "../types/api";
+import OTP from "../models/otp";
+import { IOTP, IUser } from "../types/db.model";
+import otpGenerator from "otp-generator";
 
 // LOGIN
 export const login = async (req: Request, res: Response): Promise<any> => {
@@ -63,14 +69,18 @@ export const signUp = async (
     validateSignUpData(req);
 
     // Extract user details
-    const { name, email, contactNo, password } = req.body;
+    const { name, email, contactNo, password, otp } = req.body;
 
-    // Check if user exists with given email
-    const user = await User.findOne({ email });
+    // validate otp
+    const otpInfo: IOTP | null = await OTP.findOne({ otp: otp });
 
-    // If user already exists with entered email
-    if (user) {
-      return res.status(500).json({ message: "Email already used" });
+    if (!otpInfo) {
+      return res.status(500).json({ message: "Invalid OTP" });
+    }
+
+    // validating Email
+    if (otpInfo.email !== email) {
+      return res.status(500).json({ message: "Incorrect Email" });
     }
 
     // Password encryption
@@ -90,9 +100,59 @@ export const signUp = async (
   }
 };
 
+export const generateOTP = async (
+  req: Request,
+  res: Response
+): Promise<Response | any> => {
+  try {
+    // Validate signup data
+    validateUserData(req);
+
+    // Extract user details
+    const { name, email, contactNo, password } = req.body;
+
+    // Check if user exists with given email
+    const user: IUser | null = await User.findOne({ email });
+
+    // If user already exists with entered email
+    if (user) {
+      return res.status(500).json({ message: "Email already used" });
+    }
+
+    // generate OTP
+    let numericOtp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    // if generated OTP is present then  generate new OTP (OTP should be unique)
+    let otpInfo = await OTP.findOne({ otp: numericOtp });
+
+    while (otpInfo) {
+      numericOtp = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+        lowerCaseAlphabets: false,
+        specialChars: false,
+      });
+      otpInfo = await OTP.findOne({ otp: numericOtp });
+    }
+
+    console.log("Generated OTP:", numericOtp);
+
+    await OTP.create({
+      email,
+      otp: numericOtp,
+    });
+
+    res.status(200).json({ message: "OTP generated successfully" });
+  } catch (err) {
+    return res.status(500).json({ message: (err as Error).message });
+  }
+};
+
 // Logout
 export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
-
   // set token as null in cookie
   res.cookie("token", null, { expires: new Date(Date.now()) });
 
