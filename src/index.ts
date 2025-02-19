@@ -1,11 +1,33 @@
 import express, { Request, Response } from "express";
 import connectDB from "./config/db";
 import cookieParser from "cookie-parser";
-
+import cors from "cors";
 import authRouter from "./routes/auth";
+import { PORT } from "./utils/envProvider";
+import { Frontend_Base_URL } from "./utils/constants";
 
 // Create Express server
 const app = express();
+
+const corsOptions = {
+  origin: Frontend_Base_URL, // Allows requests from any origin
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // Allow common HTTP methods
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+    "Access-Control-Allow-Origin",
+  ], // Allow necessary headers
+  credentials: true, // Allow cookies & authorization headers
+};
+
+// Enable CORS with necessary headers
+app.use(cors(corsOptions));
+
+// Handle preflight requests (OPTIONS)
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -17,7 +39,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/auth", authRouter);
 
-const port = process.env.PORT || 3000;
+const port = PORT || 3000;
 
 // Connect database
 connectDB()
