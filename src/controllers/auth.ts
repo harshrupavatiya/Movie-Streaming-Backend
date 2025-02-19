@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import {
+  validateEmail,
   validateSignUpData,
   validateUserData,
 } from "../validators/newUserData";
@@ -9,6 +10,10 @@ import { AuthRequest } from "../types/api";
 import OTP from "../models/otp";
 import { IOTP, IUser } from "../types/db.model";
 import otpGenerator from "otp-generator";
+import { JWT_FORGOT_PASS_SECRET, JWT_SIGNUP_SECRET } from "../utils/envProvider";
+import { Frontend_Base_URL } from "../utils/constants";
+import mailSender from "../utils/mailSender";
+import { forgotPassTemplate } from "../utils/mailTemplates";
 
 // LOGIN
 export const login = async (req: Request, res: Response): Promise<any> => {
@@ -33,7 +38,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     }
 
     // generate user token
-    const token = await user.getJWT("7d");
+    const token = await user.getJWT(JWT_SIGNUP_SECRET as string,"7d");
 
     // set token into cookie
     res.cookie("token", token, {
@@ -161,5 +166,23 @@ export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
 
 // Forgot Password
 export const forgotPassword = async(req: Request, res: Response): Promise<any> => {
-  
+  const { email } = req.body;
+
+  validateEmail(email);
+
+  const user = await User.findOne({email});
+
+  if(!user) {
+    return res.status(400).json({message: "User not found"});
+  }
+
+  const forgotPassToken = await user.getJWT(JWT_FORGOT_PASS_SECRET as string, "1h");
+
+  const forgotPassLink = Frontend_Base_URL + `/reset-password?token=${forgotPassToken}`;
+
+  mailSender(email, "Reset password of your Filmster account", forgotPassTemplate(forgotPassLink as string))
+  // TODO: make mail template and send link in mail
+  console.log("Forgot PAssword Token :-------+-> ", forgotPassToken);
+
+  return res.status(200).json({token : forgotPassToken});
 }

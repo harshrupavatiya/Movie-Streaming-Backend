@@ -1,18 +1,17 @@
 import nodemailer from "nodemailer";
 import { MailFrom } from "./constants";
-import dotenv from "dotenv";
-dotenv.config();
+import { MAIL_HOST, MAIL_PASS, MAIL_PORT, MAIL_USER } from "./envProvider";
 
 const mailSender = (email: string, title: string, body: string): void => {
   try {
     // created mail transporter
     const transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST as string,
-      port: Number(process.env.MAIL_PORT) || 587,
-      secure: process.env.MAIL_PORT === "465",
+      host: MAIL_HOST as string,
+      port: Number(MAIL_PORT) || 587,
+      secure: Number(MAIL_PORT) === 465,
       auth: {
-        user: process.env.MAIL_USER as string,
-        pass: process.env.MAIL_PASS as string,
+        user: MAIL_USER as string,
+        pass: MAIL_PASS as string,
       },
     });
 
