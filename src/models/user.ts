@@ -3,10 +3,7 @@ import { IUser } from "../types/db.model";
 import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
-import dotenv from "dotenv";
 import type { StringValue } from "ms";
-
-dotenv.config();
 
 const userSchema = new Schema<IUser>(
   {
@@ -81,11 +78,12 @@ const userSchema = new Schema<IUser>(
 
 // Method for get JWT token
 userSchema.methods.getJWT = async function (
+  secret: string,
   duration: StringValue
 ): Promise<string> {
   const user = this as IUser;
 
-  if (!process.env.JWT_SECRET) {
+  if (!secret) {
     throw new Error("JWT_SECRET is not defined in environment variables");
   }
 
@@ -93,7 +91,7 @@ userSchema.methods.getJWT = async function (
     expiresIn: duration,
   };
 
-  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, options);
+  const token = jwt.sign({ _id: user._id }, secret, options);
 
   return token;
 };

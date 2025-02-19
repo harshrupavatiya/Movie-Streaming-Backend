@@ -22,7 +22,7 @@ export interface IUser extends Document {
   subscription?: ISubscription;
   watchlist: mongoose.Types.ObjectId[];
   role: "user" | "admin";
-  getJWT(duration: StringValue): Promise<string>;
+  getJWT(secret: string, duration: StringValue): Promise<string>;
   validatePassword(passwordInputByUser: string): Promise<boolean>;
 }
 
