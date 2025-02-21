@@ -1,11 +1,11 @@
 # Total APIs
 
-- [ ] Auth
+- [x] Auth
   - [x] login
   - [x] logout
-  - [x] signup (save userInfo after verifying received OTP from user)
+  - [x] sign up (save userInfo after verifying received OTP from user)
   - [x] sendOTP (send OTP after verifying userInfo)
-  - [ ] forgotPassword
+  - [x] forgotPassword
 
 - [ ] User
   - [ ] getUserData
