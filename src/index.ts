@@ -42,15 +42,12 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/auth", authRouter);
 
-app.use("user", userRouter);
-
 const port = PORT || 3000;
 
 // Connect database
 connectDB()
   .then(() => {
     console.log("Database connected successfully.");
-    abc();
     // Start the server
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);
