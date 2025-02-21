@@ -2,12 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
 import { AuthRequest } from "../types/api";
+import { JWT_SIGNUP_SECRET } from "../utils/envProvider";
 
 const userAuth = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-) => {
+): Promise<any> => {
   try {
     // Getting token from cookies
     const { token } = req.cookies;
@@ -18,7 +19,7 @@ const userAuth = async (
     }
 
     // Decoding token
-    const decodedObj = jwt.verify(token, process.env.JWT_SECRET as string) as {
+    const decodedObj = jwt.verify(token, JWT_SIGNUP_SECRET as string) as {
       _id: string;
     };
 
