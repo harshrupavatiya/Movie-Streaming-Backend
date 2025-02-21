@@ -1,5 +1,5 @@
 import mongoose, { Schema, Model } from "mongoose";
-import { IReview, reviewAvgAggregation } from "../types/db.model";
+import { IReview } from "../types/db.model";
 import Movie from "./movie";
 import Series from "./series";
 
