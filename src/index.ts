@@ -5,6 +5,9 @@ import cors from "cors";
 import authRouter from "./routes/auth";
 import { PORT } from "./utils/envProvider";
 import { Frontend_Base_URL } from "./utils/constants";
+import Review from "./models/review";
+import Movie from "./models/movie";
+import userRouter from "./routes/user";
 
 // Create Express server
 const app = express();
@@ -39,12 +42,15 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/auth", authRouter);
 
+app.use("user", userRouter);
+
 const port = PORT || 3000;
 
 // Connect database
 connectDB()
   .then(() => {
     console.log("Database connected successfully.");
+    abc();
     // Start the server
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);

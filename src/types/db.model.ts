@@ -14,6 +14,7 @@ interface ICastMember {
 
 // User
 export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId | string;
   name: string;
   email: string;
   contactNo?: string;
@@ -123,3 +124,5 @@ export interface IReview extends Document {
   rating: number;
   comment?: string;
 }
+
+export interface reviewAvgAggregation { _id: null; averageRating: number }[]
