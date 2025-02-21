@@ -1,5 +1,7 @@
 import mongoose, { Schema, Model } from "mongoose";
 import { IReview } from "../types/db.model";
+import Movie from "./movie";
+import Series from "./series";
 
 const reviewSchema = new Schema<IReview>(
   {
@@ -30,6 +32,47 @@ const reviewSchema = new Schema<IReview>(
   },
   { timestamps: true }
 );
+
+reviewSchema.post("save", async function () {
+  const review = this;
+  console.log("Post hook review: ", review);
+  Review.aggregate([
+    {
+      $match: {
+        contentId: review.contentId,
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        averageRating: { $avg: "$rating" },
+      },
+    },
+  ])
+    .then(async (val: { _id: null; averageRating: number }[]) => {
+      if (review.contentType == "Movie") {
+        return Movie.findByIdAndUpdate(
+          review.contentId.toString(),
+          {
+            rating: val[0].averageRating,
+          },
+          { new: true }
+        );
+      }
+      if (review.contentType == "Series") {
+        return Series.findByIdAndUpdate(
+          review.contentId.toString(),
+          {
+            rating: val[0].averageRating,
+          },
+          { new: true }
+        );
+      }
+    })
+    .catch((err) => {
+      throw new Error("average rating not calculated");
+    });
+});
 
 const Review: Model<IReview> = mongoose.model<IReview>("Review", reviewSchema);
 

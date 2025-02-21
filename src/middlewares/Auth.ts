@@ -8,7 +8,7 @@ const userAuth = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-): Promise<string | any> => {
+): Promise<any> => {
   try {
     // Getting token from cookies
     const { token } = req.cookies;

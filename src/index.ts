@@ -5,6 +5,9 @@ import cors from "cors";
 import authRouter from "./routes/auth";
 import { PORT } from "./utils/envProvider";
 import { Frontend_Base_URL } from "./utils/constants";
+import Review from "./models/review";
+import Movie from "./models/movie";
+import userRouter from "./routes/user";
 import movieRouter from "./routes/movie";
 
 // Create Express server
@@ -40,6 +43,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/auth", authRouter);
 app.use("/movie", movieRouter);
+app.use("/user", userRouter);
 
 const port = PORT || 3000;
 
