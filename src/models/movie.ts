@@ -30,18 +30,19 @@ const movieSchema = new Schema<IMovie>(
       min: 0,
       max: 10,
     },
+    feedbacks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
+      },
+    ],
     cast: [
       {
         castId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Cast",
           required: true,
-        },
-        roleName: {
-          type: String,
-          minLength: 2,
-          maxLength: 50,
-        },
+        }
       },
     ],
     director: {

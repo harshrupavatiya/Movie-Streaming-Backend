@@ -41,6 +41,7 @@ export interface IMovie extends Document {
   genres?: number[];
   duration: number;
   rating?: number;
+  feedbacks?: mongoose.Types.ObjectId;
   cast?: ICastMember[];
   director?: mongoose.Types.ObjectId;
   poster?: string;
@@ -115,7 +116,7 @@ export interface IDirector extends Document {
   tvSeries?: mongoose.Types.ObjectId[];
 }
 
-type ContentType = 'Movie' | 'Series';
+type ContentType = "Movie" | "Series";
 export interface IReview extends Document {
   contentId: mongoose.Types.ObjectId;
   contentType: ContentType;
