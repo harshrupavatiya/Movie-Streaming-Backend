@@ -114,3 +114,12 @@ export interface IDirector extends Document {
   movies?: mongoose.Types.ObjectId[];
   tvSeries?: mongoose.Types.ObjectId[];
 }
+
+type ContentType = 'Movie' | 'Series';
+export interface IReview extends Document {
+  contentId: mongoose.Types.ObjectId;
+  contentType: ContentType;
+  reviewer: mongoose.Types.ObjectId;
+  rating: number;
+  comment?: string;
+}
