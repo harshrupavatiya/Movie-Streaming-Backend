@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import Movie from "../models/movie";
 import { AuthRequest } from "../types/api";
+import Cast from "../models/cast";
+import Director from "../models/director";
+import Review from "../models/review";
 
 // Create a new movie (Admin only)
 export const createMovie = async (
@@ -14,7 +17,7 @@ export const createMovie = async (
     }
 
     const {
-      title,
+      title,  
       description,
       releaseDate,
       genres,
@@ -29,7 +32,7 @@ export const createMovie = async (
     } = req.body;
 
     // Validate required fields
-    if (!title || !duration || !cast || !director) {
+    if (!title || !duration || !Cast || !Director) {
       return res.status(400).json({
         message: "Missing required fields: title, duration, cast, or director.",
       });
@@ -46,6 +49,7 @@ export const createMovie = async (
         });
       }
     }
+
     // Validate genres (ensure it's an array of numbers)
     if (!Array.isArray(genres) || genres.some((g) => typeof g !== "number")) {
       return res
@@ -62,17 +66,30 @@ export const createMovie = async (
       duration,
       rating,
       cast,
-      director,
       poster,
+      director,
+      Review,
       trailerUrl,
       movieUrl,
       availableForStreaming,
     });
-    await newMovie.save();
 
-    res
-      .status(201)
-      .json({ message: "Movie created successfully", movie: newMovie });
+    await newMovie.save();
+    const movieId = newMovie._id;
+
+    // Update Cast members by adding the new movie ID
+    await Cast.updateMany(
+      { _id: { $in: cast.map((member) => member.castId) } },
+      { $push: { movies: movieId } }
+    );
+
+    // Update Director(s) by adding the new movie ID
+    await Director.updateMany(
+      { _id: { $in: director } }, // No need for directorId
+      { $push: { movies: movieId } }
+    );
+
+    res.status(201).json({ message: "Movie created successfully", movie: newMovie });
   } catch (err) {
     res.status(500).json({
       message: "Internal server error",
@@ -88,7 +105,7 @@ export const getAllMovies = async (req: AuthRequest, res: Response) => {
     const page = parseInt((req.query.page as string) || "1", 10);
     const limit = parseInt((req.query.limit as string) || "10", 10);
     const skip = (page - 1) * limit;
-
+    
     // Fetching movies with important fields
     const movies = await Movie.find({})
       .populate({
@@ -96,13 +113,13 @@ export const getAllMovies = async (req: AuthRequest, res: Response) => {
         select: "name", // Fetch only the name of the cast member
       })
       .populate({
-        path: "director",
-        select: "name"
+        path: "director", // Try populating just "director" first
+        select: "name",
+        // populate: { path: "directorId", select: "name" }, // Nested population
       })
       .skip(skip)
       .limit(limit)
-      .sort({ releaseDate: -1 })
-      .exec(); 
+      .sort({ releaseDate: -1 });
 
     // Total movies count
     const totalMovies = await Movie.countDocuments();
@@ -141,6 +158,113 @@ export const getAllMovies = async (req: AuthRequest, res: Response) => {
     res.status(500).json({
       message: "Internal server error",
       error: (err as Error).message,
+    });
+  }
+};
+
+
+/// Get a Movie by Id
+export const getMovieById = async (
+  req: AuthRequest,
+  res: Response
+): Promise<string | any> => {
+  try {
+    const { id } = req.params;
+
+    // Find movie by ID and populate related fields
+    const movie = await Movie.findById(id)
+      .populate({
+        path: "cast.castId",
+        select: "name",
+      })
+      .populate({
+        path: "director",
+        select: "name",
+      }).populate({
+        path: "reviews",
+        select: "userId rating comment",
+      });
+
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    return res.status(200).json(movie);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
+
+//Update Movie by Id (Admin only)
+export const updateMovieById = async (
+  req: AuthRequest,
+  res: Response
+): Promise<string | any> => {
+  try {
+    const { id } = req.params;
+
+    // Check if user is admin
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    // Find and update the movie
+    const updatedMovie = await Movie.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    })
+      .populate({
+        path: "cast.castId",
+        select: "name",
+      })
+      .populate({
+        path: "director",
+        select: "name",
+      });
+
+    if (!updatedMovie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Movie updated successfully", movie: updatedMovie });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
+
+// Delete movie by Id (Admin only)
+export const deleteMovieById = async (
+  req: AuthRequest,
+  res: Response
+): Promise<string | any> => {
+  try {
+    const { id } = req.params;
+
+    // Check if user is admin
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    // Find and delete the movie
+    const deletedMovie = await Movie.findByIdAndDelete(id);
+
+    if (!deletedMovie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    return res.status(200).json({ message: "Movie deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
     });
   }
 };

@@ -6,6 +6,7 @@ import authRouter from "./routes/auth";
 import { PORT } from "./utils/envProvider";
 import { Frontend_Base_URL } from "./utils/constants";
 import movieRouter from "./routes/movie";
+import Cast from "./models/cast"
 
 // Create Express server
 const app = express();

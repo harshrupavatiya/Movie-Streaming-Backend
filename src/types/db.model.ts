@@ -41,7 +41,7 @@ export interface IMovie extends Document {
   genres?: number[];
   duration: number;
   rating?: number;
-  feedbacks?: mongoose.Types.ObjectId;
+  reviews?: mongoose.Types.ObjectId;
   cast?: ICastMember[];
   director?: mongoose.Types.ObjectId;
   poster?: string;
