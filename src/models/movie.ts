@@ -30,7 +30,7 @@ const movieSchema = new Schema<IMovie>(
       min: 0,
       max: 10,
     },
-    feedbacks: [
+    review: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Review",
