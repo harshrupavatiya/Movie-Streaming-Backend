@@ -78,7 +78,7 @@ export const editProfile = async (
 
 export const createAdmin = async(req: AuthRequest, res: Response) => {
     try {
-        
+        // TODO: all
     } catch(err) {
         return res.status(500).json({message: (err as Error).message});
     }

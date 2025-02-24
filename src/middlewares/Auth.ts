@@ -4,7 +4,7 @@ import User from "../models/user";
 import { AuthRequest } from "../types/api";
 import { JWT_SIGNUP_SECRET } from "../utils/envProvider";
 
-const userAuth = async (
+export const userAuth = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -41,5 +41,3 @@ const userAuth = async (
     res.status(400).json({ message: err.message });
   }
 };
-
-export { userAuth };
