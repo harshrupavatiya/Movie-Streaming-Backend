@@ -12,6 +12,12 @@ interface ICastMember {
   roleName?: string;
 }
 
+// Define Liked Content Interface
+export interface ILikedContent {
+  contentId: mongoose.Types.ObjectId;
+  contentType: "Movie" | "Series";
+}
+
 // User
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId | string;
@@ -24,6 +30,7 @@ export interface IUser extends Document {
   profilePicture?: string;
   subscription?: ISubscription;
   watchlist: mongoose.Types.ObjectId[];
+  likedContent: ILikedContent[];
   role: "user" | "admin";
   getJWT(secret: string, duration: StringValue): Promise<string>;
   validatePassword(passwordInputByUser: string): Promise<boolean>;
@@ -44,7 +51,7 @@ export interface IMovie extends Document {
   genres?: number[];
   duration: number;
   rating?: number;
-  review?: mongoose.Types.ObjectId;
+  reviews?: mongoose.Types.ObjectId;
   cast?: ICastMember[];
   director?: mongoose.Types.ObjectId;
   poster?: string;
@@ -117,6 +124,15 @@ export interface IDirector extends Document {
   nationality?: string;
   movies?: mongoose.Types.ObjectId[];
   tvSeries?: mongoose.Types.ObjectId[];
+}
+
+//liked section
+export interface ILike extends Document {
+  user: mongoose.Types.ObjectId;
+  contentId: mongoose.Types.ObjectId;
+  contentType: "Movie" | "Series";
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 type ContentType = "Movie" | "Series";

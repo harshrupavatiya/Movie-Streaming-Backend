@@ -7,7 +7,8 @@ import { PORT } from "./utils/envProvider";
 import { Frontend_Base_URL } from "./utils/constants";
 import userRouter from "./routes/user";
 import movieRouter from "./routes/movie";
-import validator from "validator";
+import reviewRouter from "./routes/review";
+import likedRouter from "./routes/like";
 
 // Create Express server
 const app = express();
@@ -43,6 +44,8 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/auth", authRouter);
 app.use("/movie", movieRouter);
 app.use("/user", userRouter);
+app.use("/review", reviewRouter);
+app.use("/liked", likedRouter);
 
 const port = PORT || 3000;
 
