@@ -42,4 +42,4 @@ const userAuth = async (
   }
 };
 
-export { userAuth };
+export { userAuth, AuthRequest };

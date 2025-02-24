@@ -30,10 +30,12 @@ const movieSchema = new Schema<IMovie>(
       min: 0,
       max: 10,
     },
-    feedbacks: [
+    reviews: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Review",
+        reviewId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Review",
+        }
       },
     ],
     cast: [
@@ -42,7 +44,7 @@ const movieSchema = new Schema<IMovie>(
           type: mongoose.Schema.Types.ObjectId,
           ref: "Cast",
           required: true,
-        }
+        },
       },
     ],
     director: {
