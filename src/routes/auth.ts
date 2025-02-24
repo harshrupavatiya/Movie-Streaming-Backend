@@ -1,5 +1,5 @@
 import express from "express";
-import { forgotPassword, generateOTP, login, logout, signUp } from "../controllers/auth"
+import { generateOTP, login, logout, resetPassword, sendMailResetPassword, signUp } from "../controllers/auth"
 
 const authRouter = express.Router();
 
@@ -15,6 +15,10 @@ authRouter.post("/generateOTP", generateOTP);
 // Route for Logout
 authRouter.post("/logout", logout);
 
-authRouter.post("/forgotPass", forgotPassword);
+// Route for mail sending of reset password
+authRouter.post("/sendMailResetPassword", sendMailResetPassword);
+
+// Route for Reset password
+authRouter.post("/resetPassword", resetPassword);
 
 export default authRouter;

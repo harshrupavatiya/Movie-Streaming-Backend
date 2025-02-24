@@ -19,6 +19,8 @@ export interface IUser extends Document {
   email: string;
   contactNo?: string;
   password: string;
+  dateOfBirth?: Date;
+  gender?: "" | "male" | "female" | "other" | "prefer not to say";
   profilePicture?: string;
   subscription?: ISubscription;
   watchlist: mongoose.Types.ObjectId[];
@@ -42,7 +44,7 @@ export interface IMovie extends Document {
   genres?: number[];
   duration: number;
   rating?: number;
-  feedbacks?: mongoose.Types.ObjectId;
+  review?: mongoose.Types.ObjectId;
   cast?: ICastMember[];
   director?: mongoose.Types.ObjectId;
   poster?: string;

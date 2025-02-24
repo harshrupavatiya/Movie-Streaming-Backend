@@ -5,10 +5,9 @@ import cors from "cors";
 import authRouter from "./routes/auth";
 import { PORT } from "./utils/envProvider";
 import { Frontend_Base_URL } from "./utils/constants";
-import Review from "./models/review";
-import Movie from "./models/movie";
 import userRouter from "./routes/user";
 import movieRouter from "./routes/movie";
+import validator from "validator";
 
 // Create Express server
 const app = express();
