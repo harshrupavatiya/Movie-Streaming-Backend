@@ -1,23 +1,5 @@
 import { Request } from "express";
-import validator from "validator";
-
-export const validateEmail = (email: string): void => {
-  if(!validator.isEmail(email)) {
-    throw new Error("Email is not valid!");
-  }
-};
-
-export const validatePassword = (password: string): void => {
-  if (!validator.isStrongPassword(password)) {
-    throw new Error("Please enter a strong password!");
-  }
-};
-
-export const validateContactNo = (contactNo: string): void => {
-  if (!validator.isMobilePhone(contactNo)) {
-    throw new Error("Contact number is not valid!");
-  }
-};
+import { validateContactNo, validateEmail, validatePassword } from "./inputValidators";
 
 export const validateUserData = (req: Request): void => {
   // Extract data
@@ -42,7 +24,7 @@ export const validateSignUpData = (req: Request): void => {
 
   const { otp } = req.body;
 
-  const otpRegex = /^\d{6}$/;
+  const otpRegex = /`^\d{6}$`/;
 
   // validating OTP
   if (!otpRegex.test(otp)) {

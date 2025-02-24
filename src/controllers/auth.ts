@@ -2,21 +2,19 @@ import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import {
-  validateEmail,
   validateSignUpData,
   validateUserData,
 } from "../validators/newUserData";
+import { validateEmail, validatePassword } from "../validators/inputValidators";
 import { AuthRequest } from "../types/api";
 import OTP from "../models/otp";
 import { IOTP, IUser } from "../types/db.model";
 import otpGenerator from "otp-generator";
-import {
-  JWT_FORGOT_PASS_SECRET,
-  JWT_SIGNUP_SECRET,
-} from "../utils/envProvider";
+import { JWT_RESET_PASS_SECRET, JWT_SIGNUP_SECRET } from "../utils/envProvider";
 import { Frontend_Base_URL } from "../utils/constants";
 import mailSender from "../utils/mailSender";
 import { forgotPassTemplate } from "../utils/mailTemplates";
+import jwt from "jsonwebtoken";
 
 // LOGIN
 export const login = async (req: Request, res: Response): Promise<any> => {
@@ -108,6 +106,7 @@ export const signUp = async (
   }
 };
 
+// validate data and send OTP
 export const generateOTP = async (
   req: Request,
   res: Response
@@ -167,35 +166,91 @@ export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
   res.status(200).json({ message: "User logout successfully" });
 };
 
-// Forgot Password
-export const forgotPassword = async (
+// Send mail for reset Password
+export const sendMailResetPassword = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-  const { email } = req.body;
+  try {
+    const { email } = req.body;
 
-  validateEmail(email);
+    validateEmail(email);
 
-  const user = await User.findOne({ email });
+    // find user in collection
+    const user = await User.findOne({ email });
 
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
+    // if user not exist
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    // get JWT token for reset password
+    const resetPassToken = await user.getJWT(
+      JWT_RESET_PASS_SECRET as string,
+      "1h"
+    );
+
+    // create frontend link for reset password
+    const resetPassLink =
+      Frontend_Base_URL + `/reset-password?token=${resetPassToken}`;
+
+    // send mail with Reset Password Link
+    mailSender(
+      email,
+      "Reset password of your Filmster account",
+      forgotPassTemplate(resetPassLink as string)
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Link sent at given email address" });
+  } catch (err) {
+    return res.status(500).json({ message: "Something went wrong" });
   }
+};
 
-  const forgotPassToken = await user.getJWT(
-    JWT_FORGOT_PASS_SECRET as string,
-    "1h"
-  );
+// Forgot password
+export const resetPassword = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { token, password } = req.body;
 
-  const forgotPassLink =
-    Frontend_Base_URL + `/reset-password?token=${forgotPassToken}`;
+    validatePassword(password);
 
-  // send mail with Forgot Password Link
-  mailSender(
-    email,
-    "Reset password of your Filmster account",
-    forgotPassTemplate(forgotPassLink as string)
-  );
+    // if token not exist
+    if (!token) {
+      return res.status(400).json({ message: "Token invalid" });
+    }
 
-  return res.status(200).json({ message: "Link sent at given email address" });
+    // Decoding token
+    const decodedObj = jwt.verify(token, JWT_RESET_PASS_SECRET as string) as {
+      _id: string;
+    };
+
+    // Extract UserID from decoded token
+    const { _id } = decodedObj;
+
+    // Finding user in collection
+    const user = await User.findById(_id);
+
+    // If user is not present
+    if (!user) {
+      return res.status(400).json({ message: "Invalid user token" });
+    }
+
+    // password encryption
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // update user document
+    user.password = hashedPassword;
+
+    // save user data
+    await user.save();
+
+    return res.status(200).json({ message: "Password has been updated" });
+  } catch (err) {
+    return res.status(500).json({ message: (err as Error).message });
+  }
 };

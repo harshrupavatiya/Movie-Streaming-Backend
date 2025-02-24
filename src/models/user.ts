@@ -20,6 +20,7 @@ const userSchema = new Schema<IUser>(
       unique: true,
       trim: true,
       lowercase: true,
+      immutable: true,
       maxLength: 254,
       validate(value: string) {
         if (!validator.isEmail(value)) {
@@ -48,6 +49,14 @@ const userSchema = new Schema<IUser>(
         }
       },
     },
+    dateOfBirth: {
+      type: Date,
+    },
+    gender: {
+      type: String,
+      default: "",
+      enum: ["male", "female", "other", "prefer not to say"],
+    },
     subscription: {
       plan: {
         type: String,
@@ -69,6 +78,7 @@ const userSchema = new Schema<IUser>(
     ],
     role: {
       type: String,
+      immutable: true,
       enum: ["user", "admin"],
       default: "user",
     },
@@ -84,7 +94,7 @@ userSchema.methods.getJWT = async function (
   const user = this as IUser;
 
   if (!secret) {
-    throw new Error("JWT_SECRET is not defined in environment variables");
+    throw new Error("Secret is not defined");
   }
 
   const options: SignOptions = {
