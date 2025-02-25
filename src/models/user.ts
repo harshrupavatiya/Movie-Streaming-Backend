@@ -55,7 +55,7 @@ const userSchema = new Schema<IUser>(
     gender: {
       type: String,
       default: "",
-      enum: ["male", "female", "other", "prefer not to say"],
+      enum: ["male", "female", "other", "prefer not to say", ""],
     },
     subscription: {
       plan: {
