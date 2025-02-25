@@ -3,7 +3,7 @@ import Like from "../models/like";
 import { AuthRequest } from "../types/api"; // Assuming AuthRequest extends Request and includes user info
 import User from "../models/user";
 
-// Toggle Like (Add/Remove)
+// Toggle Like (Add/Remove)--------------------------------------------------------------------------------
 export const toggleLike = async (
   req: AuthRequest,
   res: Response
@@ -50,7 +50,7 @@ export const toggleLike = async (
   }
 };
 
-// Get all liked movies and series for a user
+// Get all liked movies and series for a user--------------------------------------------------------------
 export const getLikedContent = async (
   req: AuthRequest,
   res: Response

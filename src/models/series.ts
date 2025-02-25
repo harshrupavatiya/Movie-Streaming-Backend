@@ -54,7 +54,7 @@ const seriesSchema = new Schema<ISeries>(
     description: {
       type: String,
     },
-    genre: [
+    genres: [
       {
         type: Number,
       },
@@ -67,6 +67,14 @@ const seriesSchema = new Schema<ISeries>(
       min: 0,
       max: 10,
     },
+    reviews: [
+      {
+        reviewId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Review",
+        },
+      },
+    ],
     cast: [
       {
         castId: {
@@ -81,10 +89,12 @@ const seriesSchema = new Schema<ISeries>(
         },
       },
     ],
-    director: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Director",
-    },
+    director: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Director",
+      },
+    ],
     poster: {
       type: String,
       required: true,
@@ -101,9 +111,6 @@ const seriesSchema = new Schema<ISeries>(
   { timestamps: true }
 );
 
-const Series: Model<ISeries> = mongoose.model<ISeries>(
-  "Series",
-  seriesSchema
-);
+const Series: Model<ISeries> = mongoose.model<ISeries>("Series", seriesSchema);
 
 export default Series;

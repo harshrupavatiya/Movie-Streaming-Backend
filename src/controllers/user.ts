@@ -56,10 +56,6 @@ export const editProfile = async (
 
     const { name, contactNo, dateOfBirth, gender } = req.body;
 
-    // if (!req.files || !req.files.image) {
-    //   return res.status(400).json({message: "No files were uploaded."});
-    // }
-
     const file = req?.files?.image as UploadedFile;
 
     if (file && file.mimetype.split("/")[0] !== "image") {
@@ -67,20 +63,24 @@ export const editProfile = async (
     }
 
     // Upload the image to Cloudinary
-    let profilePicture = null;
+    let result = null;
     if(file) {
-      profilePicture = await uploadImageToCloudinary(file.tempFilePath, {
+      result = await uploadImageToCloudinary(file.tempFilePath, {
         folder: "uploads",
         height: 800,
         quality: 100,
       });
+
+      // Delete the temporary file
+      fs.unlink(file.tempFilePath, (err) => {
+        if (err) console.error("Failed to delete temp file:", err);
+      });
     }
 
-    // Delete the temporary file
-    fs.unlink(file.tempFilePath, (err) => {
-      if (err) console.error("Failed to delete temp file:", err);
-    });
+    // getting secure url from received data from cloudinary uploader
+    const profilePicture = result?.secure_url || null;
 
+    // creating updateField options(payload)
     const editDetails: Partial<IEditDetails> = {
       ...(name && { name }),
       ...(contactNo && { contactNo }),
@@ -89,8 +89,12 @@ export const editProfile = async (
       ...(profilePicture && { profilePicture }),
     };
 
+    console.log(editDetails);
+
+    // get user from request(via middleware - userAuth)
     const user = req.user;
 
+    // finding user and updating its value
     const updatedUser = await User.findByIdAndUpdate(user?._id, editDetails, {
       new: true,
       runValidators: true,
