@@ -2,7 +2,7 @@ import { Request } from "express";
 import { isValidISODate, validateContactNo } from "./inputValidators";
 
 export const isValidField = (req: Request) => {
-  const { name, contactNo, profilePicture, dateOfBirth, gender } = req.body;
+  const { name, contactNo, dateOfBirth, gender } = req.body;
   let flag = false;
 
   if (name) {
@@ -27,7 +27,6 @@ export const isValidField = (req: Request) => {
     if(!isGender) throw new Error("Invalid Gender value");
     flag = true;
   }
-  // TODO: update profile picture
 
   if(!flag) throw new Error ("Invalid data");
 };

@@ -10,11 +10,11 @@ import movieRouter from "./routes/movie";
 import reviewRouter from "./routes/review";
 import likedRouter from "./routes/like";
 import connectCloudinary from "./config/cloudinary";
+import { uploadImageToCloudinary } from "./utils/fileUploader";
 
-import fileUpload, { UploadedFile } from 'express-fileupload';
-import fs from 'fs';
-import path from 'path';
-
+import fileUpload, { UploadedFile } from "express-fileupload";
+import fs from "fs";
+// import path from "path";
 
 // Create Express server
 const app = express();
@@ -42,23 +42,52 @@ app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-// Ensure the temporary directory exists
-const tempDir = path.join(__dirname, 'tmp');
-if (!fs.existsSync(tempDir)) {
-  fs.mkdirSync(tempDir);
-}
-
 // Middleware to handle file uploads
 app.use(
   fileUpload({
     useTempFiles: true,
-    tempFileDir: tempDir,
+    tempFileDir: "/tmp/",
   })
 );
 
 // Define a route handler for the root route
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
+});
+
+// Route to handle image upload
+app.post("/upload", async (req: Request, res: Response): Promise<any> => {
+  try {
+    console.log("file: ", req.files);
+    console.log("body: ", req.body);
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({message: "No files were uploaded."});
+    }
+
+    const file = req.files.image as UploadedFile;
+
+    // Upload the image to Cloudinary
+    const result = await uploadImageToCloudinary(file.tempFilePath, {
+      folder: "uploads",
+      height: 500,
+      quality: 80,
+    });
+
+    // Delete the temporary file
+    fs.unlink(file.tempFilePath, (err) => {
+      if (err) console.error("Failed to delete temp file:", err);
+    });
+
+    // Respond with the URL of the uploaded image
+    return res.status(200).json({
+      message: "File uploaded successfully",
+      url: result.secure_url,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: `An error occurred: ${(error as Error).message}`});
+  }
 });
 
 app.use("/auth", authRouter);
