@@ -34,10 +34,10 @@ const castSchema = new Schema<ICast>(
         ref: "Movie",
       },
     ],
-    tvSeries: [
+    series: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "TVSeries",
+        ref: "Series",
       },
     ],
   },

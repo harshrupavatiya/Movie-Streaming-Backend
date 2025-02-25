@@ -16,7 +16,7 @@ import mailSender from "../utils/mailSender";
 import { forgotPassTemplate } from "../utils/mailTemplates";
 import jwt from "jsonwebtoken";
 
-// LOGIN
+// LOGIN--------------------------------------------------------------------------------------------------
 export const login = async (req: Request, res: Response): Promise<any> => {
   try {
     // Get data from req body
@@ -64,7 +64,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-// SIGNUP
+// SIGNUP-------------------------------------------------------------------------------------------------
 export const signUp = async (
   req: Request,
   res: Response,
@@ -106,7 +106,7 @@ export const signUp = async (
   }
 };
 
-// validate data and send OTP
+// Generate OTP-------------------------------------------------------------------------------------------
 export const generateOTP = async (
   req: Request,
   res: Response
@@ -158,7 +158,7 @@ export const generateOTP = async (
   }
 };
 
-// Logout
+// Logout-------------------------------------------------------------------------------------------------
 export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
   // set token as null in cookie
   res.cookie("token", null, { expires: new Date(Date.now()) });
@@ -166,7 +166,7 @@ export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
   res.status(200).json({ message: "User logout successfully" });
 };
 
-// Send mail for reset Password
+// Send mail for reset Password-------------------------------------------------------------------------------------------------
 export const sendMailResetPassword = async (
   req: Request,
   res: Response
@@ -209,7 +209,7 @@ export const sendMailResetPassword = async (
   }
 };
 
-// Forgot password
+// Forgot password-------------------------------------------------------------------------------------------------
 export const resetPassword = async (
   req: Request,
   res: Response

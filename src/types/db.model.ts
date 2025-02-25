@@ -72,6 +72,7 @@ export interface IEpisode {
 
 // season
 export interface ISeason {
+  _id: string;
   seasonNumber: number;
   episodes: IEpisode[];
 }
@@ -80,10 +81,11 @@ export interface ISeason {
 export interface ISeries extends Document {
   title: string;
   description?: string;
-  genre?: number[];
+  genres?: number[];
   releaseDate?: Date;
   rating?: number;
   cast?: ICastMember[];
+  reviews?: mongoose.Types.ObjectId;
   director?: mongoose.Types.ObjectId;
   poster: string;
   trailerUrl?: string;
@@ -96,7 +98,7 @@ export interface IUpcomingContent extends Document {
   title: string;
   description?: string;
   releaseDate: Date;
-  contentType: "movie" | "tvSeries";
+  contentType: "movie" | "series";
   genre?: number[];
   cast?: mongoose.Types.ObjectId[];
   director?: mongoose.Types.ObjectId;
@@ -113,7 +115,7 @@ export interface ICast extends Document {
   birthDate?: Date;
   nationality?: string;
   movies?: mongoose.Types.ObjectId[];
-  tvSeries?: mongoose.Types.ObjectId[];
+  series?: mongoose.Types.ObjectId[];
 }
 
 // director
@@ -123,7 +125,7 @@ export interface IDirector extends Document {
   birthDate?: Date;
   nationality?: string;
   movies?: mongoose.Types.ObjectId[];
-  tvSeries?: mongoose.Types.ObjectId[];
+  series?: mongoose.Types.ObjectId[];
 }
 
 //liked section

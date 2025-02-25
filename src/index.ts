@@ -9,6 +9,9 @@ import userRouter from "./routes/user";
 import movieRouter from "./routes/movie";
 import reviewRouter from "./routes/review";
 import likedRouter from "./routes/like";
+import connectCloudinary from "./config/cloudinary";
+import seriesRouter from "./routes/series";
+import fileUpload from "express-fileupload";
 
 // Create Express server
 const app = express();
@@ -36,26 +39,36 @@ app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+// Middleware to handle file uploads
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
+
 // Define a route handler for the root route
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
 });
 
+
 app.use("/auth", authRouter);
 app.use("/movie", movieRouter);
 app.use("/user", userRouter);
+app.use("/series", seriesRouter);
 app.use("/review", reviewRouter);
 app.use("/liked", likedRouter);
 
 const port = PORT || 3000;
 
-// Connect database
-connectDB()
+Promise.all([connectDB(), connectCloudinary()])
   .then(() => {
-    console.log("Database connected successfully.");
-    // Start the server
+    console.log("Database connected ✅ \nCloudinary configured ✅");
+
+    // start server
     app.listen(port, () => {
-      console.log(`Server is running on http://localhost:${port}`);
+      console.log(`Server is running on 👉 http://localhost:${port}`);
     });
   })
   .catch((err) => {

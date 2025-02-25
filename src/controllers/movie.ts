@@ -3,10 +3,8 @@ import Movie from "../models/movie";
 import { AuthRequest } from "../types/api";
 import Director from "../models/director";
 import Cast from "../models/cast";
-import Review from "./../models/review";
-import Series from "../models/series";
 
-// Create a new movie (Admin only)
+// Create a new movie (Admin only)---------------------------------------------------------------------------
 export const createMovie = async (
   req: AuthRequest,
   res: Response
@@ -24,16 +22,18 @@ export const createMovie = async (
       genres,
       duration,
       rating,
+      reviews,
       cast,
       director,
       poster,
       trailerUrl,
+      review,
       movieUrl,
       availableForStreaming,
     } = req.body;
 
     // Validate required fields
-    if (!title || !duration || !Cast || !Director) {
+    if (!title || !duration || !cast || !director) {
       return res.status(400).json({
         message: "Missing required fields: title, duration, cast, or director.",
       });
@@ -42,6 +42,12 @@ export const createMovie = async (
     if (!Array.isArray(cast) || cast.length === 0) {
       return res.status(400).json({ message: "Cast list cannot be empty." });
     }
+
+    // Validate Director
+    if (!Array.isArray(director) || director.length === 0) {
+      return res.status(400).json({ message: "Director list cannot be empty." });
+    }
+
     // Validate each cast member
     for (const member of cast) {
       if (!member.castId || !member.roleName) {
@@ -65,9 +71,10 @@ export const createMovie = async (
       genres,
       duration,
       rating,
+      reviews,
       cast,
       director,
-      Review,
+      review,
       poster,
       trailerUrl,
       movieUrl,
@@ -97,7 +104,7 @@ export const createMovie = async (
   }
 };
 
-//getAll Movie --------------------------------------------------------------------------------
+//getAll Movie ----------------------------------------------------------------------------------------------
 export const getAllMovies = async (req: AuthRequest, res: Response) => {
   try {
     // Default values for pagination
@@ -159,7 +166,7 @@ export const getAllMovies = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Get a Movie by Id --------------------------------------------------------------------------------
+// Get a Movie by Id ----------------------------------------------------------------------------------------
 export const getMovieById = async (
   req: AuthRequest,
   res: Response
@@ -195,7 +202,7 @@ export const getMovieById = async (
   }
 };
 
-//Update Movie by Id (Admin only)--------------------------------------------------------------------------------
+//Update Movie by Id (Admin only)----------------------------------------------------------------------------
 export const updateMovieById = async (
   req: AuthRequest,
   res: Response
@@ -237,7 +244,7 @@ export const updateMovieById = async (
   }
 };
 
-// Delete movie by Id (Admin only)--------------------------------------------------------------------------------
+// Delete movie by Id (Admin only)---------------------------------------------------------------------------
 export const deleteMovieById = async (
   req: AuthRequest,
   res: Response
@@ -250,12 +257,26 @@ export const deleteMovieById = async (
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
-    // Find and delete the movie
-    const deletedMovie = await Movie.findByIdAndDelete(id);
-
-    if (!deletedMovie) {
+    // Find the movie before deleting to get associated cast and directors
+    const movie = await Movie.findById(id);
+    if (!movie) {
       return res.status(404).json({ message: "Movie not found" });
     }
+
+    // Delete the movie
+    await Movie.findByIdAndDelete(id);
+
+    // Remove the movie ID from the casts' movie lists
+    await Cast.updateMany(
+      { _id: { $in: (movie.cast || []).map((member) => member.castId) } },
+      { $pull: { movies: id } }
+    );
+
+    // Remove the movie ID from the directors' movie lists
+    await Director.updateMany(
+      { _id: { $in: movie.director } },
+      { $pull: { movies: id } }
+    );
 
     return res.status(200).json({ message: "Movie deleted successfully" });
   } catch (error) {
