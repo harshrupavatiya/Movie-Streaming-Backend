@@ -4,7 +4,6 @@ import { AuthRequest } from "../types/api";
 import Director from "../models/director";
 import Cast from "../models/cast";
 import Review from "./../models/review";
-import Series from "../models/series";
 
 // Create a new movie (Admin only)
 export const createMovie = async (
@@ -24,6 +23,7 @@ export const createMovie = async (
       genres,
       duration,
       rating,
+      reviews,
       cast,
       director,
       poster,
@@ -33,7 +33,7 @@ export const createMovie = async (
     } = req.body;
 
     // Validate required fields
-    if (!title || !duration || !Cast || !Director) {
+    if (!title || !duration || !cast || !director) {
       return res.status(400).json({
         message: "Missing required fields: title, duration, cast, or director.",
       });
@@ -65,9 +65,9 @@ export const createMovie = async (
       genres,
       duration,
       rating,
+      reviews,
       cast,
       director,
-      Review,
       poster,
       trailerUrl,
       movieUrl,
