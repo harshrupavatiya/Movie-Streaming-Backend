@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Review from "../models/review";
 import Movie from "../models/movie";
 import Series from "../models/series";
-import { AuthRequest } from "./../middlewares/Auth";
+import { AuthRequest } from "../types/api";
 import mongoose from "mongoose";
 
 // Create or Update Review
