@@ -18,7 +18,15 @@ export const validateContactNo = (contactNo: string): void => {
   }
 };
 
+export function isValidISOBirthDate(dateString: string): boolean {
+  const date = new Date(dateString);
+  const today = new Date();
+
+  return date instanceof Date && !isNaN(date.getTime()) && date <= today;
+}
+
 export function isValidISODate(dateString: string): boolean {
   const date = new Date(dateString);
+
   return date instanceof Date && !isNaN(date.getTime());
 }
