@@ -24,7 +24,7 @@ export const validateSignUpData = (req: Request): void => {
 
   const { otp } = req.body;
 
-  const otpRegex = /`^\d{6}$`/;
+  const otpRegex = /^\d{6}$/;
 
   // validating OTP
   if (!otpRegex.test(otp)) {
