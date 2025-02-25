@@ -26,10 +26,10 @@ const directorSchema = new Schema<IDirector>(
         ref: "Movie",
       },
     ],
-    tvSeries: [
+    series: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "TVSeries",
+        ref: "Series",
       },
     ],
   },

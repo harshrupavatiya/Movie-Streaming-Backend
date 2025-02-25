@@ -8,6 +8,7 @@ import { Frontend_Base_URL } from "./utils/constants";
 import movieRouter from "./routes/movie";
 import reviewRouter from "./routes/review";
 import likedRouter from "./routes/like";
+import seriesRouter from "./routes/series";
 
 // Create Express server
 const app = express();
@@ -42,6 +43,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/auth", authRouter);
 app.use("/movie", movieRouter);
+app.use("/series", seriesRouter);
 app.use("/review", reviewRouter);
 app.use("/liked", likedRouter);
 
