@@ -18,6 +18,12 @@ export interface ILikedContent {
   contentType: "Movie" | "Series";
 }
 
+// Define Watchlist Content Interface
+export interface IWatchlistContent {
+  contentId: mongoose.Types.ObjectId;
+  contentType: "Movie" | "Series";
+}
+
 // User
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId | string;
@@ -29,7 +35,7 @@ export interface IUser extends Document {
   gender?: "" | "male" | "female" | "other" | "prefer not to say";
   profilePicture?: string;
   subscription?: ISubscription;
-  watchlist: mongoose.Types.ObjectId[];
+  watchlist: IWatchlistContent[];
   likedContent: ILikedContent[];
   role: "user" | "admin";
   getJWT(secret: string, duration: StringValue): Promise<string>;
