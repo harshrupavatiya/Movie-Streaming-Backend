@@ -24,12 +24,14 @@ const directorSchema = new Schema<IDirector>(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Movie",
+        default: [],
       },
     ],
     series: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Series",
+        default: [],
       },
     ],
   },

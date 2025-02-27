@@ -435,3 +435,240 @@ export const addEpisodeToSeason = async (
     });
   }
 };
+
+// Delete Series by ID (Admin Only)---------------------------------------------------------------------------------------
+export const deleteSeriesById = async (
+  req: AuthRequest,
+  res: Response
+): Promise<string | any> => {
+  try {
+    // Check if the user is an admin
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    const { id } = req.params;
+
+    // Find the series to delete
+    const series = await Series.findById(id);
+    if (!series) {
+      return res.status(404).json({ message: "Series not found" });
+    }
+
+    // Remove the series ID from Cast members
+    await Cast.updateMany(
+      { _id: { $in: (series.cast || []).map((member) => member.castId) } },
+      { $pull: { series: id } }
+    );
+
+    // Remove the series ID from Director(s)
+    await Director.updateMany(
+      { _id: { $in: series.director } },
+      { $pull: { series: id } }
+    );
+
+    // Delete the series
+    await Series.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Series deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
+
+// Get All Episodes of a Season---------------------------------------------------------------------------------------
+export const getEpisodesBySeason = async (req: Request, res: Response) : Promise< string | any > => {
+  try {
+    const { id, seasonNumber } = req.params;
+
+    // Find the series by ID
+    const series = await Series.findById(id);
+    if (!series) {
+      return res.status(404).json({ message: "Series not found" });
+    }
+
+    // Find the season based on seasonNumber
+    const season = series.seasons.find(
+      (s: any) => s.seasonNumber === Number(seasonNumber)
+    );
+
+    if (!season) {
+      return res.status(404).json({ message: "Season not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      seriesTitle: series.title,
+      seasonNumber: season.seasonNumber,
+      episodes: season.episodes, // Assuming each season contains an array of episodes
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
+
+// Delete Season From Series---------------------------------------------------------------------------------------
+export const deleteSeasonFromSeries = async (req: Request, res: Response) : Promise< String | any > => {
+  try {
+    const { id, seasonNumber } = req.params;
+
+    // Find the series by ID
+    const series = await Series.findById(id);
+    if (!series) {
+      return res.status(404).json({ message: "Series not found" });
+    }
+
+    // Filter out the season to be deleted
+    const updatedSeasons = series.seasons.filter(
+      (s: any) => s.seasonNumber !== parseInt(seasonNumber)
+    );
+
+    // Check if the season was actually found and removed
+    if (updatedSeasons.length === series.seasons.length) {
+      return res.status(404).json({ message: "Season not found in series" });
+    }
+
+    // Update the series with the filtered seasons
+    series.seasons = updatedSeasons;
+    await series.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Season ${seasonNumber} deleted successfully from series.`,
+      series,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
+
+// Delete Episode From Season---------------------------------------------------------------------------------------
+export const deleteEpisodeFromSeason = async (req: Request, res: Response) : Promise<any> => {
+  try {
+    const { id, seasonNumber, episodeNumber } = req.params;
+
+    // Find the series by ID
+    const series = await Series.findById(id);
+    if (!series) {
+      return res.status(404).json({ message: "Series not found" });
+    }
+
+    // Find the specific season
+    const season = series.seasons.find(
+      (s: any) => s.seasonNumber === parseInt(seasonNumber)
+    );
+    if (!season) {
+      return res.status(404).json({ message: "Season not found" });
+    }
+
+    // Filter out the episode to be deleted
+    const updatedEpisodes = season.episodes.filter(
+      (e: any) => e.episodeNumber !== parseInt(episodeNumber)
+    );
+
+    // Check if the episode was actually found and removed
+    if (updatedEpisodes.length === season.episodes.length) {
+      return res.status(404).json({ message: "Episode not found in season" });
+    }
+
+    // Update the season with the filtered episodes
+    season.episodes = updatedEpisodes;
+    await series.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Episode ${episodeNumber} deleted successfully from season ${seasonNumber}.`,
+      series,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
+
+// Search Series By Title---------------------------------------------------------------------------------------
+export const searchSeriesByTitle = async (req: Request, res: Response) : Promise< String | any > => {
+  try {
+    const { title } = req.query;
+
+    if (!title) {
+      return res.status(400).json({ message: "Title query parameter is required" });
+    }
+
+    // Perform case-insensitive search using regex
+    const seriesList = await Series.find({ title: { $regex: title, $options: "i" } });
+
+    if (seriesList.length === 0) {
+      return res.status(404).json({ message: "No series found matching the title" });
+    }
+
+    res.status(200).json({ success: true, series: seriesList });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
+
+// Filter Series By Genre---------------------------------------------------------------------------------------
+export const filterSeriesByGenre = async (req: Request, res: Response) : Promise< String | any > => {
+  try {
+    const { genre } = req.query; // Get genre from query params
+
+    if (!genre) {
+      return res.status(400).json({ message: "Genre ID is required" });
+    }
+
+    const genreId = Number(genre);
+    if (isNaN(genreId)) {
+      return res.status(400).json({ message: "Invalid Genre ID provided" });
+    }
+
+    // Find series that match exactly the given genre ID
+    const seriesList = await Series.find({ genres: genreId });
+
+    if (seriesList.length === 0) {
+      return res.status(404).json({ message: "No series found for the given genre" });
+    }
+
+    res.status(200).json({ success: true, series: seriesList });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
+
+// Top Rated Series---------------------------------------------------------------------------------------
+export const getTopRatedSeries = async (req: Request, res: Response) : Promise< String | any > => {
+  try {
+    const topSeries = await Series.find()
+      .sort({ rating: -1 }) // Sort by rating (descending)
+      .limit(20); // Limit to 20 results
+
+    res.status(200).json({ success: true, series: topSeries });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
