@@ -286,3 +286,64 @@ export const deleteMovieById = async (
     });
   }
 };
+
+// Filter Movies by Genre---------------------------------------------------------------------------
+export const getMoviesByGenre = async (req: Request, res: Response) : Promise< String | any >=> {
+  try {
+    const { genre } = req.query;
+
+    if (!genre) {
+      return res.status(400).json({ message: "Genre parameter is required." });
+    }
+
+    const genreNumber = Number(genre);
+    if (isNaN(genreNumber)) {
+      return res.status(400).json({ message: "Genre must be a valid number." });
+    }
+
+    const movies = await Movie.find({ genres: genreNumber })
+      .populate({
+        path: "cast.castId",
+        select: "name",
+      })
+      .populate({
+        path: "director",
+        select: "name",
+      });
+
+    if (movies.length === 0) {
+      return res.status(404).json({ message: "No movies found for this genre." });
+    }
+
+    res.status(200).json(movies);
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};
+
+//Top Rated Movies---------------------------------------------------------------------------
+export const getTopRatedMovies = async (req: Request, res: Response) => {
+  try {
+    const movies = await Movie.find()
+      .sort({ rating: -1 }) // Sort in descending order (highest-rated first)
+      .limit(20) // Get only the top 20
+      .populate({
+        path: "cast.castId",
+        select: "name",
+      })
+      .populate({
+        path: "director",
+        select: "name",
+      });
+
+    res.status(200).json(movies);
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: (error as Error).message,
+    });
+  }
+};

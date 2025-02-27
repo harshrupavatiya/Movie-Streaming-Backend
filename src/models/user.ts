@@ -72,8 +72,8 @@ const userSchema = new Schema<IUser>(
     },
     watchlist: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Movie",
+        contentId: { type: mongoose.Schema.Types.ObjectId, required: true, refPath: "watchlist.contentType" },
+        contentType: { type: String, enum: ["Movie", "Series"], required: true },
       },
     ],
     role: {
