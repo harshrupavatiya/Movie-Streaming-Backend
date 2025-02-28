@@ -10,3 +10,6 @@
 - [ ] User
   - [ ] getUserData
   - [ ] updateProfile
+
+
+- [ ] Subscription.

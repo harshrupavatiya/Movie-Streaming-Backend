@@ -9,6 +9,7 @@ import userRouter from "./routes/user";
 import movieRouter from "./routes/movie";
 import reviewRouter from "./routes/review";
 import likedRouter from "./routes/like";
+import subscriptionRouter from './routes/subscription'
 
 // Create Express server
 const app = express();
@@ -46,6 +47,8 @@ app.use("/movie", movieRouter);
 app.use("/user", userRouter);
 app.use("/review", reviewRouter);
 app.use("/liked", likedRouter);
+app.use("/stripe", subscriptionRouter);
+
 
 const port = PORT || 3000;
 

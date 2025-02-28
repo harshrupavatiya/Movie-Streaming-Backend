@@ -1,12 +1,6 @@
 import mongoose, { Document } from "mongoose";
 import { StringValue } from "ms";
 
-interface ISubscription {
-  plan: "free" | "basic" | "premium";
-  startDate?: Date;
-  endDate?: Date;
-}
-
 interface ICastMember {
   castId: mongoose.Types.ObjectId;
   roleName?: string;
@@ -142,4 +136,17 @@ export interface IReview extends Document {
   reviewer: mongoose.Types.ObjectId;
   rating: number;
   comment?: string;
+}
+
+
+// Subscription 
+
+export interface ISubscription extends Document {
+  subscriptionID: string;
+  userID: string
+  paymentDate: Date;
+  planEndingDate: Date;
+  amount: number;
+  subscriptionType: "free" | "basic" | "premium";
+  transactionId: string
 }
