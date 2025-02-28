@@ -76,6 +76,7 @@ export const signUp = async (
 
     // Extract user details
     const { name, email, contactNo, password, otp } = req.body;
+    console.log(name, email, contactNo, password, otp, "Body")
 
     // validate otp
     const otpInfo: IOTP | null = await OTP.findOne({ otp: otp });
