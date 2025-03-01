@@ -7,6 +7,7 @@ import { isValidField } from "../validators/editUserData";
 import { UploadedFile } from "express-fileupload";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
+import { validateFileContent } from "../validators/mediaFile";
 
 export const changePassword = async (
   req: AuthRequest,
@@ -58,13 +59,11 @@ export const editProfile = async (
 
     const file = req?.files?.image as UploadedFile;
 
-    if (file && file.mimetype.split("/")[0] !== "image") {
-      return res.status(500).json({ message: "only image can be sent" });
-    }
-
     // Upload the image to Cloudinary
     let result = null;
     if(file) {
+      validateFileContent(file, "image");
+
       result = await uploadImageToCloudinary(file.tempFilePath, {
         folder: "uploads",
         height: 800,
@@ -73,7 +72,7 @@ export const editProfile = async (
 
       // Delete the temporary file
       fs.unlink(file.tempFilePath, (err) => {
-        if (err) console.error("Failed to delete temp file:", err);
+        if (err) console.log("Failed to delete temp file:", err);
       });
     }
 
