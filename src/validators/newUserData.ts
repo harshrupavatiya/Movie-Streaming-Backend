@@ -1,15 +1,12 @@
 import { Request } from "express";
-import { validateContactNo, validateEmail, validatePassword } from "./inputValidators";
+import { validateContactNo, validateEmail, validateName, validatePassword } from "./inputValidators";
 
 export const validateUserData = (req: Request): void => {
   // Extract data
   const { name, email, password, contactNo } = req.body;
 
   // If Name not present
-  const nameRegex = /^[A-Za-z ]+$/;
-  if (!nameRegex.test(name)) {
-    throw new Error("Name is not valid");
-  }
+  validateName(name);
 
   validateContactNo(contactNo);
   

@@ -10,13 +10,10 @@ const castSchema = new Schema<ICast>(
       minLength: 2,
       maxLength: 50,
     },
-    age: {
-      type: Number,
-      max: 150,
-    },
     gender: {
       type: String,
-      enum: ["male", "female", "other"],
+      enum: ["male", "female", "other", "", "prefer not to say"],
+      default: "",
     },
     profilePicture: {
       type: String,
