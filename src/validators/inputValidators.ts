@@ -1,5 +1,12 @@
 import validator from "validator";
 
+export const validateName = (name: string): void => {
+  const nameRegex = /^[A-Za-z ]+$/;
+  if (!nameRegex.test(name)) {
+    throw new Error("Name is not valid");
+  }
+};
+
 export const validateEmail = (email: string): void => {
   if (!validator.isEmail(email)) {
     throw new Error("Email is not valid!");

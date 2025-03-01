@@ -115,8 +115,7 @@ export interface IUpcomingContent extends Document {
 // cast
 export interface ICast extends Document {
   name: string;
-  age?: number;
-  gender?: "male" | "female" | "other";
+  gender?: "male" | "female" | "other" | "" | "prefer not to say";
   profilePicture?: string;
   birthDate?: Date;
   nationality?: string;
