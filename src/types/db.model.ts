@@ -1,6 +1,8 @@
 import mongoose, { Document } from "mongoose";
 import { StringValue } from "ms";
 
+type ContentType = "Movie" | "Series";
+
 interface ISubscription {
   plan: "free" | "basic" | "premium";
   startDate?: Date;
@@ -15,13 +17,13 @@ interface ICastMember {
 // Define Liked Content Interface
 export interface ILikedContent {
   contentId: mongoose.Types.ObjectId;
-  contentType: "Movie" | "Series";
+  contentType: ContentType;
 }
 
 // Define Watchlist Content Interface
 export interface IWatchlistContent {
   contentId: mongoose.Types.ObjectId;
-  contentType: "Movie" | "Series";
+  contentType: ContentType;
 }
 
 // User
@@ -56,7 +58,8 @@ export interface IMovie extends Document {
   releaseDate?: Date;
   genres?: number[];
   duration: number;
-  rating?: number;
+  rating: number;
+  likes: number;
   reviews?: mongoose.Types.ObjectId;
   cast?: ICastMember[];
   director?: mongoose.Types.ObjectId;
@@ -104,7 +107,7 @@ export interface IUpcomingContent extends Document {
   title: string;
   description?: string;
   releaseDate: Date;
-  contentType: "movie" | "series";
+  contentType: ContentType;
   genre?: number[];
   cast?: mongoose.Types.ObjectId[];
   director?: mongoose.Types.ObjectId;
@@ -135,14 +138,11 @@ export interface IDirector extends Document {
 
 //liked section
 export interface ILike extends Document {
-  user: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   contentId: mongoose.Types.ObjectId;
-  contentType: "Movie" | "Series";
-  createdAt: Date;
-  updatedAt: Date;
+  contentType: ContentType;
 }
 
-type ContentType = "Movie" | "Series";
 export interface IReview extends Document {
   contentId: mongoose.Types.ObjectId;
   contentType: ContentType;
