@@ -11,9 +11,10 @@ import {
   isValidISOBirthDate,
   validateName,
 } from "../validators/inputValidators";
-import { ICast } from "../types/db.model";
+import { getValidCastPayload } from "../utils/getPayload";
 
 // Add Cast (Admin Only)
+// NOW IT IS NOT USEFUL ANYMORE, SO REMOVE IT AFTER TESTING "addOrUpdateCast"
 export const addCast = async (
   req: AuthRequest,
   res: Response
@@ -43,7 +44,7 @@ export const addCast = async (
     // Upload image to Cloudinary
     let result = null;
     if (file) {
-      validateFileContent(file, "image");
+      validateFileContent(file.mimetype, "image");
 
       result = await uploadImageToCloudinary(file.tempFilePath, {
         folder: "cast",
@@ -110,7 +111,7 @@ export const getAllCastNames = async (
   }
 };
 
-// Add or Update Cast (Admin Only) post--------------------------------------------------------------------------------
+// Add or Update Cast (Admin Only)--------------------------------------------------------------------------------
 export const addOrUpdateCast = async (
   req: AuthRequest,
   res: Response
@@ -121,31 +122,31 @@ export const addOrUpdateCast = async (
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
-    const { castId, name, gender, birthDate, nationality } = req.body;
+    const { castId } = req.body;
     const file = req?.files?.image as UploadedFile;
 
     // find cast by id
     const existingCast = await Cast.findById(castId);
 
-    // validating the data
-    if (!existingCast || (existingCast && name)) {
-      validateName(name);
+    // get castPayload by validating req.body
+    const castPayload = getValidCastPayload(req.body, existingCast ? true : false);
+
+    // corner-cases error handling 
+    if(!existingCast && castId) {
+      throw new Error("Cast not found in DB");
     }
-    if (birthDate) {
-      isValidISOBirthDate(birthDate);
+    if(existingCast && Object.keys(castPayload).length === 0 && !file) {
+      throw new Error("Atleast one field required to update Cast information");
     }
-    if (nationality && typeof nationality !== "string") {
-      throw new Error("value of nationality should be in string type");
-    }
-    if (gender && typeof gender !== "string") {
-      throw new Error("value of gender should nbe in string type");
+    if(!existingCast && !Object.keys(castPayload).includes("name")) {
+      throw new Error("Name is required field");
     }
 
     // image uploading proocess begins from here,
     let result = null;
     // if file(image) exists in request-files
     if (file) {
-      validateFileContent(file, "image");
+      validateFileContent(file.mimetype, "image");
 
       // uploading image to cloudinary
       result = await uploadImageToCloudinary(file.tempFilePath, {
@@ -162,14 +163,14 @@ export const addOrUpdateCast = async (
     // getting secure url from received data from cloudinary uploader
     const profilePicture = result?.secure_url || null;
 
-    // new cast payload
-    const castPayload: Partial<ICast> = {
-      ...((!existingCast || (existingCast && name)) && { name }),
-      ...(birthDate && { birthDate: new Date(birthDate) }),
-      ...(gender && { gender }),
-      ...(nationality && { nationality }),
-      ...(profilePicture && { profilePicture }),
-    };
+    // if url not generated
+    if(file && !profilePicture) {
+      throw new Error("Something went wrong while uploading Image");
+    }
+    // adding url in payload
+    if (profilePicture) {
+      castPayload.profilePicture = profilePicture;
+    }
 
     // if cast exists then update the information
     if (existingCast) {
