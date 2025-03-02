@@ -25,15 +25,24 @@ export const validateContactNo = (contactNo: string): void => {
   }
 };
 
-export function isValidISOBirthDate(dateString: string): boolean {
+export function isValidISOBirthDate(dateString: string): void {
   const date = new Date(dateString);
   const today = new Date();
 
-  return date instanceof Date && !isNaN(date.getTime()) && date <= today;
+  if (!(date instanceof Date) || isNaN(date.getTime()) || date > today) {
+    throw new Error("Birthdate Is not valid");
+  }
 }
 
-export function isValidISODate(dateString: string): boolean {
+export function isValidISODate(dateString: string): void {
   const date = new Date(dateString);
 
-  return date instanceof Date && !isNaN(date.getTime());
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    throw new Error("Date is not valid");
+  }
 }
+
+export const validateGender = (gender: string): void => {
+  if (!["male", "female", "other", "prefer not to say"].includes(gender))
+    throw new Error("Invalid Gender value");
+};

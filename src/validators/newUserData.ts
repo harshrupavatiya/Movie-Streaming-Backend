@@ -1,9 +1,16 @@
-import { Request } from "express";
 import { validateContactNo, validateEmail, validateName, validatePassword } from "./inputValidators";
 
-export const validateUserData = (req: Request): void => {
+interface IUserRequiredField {
+  name: string;
+  email: string;
+  password: string;
+  contactNo: string;
+  otp?: number;
+}
+
+export const validateUserData = (reqBody: IUserRequiredField): void => {
   // Extract data
-  const { name, email, password, contactNo } = req.body;
+  const { name, email, password, contactNo } = reqBody;
 
   // If Name not present
   validateName(name);
@@ -15,16 +22,16 @@ export const validateUserData = (req: Request): void => {
   validatePassword(password);
 };
 
-export const validateSignUpData = (req: Request): void => {
+export const validateSignUpData = (reqBody: Required<IUserRequiredField>): void => {
   // validate name, email, contactNo, password
-  validateUserData(req);
+  validateUserData(reqBody);
 
-  const { otp } = req.body;
+  const { otp } = reqBody;
 
   const otpRegex = /^\d{6}$/;
 
   // validating OTP
-  if (!otpRegex.test(otp)) {
+  if (!otpRegex.test(otp.toString())) {
     throw new Error("Invalid OTP format");
   }
 };

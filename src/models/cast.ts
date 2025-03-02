@@ -19,7 +19,7 @@ const castSchema = new Schema<ICast>(
       type: String,
       default: "https://geographyandyou.com/images/user-profile.png"
     },
-    birthDate: {
+    dateOfBirth: {
       type: Date,
     },
     nationality: {
