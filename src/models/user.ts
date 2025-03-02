@@ -90,20 +90,6 @@ const userSchema = new Schema<IUser>(
       enum: ["user", "admin"],
       default: "user",
     },
-    likedContent: [
-      {
-        contentId: {
-          type: mongoose.Schema.Types.ObjectId,
-          required: true,
-          refPath: "likedContent.contentType", // Dynamic reference
-        },
-        contentType: {
-          type: String,
-          required: true,
-          enum: ["Movie", "Series"], // Allowed types
-        },
-      },
-    ],
   },
   { timestamps: true }
 );
