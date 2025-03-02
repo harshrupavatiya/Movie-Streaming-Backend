@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import {
@@ -17,6 +17,7 @@ import { forgotPassTemplate } from "../utils/mailTemplates";
 import jwt from "jsonwebtoken";
 
 // LOGIN--------------------------------------------------------------------------------------------------
+// add validators
 export const login = async (req: Request, res: Response): Promise<any> => {
   try {
     // Get data from req body
@@ -68,11 +69,10 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 export const signUp = async (
   req: Request,
   res: Response,
-  next: NextFunction
 ): Promise<Response | any> => {
   try {
     // Validate signup data
-    validateSignUpData(req);
+    validateSignUpData(req.body);
 
     // Extract user details
     const { name, email, contactNo, password, otp } = req.body;
@@ -113,10 +113,10 @@ export const generateOTP = async (
 ): Promise<Response | any> => {
   try {
     // Validate signup data
-    validateUserData(req);
+    validateUserData(req.body);
 
     // Extract user details
-    const { name, email, contactNo, password } = req.body;
+    const { email } = req.body;
 
     // Check if user exists with given email
     const user: IUser | null = await User.findOne({ email });
