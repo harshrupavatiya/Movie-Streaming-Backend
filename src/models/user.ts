@@ -72,8 +72,16 @@ const userSchema = new Schema<IUser>(
     },
     watchlist: [
       {
-        contentId: { type: mongoose.Schema.Types.ObjectId, required: true, refPath: "watchlist.contentType" },
-        contentType: { type: String, enum: ["Movie", "Series"], required: true },
+        contentId: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "watchlist.contentType",
+        },
+        contentType: {
+          type: String,
+          enum: ["Movie", "Series"],
+          required: true,
+        },
       },
     ],
     role: {
@@ -96,7 +104,6 @@ const userSchema = new Schema<IUser>(
         },
       },
     ],
-    
   },
   { timestamps: true }
 );
