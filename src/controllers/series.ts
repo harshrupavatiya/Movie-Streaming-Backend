@@ -436,7 +436,7 @@ export const addEpisodeToSeason = async (
   }
 };
 
-// Delete Series by ID (Admin Only)---------------------------------------------------------------------------------------
+// Delete Series by ID (Admin Only)---------------------------------------------------------------------
 export const deleteSeriesById = async (
   req: AuthRequest,
   res: Response
@@ -483,8 +483,11 @@ export const deleteSeriesById = async (
   }
 };
 
-// Get All Episodes of a Season---------------------------------------------------------------------------------------
-export const getEpisodesBySeason = async (req: Request, res: Response) : Promise< string | any > => {
+// Get All Episodes of a Season-------------------------------------------------------------------------
+export const getEpisodesBySeason = async (
+  req: AuthRequest,
+  res: Response
+): Promise<string | any> => {
   try {
     const { id, seasonNumber } = req.params;
 
@@ -518,8 +521,11 @@ export const getEpisodesBySeason = async (req: Request, res: Response) : Promise
   }
 };
 
-// Delete Season From Series---------------------------------------------------------------------------------------
-export const deleteSeasonFromSeries = async (req: Request, res: Response) : Promise< String | any > => {
+// Delete Season From Series----------------------------------------------------------------------------
+export const deleteSeasonFromSeries = async (
+  req: AuthRequest,
+  res: Response
+): Promise<String | any> => {
   try {
     const { id, seasonNumber } = req.params;
 
@@ -556,8 +562,11 @@ export const deleteSeasonFromSeries = async (req: Request, res: Response) : Prom
   }
 };
 
-// Delete Episode From Season---------------------------------------------------------------------------------------
-export const deleteEpisodeFromSeason = async (req: Request, res: Response) : Promise<any> => {
+// Delete Episode From Season---------------------------------------------------------------------------
+export const deleteEpisodeFromSeason = async (
+  req: AuthRequest,
+  res: Response
+): Promise<any> => {
   try {
     const { id, seasonNumber, episodeNumber } = req.params;
 
@@ -602,33 +611,11 @@ export const deleteEpisodeFromSeason = async (req: Request, res: Response) : Pro
   }
 };
 
-// Search Series By Title---------------------------------------------------------------------------------------
-export const searchSeriesByTitle = async (req: Request, res: Response) : Promise< String | any > => {
-  try {
-    const { title } = req.query;
-
-    if (!title) {
-      return res.status(400).json({ message: "Title query parameter is required" });
-    }
-
-    // Perform case-insensitive search using regex
-    const seriesList = await Series.find({ title: { $regex: title, $options: "i" } });
-
-    if (seriesList.length === 0) {
-      return res.status(404).json({ message: "No series found matching the title" });
-    }
-
-    res.status(200).json({ success: true, series: seriesList });
-  } catch (error) {
-    res.status(500).json({
-      message: "Internal server error",
-      error: (error as Error).message,
-    });
-  }
-};
-
-// Filter Series By Genre---------------------------------------------------------------------------------------
-export const filterSeriesByGenre = async (req: Request, res: Response) : Promise< String | any > => {
+// Filter Series By Genre-------------------------------------------------------------------------------
+export const filterSeriesByGenre = async (
+  req: AuthRequest,
+  res: Response
+): Promise<String | any> => {
   try {
     const { genre } = req.query; // Get genre from query params
 
@@ -645,7 +632,9 @@ export const filterSeriesByGenre = async (req: Request, res: Response) : Promise
     const seriesList = await Series.find({ genres: genreId });
 
     if (seriesList.length === 0) {
-      return res.status(404).json({ message: "No series found for the given genre" });
+      return res
+        .status(404)
+        .json({ message: "No series found for the given genre" });
     }
 
     res.status(200).json({ success: true, series: seriesList });
@@ -657,12 +646,19 @@ export const filterSeriesByGenre = async (req: Request, res: Response) : Promise
   }
 };
 
-// Top Rated Series---------------------------------------------------------------------------------------
-export const getTopRatedSeries = async (req: Request, res: Response) : Promise< String | any > => {
+// Top Rated Series-------------------------------------------------------------------------------------
+export const getTopRatedSeries = async (
+  req: AuthRequest,
+  res: Response
+): Promise<String | any> => {
   try {
     const topSeries = await Series.find()
       .sort({ rating: -1 }) // Sort by rating (descending)
-      .limit(20); // Limit to 20 results
+      .limit(20);
+
+    if (topSeries.length === 0) {
+      return res.status(404).json({ message: "No top-rated series found" });
+    }
 
     res.status(200).json({ success: true, series: topSeries });
   } catch (error) {

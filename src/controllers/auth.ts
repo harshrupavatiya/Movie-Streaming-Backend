@@ -68,7 +68,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 // SIGNUP-------------------------------------------------------------------------------------------------
 export const signUp = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<Response | any> => {
   try {
     // Validate signup data
