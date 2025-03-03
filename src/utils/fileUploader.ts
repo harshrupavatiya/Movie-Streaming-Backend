@@ -9,7 +9,7 @@ interface ICloudinaryOptions {
 
 export const uploadImageToCloudinary = async (
   filePath: string,
-  options: Partial<ICloudinaryOptions> = {}
+  options: ICloudinaryOptions = {}
 ): Promise<any> => {
   try {
     // Set default values

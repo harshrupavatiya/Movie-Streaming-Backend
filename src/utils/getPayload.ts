@@ -95,7 +95,10 @@ export const getValidCastPayload = (
     isValidISOBirthDate(dateOfBirth);
     editData.dateOfBirth = new Date(dateOfBirth);
   }
-  if (nationality && validator.isAlpha(nationality)) {
+  if (nationality) {
+    if(!validator.isAlpha(nationality)) {
+      throw new Error("Only alphabets are allowed in notionality");
+    }
     editData.nationality = nationality;
   }
 

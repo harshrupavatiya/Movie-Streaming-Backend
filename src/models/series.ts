@@ -1,47 +1,7 @@
 import mongoose, { Model, Schema } from "mongoose";
-import { IEpisode, ISeason, ISeries } from "../types/db.model";
-
-const episodeSchema = new Schema<IEpisode>(
-  {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-      maxLength: 254,
-    },
-    description: {
-      type: String,
-      maxLength: 400,
-    },
-    duration: {
-      type: Number,
-      required: true,
-    },
-    episodeNumber: {
-      type: Number,
-      required: true,
-    },
-    episodeUrl: {
-      type: String,
-      required: true,
-    },
-    releaseDate: {
-      type: Date,
-    },
-  },
-  { timestamps: true }
-);
-
-const seasonSchema = new Schema<ISeason>(
-  {
-    seasonNumber: {
-      type: Number,
-      required: true,
-    },
-    episodes: [episodeSchema],
-  },
-  { timestamps: true }
-);
+import { ISeries } from "../types/db.model";
+import Cast from "./cast";
+import Director from "./director";
 
 const seriesSchema = new Schema<ISeries>(
   {
@@ -49,67 +9,92 @@ const seriesSchema = new Schema<ISeries>(
       type: String,
       required: true,
       trim: true,
-      maxLength: 254,
+      maxLength: 100,
     },
     description: {
       type: String,
+      maxlength: 300,
     },
     genres: [
       {
         type: Number,
+        required: true,
+      },
+    ],
+    languages: [
+      {
+        type: String,
+        required: true,
       },
     ],
     releaseDate: {
       type: Date,
+      required: true,
     },
     rating: {
       type: Number,
+      default: 9,
       min: 0,
       max: 10,
     },
+    likes: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
     reviews: [
       {
-        reviewId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Review",
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
       },
     ],
-    cast: [
-      {
-        castId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Cast",
-          required: true,
-        },
-        roleName: {
-          type: String,
-          minLength: 2,
-          maxLength: 50,
-        },
-      },
-    ],
-    director: [
+    casts: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Director",
+        ref: "Cast",
       },
     ],
+    director: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Director",
+    },
+
     poster: {
       type: String,
       required: true,
     },
     trailerUrl: {
       type: String,
+      required: true,
     },
     availableForStreaming: {
       type: Boolean,
       default: true,
     },
-    seasons: [seasonSchema],
   },
   { timestamps: true }
 );
+
+// TODO: check that post hook is working file or not ?
+
+seriesSchema.post("save", async function () {
+  const series = this;
+
+  if (series.casts) {
+    Cast.updateMany(
+      { _id: { $in: series?.casts } },
+      { $push: { series: series._id } }
+    );
+  }
+
+  if (series.director) {
+    Director.updateMany(
+      { _id: { $in: series.director } },
+      { $push: { series: series._id } }
+    );
+  }
+});
 
 const Series: Model<ISeries> = mongoose.model<ISeries>("Series", seriesSchema);
 

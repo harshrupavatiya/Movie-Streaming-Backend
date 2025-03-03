@@ -1,7 +1,7 @@
 import { contactUsEmail } from "./constants";
 
 export const otpTemplate = (otp: number) => {
-	return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 	<html>
 	
 	<head>
@@ -88,7 +88,7 @@ export const otpTemplate = (otp: number) => {
 };
 
 export const forgotPassTemplate = (forgotPassLink: string) => {
-	return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 	  <html>
 	  
 	  <head>
@@ -148,6 +148,23 @@ export const forgotPassTemplate = (forgotPassLink: string) => {
 	  
 			  .highlight {
 				  font-weight: bold;
+				  color: white;
+			  }
+
+			  .button-style {
+				  display: inline-block;
+				  padding: 10px 20px;
+				  background-color: #007bff;
+				  color: white;
+				  text-align: center;
+				  text-decoration: none;
+				  border-radius: 5px;
+				  border: none;
+				  cursor: pointer;
+			  }
+
+			  .button-style:hover {
+			  	  background-color: #0056b3;
 			  }
 		  </style>
 	  
@@ -161,7 +178,7 @@ export const forgotPassTemplate = (forgotPassLink: string) => {
 			  <div class="body">
 				  <p>Dear User,</p>
 				  <p>We received a request to reset your password for your account. Click the button below to set a new password:</p>
-				  <a href="${forgotPassLink}" class="highlight">Reset your Password</a>
+				  <a href="${forgotPassLink}" class="highlight button-style">Reset your Password</a>
 				  <p>Use this link incase of redirecting not working :</p>
 				  <p>${forgotPassLink}</p>
 				  <p>This link is valid for 60 minutes. If you didn't request this, you can safely ignore this email.</p>
@@ -172,4 +189,4 @@ export const forgotPassTemplate = (forgotPassLink: string) => {
 	  </body>
 	  
 	  </html>`;
-  };
+};

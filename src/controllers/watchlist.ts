@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { AuthRequest } from "../types/api"; // Assuming AuthRequest extends Request and includes user info
+import { Response } from "express";
+import { AuthRequest } from "../types/api";
 import User from "../models/user";
 
 // Toggle Watchlist (Add/Remove)--------------------------------------------------------------------------------
