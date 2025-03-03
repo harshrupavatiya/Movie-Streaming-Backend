@@ -12,6 +12,7 @@ import likedRouter from "./routes/like";
 import watchlistRouter from "./routes/watchlist";
 import searchRouter from "./routes/search";
 import castRouter from "./routes/cast";
+import directorRouter from "./routes/director";
 import connectCloudinary from "./config/cloudinary";
 import seriesRouter from "./routes/series";
 import fileUpload from "express-fileupload";
@@ -65,6 +66,7 @@ app.use("/liked", likedRouter);
 app.use("/watchlist", watchlistRouter);
 app.use("/search", searchRouter);
 app.use("/cast", castRouter);
+app.use("/director", directorRouter);
 const port = PORT || 3000;
 
 Promise.all([connectDB(), connectCloudinary()])
