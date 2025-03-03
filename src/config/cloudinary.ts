@@ -7,11 +7,15 @@ import {
 
 async function connectCloudinary() {
   // Configuration
-  cloudinary.config({
-    cloud_name: CLOUDINARY_CLOUD_NAME,
-    api_key: CLOUDINARY_API_KEY,
-    api_secret: CLOUDINARY_API_SECRET,
-  });
+  try {
+    cloudinary.config({
+      cloud_name: CLOUDINARY_CLOUD_NAME,
+      api_key: CLOUDINARY_API_KEY,
+      api_secret: CLOUDINARY_API_SECRET,
+    });
+  } catch(err) {
+    throw new Error("Something went wrong while configuring cloudinary");
+  }
 }
 
 export default connectCloudinary;

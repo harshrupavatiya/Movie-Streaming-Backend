@@ -142,7 +142,7 @@ export const addOrUpdateCast = async (
       throw new Error("Name is required field");
     }
 
-    // image uploading proocess begins from here,
+    // image uploading process begins from here,
     let result = null;
     // if file(image) exists in request-files
     if (file) {

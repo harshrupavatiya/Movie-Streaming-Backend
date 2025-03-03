@@ -9,7 +9,7 @@ interface ISubscription {
   endDate?: Date;
 }
 
-interface ICastMember {
+export interface ICastMember {
   castId: mongoose.Types.ObjectId;
   roleName?: string;
 }
@@ -73,17 +73,12 @@ export interface IMovie extends Document {
 export interface IEpisode {
   title: string;
   description?: string;
+  seriesId: mongoose.Types.ObjectId;
+  seasonNumber: number;
   duration: number;
   episodeNumber: number;
   episodeUrl: string;
   releaseDate?: Date;
-}
-
-// season
-export interface ISeason {
-  _id: string;
-  seasonNumber: number;
-  episodes: IEpisode[];
 }
 
 // series
@@ -91,15 +86,16 @@ export interface ISeries extends Document {
   title: string;
   description?: string;
   genres?: number[];
+  languages?: string[];
   releaseDate?: Date;
+  likes: number;
   rating?: number;
-  cast?: ICastMember[];
-  reviews?: mongoose.Types.ObjectId;
+  casts?: mongoose.Types.ObjectId[];
+  reviews?: mongoose.Types.ObjectId[];
   director?: mongoose.Types.ObjectId;
   poster: string;
   trailerUrl?: string;
   availableForStreaming?: boolean;
-  seasons: ISeason[];
 }
 
 // upcomingContent

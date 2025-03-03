@@ -79,5 +79,6 @@ likeSchema.post("findOneAndDelete", function (doc) {
       });
   }
 });
+
 const Like: Model<ILike> = mongoose.model<ILike>("Like", likeSchema);
 export default Like;

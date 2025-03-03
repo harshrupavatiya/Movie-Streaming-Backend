@@ -24,7 +24,7 @@ async function sendVerificationEmail(email: string, otp: number):Promise<void> {
   try {
     await mailSender(
       email,
-      "verification from Filmster",
+      "OTP verification from Filmster",
       otpTemplate(otp)
     );
   } catch (error) {
