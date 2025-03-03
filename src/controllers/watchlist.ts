@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { AuthRequest } from "../types/api"; // Assuming AuthRequest extends Request and includes user info
+import { AuthRequest } from "../types/api";
 import User from "../models/user";
 
 // Toggle Watchlist (Add/Remove)--------------------------------------------------------------------------------
@@ -43,8 +43,7 @@ export const toggleWatchlist = async (
     }
   } catch (error) {
     return res.status(500).json({
-      message: "Internal server error",
-      error: (error as Error).message,
+      message: (error as Error).message,
     });
   }
 };
@@ -66,11 +65,10 @@ export const getWatchlist = async (
         select: "title poster",
       });
 
-    return res.status(200).json({ watchlist });
+    return res.status(200).json({ data: { watchlist } });
   } catch (error) {
     return res.status(500).json({
-      message: "Internal server error",
-      error: (error as Error).message,
+      message: (error as Error).message,
     });
   }
 };

@@ -1,6 +1,6 @@
 import express from "express";
 import { createSeries, getAllSeries, getSeriesById, updateSeriesById, addSeasonToSeries, addEpisodeToSeason, 
-  deleteSeriesById, getEpisodesBySeason, deleteSeasonFromSeries, deleteEpisodeFromSeason , searchSeriesByTitle , filterSeriesByGenre , getTopRatedSeries } from "./../controllers/series";
+  deleteSeriesById, getEpisodesBySeason, deleteSeasonFromSeries, deleteEpisodeFromSeason, filterSeriesByGenre, getTopRatedSeries } from "./../controllers/series";
 import { userAuth } from "../middlewares/Auth";
 const seriesRouter = express.Router();
 
@@ -14,7 +14,6 @@ seriesRouter.delete("/deleteSeriesById/:id", userAuth, deleteSeriesById);
 seriesRouter.get("/getEpisodesBySeason/:id/seasons/:seasonNumber",userAuth, getEpisodesBySeason);
 seriesRouter.delete("/deleteSeasonFromSeries/:id/seasons/:seasonNumber", userAuth,  deleteSeasonFromSeries);
 seriesRouter.delete("/deleteEpisodeFromSeason/:id/seasons/:seasonNumber/episodes/:episodeNumber", userAuth, deleteEpisodeFromSeason);
-seriesRouter.get("/search", userAuth, searchSeriesByTitle);
 seriesRouter.get("/getSeriesByGenre", userAuth, filterSeriesByGenre);
 seriesRouter.get("/getTopRatedSeries", userAuth, getTopRatedSeries);  
 

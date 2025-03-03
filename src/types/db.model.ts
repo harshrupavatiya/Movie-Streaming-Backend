@@ -60,6 +60,7 @@ export interface IMovie extends Document {
   duration: number;
   rating: number;
   likes: number;
+  languages?: string[];
   reviews?: mongoose.Types.ObjectId;
   cast?: ICastMember[];
   director?: mongoose.Types.ObjectId;
