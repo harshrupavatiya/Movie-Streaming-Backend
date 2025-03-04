@@ -25,9 +25,9 @@ export const createMovie = async (
       reviews,
       cast,
       director,
+      languages,
       poster,
       trailerUrl,
-      review,
       movieUrl,
       availableForStreaming,
     } = req.body;
@@ -45,7 +45,9 @@ export const createMovie = async (
 
     // Validate Director
     if (!Array.isArray(director) || director.length === 0) {
-      return res.status(400).json({ message: "Director list cannot be empty." });
+      return res
+        .status(400)
+        .json({ message: "Director list cannot be empty." });
     }
 
     // Validate each cast member
@@ -74,7 +76,7 @@ export const createMovie = async (
       reviews,
       cast,
       director,
-      review,
+      languages,
       poster,
       trailerUrl,
       movieUrl,
@@ -91,15 +93,17 @@ export const createMovie = async (
 
     // Update Director(s) by adding the new movie ID
     await Director.updateMany(
-      { _id: { $in: director } }, // No need for directorId
+      { _id: { $in: director } },
       { $push: { movies: movieId } }
     );
 
-    res.status(201).json({ message: "Movie created successfully", movie: newMovie });
+    res.status(201).json({
+      message: "Movie created successfully",
+      data: { movie: newMovie },
+    });
   } catch (err) {
     res.status(500).json({
-      message: "Internal server error",
-      error: (err as Error).message,
+      message: (err as Error).message,
     });
   }
 };
@@ -116,7 +120,7 @@ export const getAllMovies = async (req: AuthRequest, res: Response) => {
     const movies = await Movie.find({})
       .populate({
         path: "cast.castId",
-        select: "name", // Fetch only the name of the cast member
+        select: "name",
       })
       .populate({
         path: "director",
@@ -145,8 +149,16 @@ export const getAllMovies = async (req: AuthRequest, res: Response) => {
           director: movie.director,
         };
       } else {
-        // Normal user sees all movie details
-        return movie;
+        return {
+          _id: movie._id,
+          title: movie.title,
+          description: movie.description,
+          rating: movie.rating,
+          poster: movie.poster,
+          languges: movie.languages,
+          genres: movie.genres,
+          releaseDate: movie.releaseDate,
+        };
       }
     });
 
@@ -156,12 +168,11 @@ export const getAllMovies = async (req: AuthRequest, res: Response) => {
         currentPage: page,
         totalPages: Math.ceil(totalMovies / limit),
       },
-      movies: formattedMovies,
+      data: { movies: formattedMovies },
     });
   } catch (err) {
     res.status(500).json({
-      message: "Internal server error",
-      error: (err as Error).message,
+      message: (err as Error).message,
     });
   }
 };
@@ -193,11 +204,10 @@ export const getMovieById = async (
       return res.status(404).json({ message: "Movie not found" });
     }
 
-    return res.status(200).json(movie);
+    return res.status(200).json({ data: { movie } });
   } catch (error) {
     return res.status(500).json({
-      message: "Internal server error",
-      error: (error as Error).message,
+      message: (error as Error).message,
     });
   }
 };
@@ -233,13 +243,13 @@ export const updateMovieById = async (
       return res.status(404).json({ message: "Movie not found" });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Movie updated successfully", movie: updatedMovie });
+    return res.status(200).json({
+      message: "Movie updated successfully",
+      data: { movie: updatedMovie },
+    });
   } catch (error) {
     return res.status(500).json({
-      message: "Internal server error",
-      error: (error as Error).message,
+      message: (error as Error).message,
     });
   }
 };
@@ -281,14 +291,16 @@ export const deleteMovieById = async (
     return res.status(200).json({ message: "Movie deleted successfully" });
   } catch (error) {
     return res.status(500).json({
-      message: "Internal server error",
-      error: (error as Error).message,
+      message: (error as Error).message,
     });
   }
 };
 
 // Filter Movies by Genre---------------------------------------------------------------------------
-export const getMoviesByGenre = async (req: Request, res: Response) : Promise< String | any >=> {
+export const getMoviesByGenre = async (
+  req: AuthRequest,
+  res: Response
+): Promise<String | any> => {
   try {
     const { genre } = req.query;
 
@@ -312,24 +324,39 @@ export const getMoviesByGenre = async (req: Request, res: Response) : Promise< S
       });
 
     if (movies.length === 0) {
-      return res.status(404).json({ message: "No movies found for this genre." });
+      return res
+        .status(404)
+        .json({ message: "No movies found for this genre." });
     }
 
-    res.status(200).json(movies);
+    const formattedMovies = movies.map((movie) => ({
+      _id: movie._id,
+      title: movie.title,
+      description: movie.description,
+      rating: movie.rating,
+      poster: movie.poster,
+      languages: movie.languages,
+      genres: movie.genres,
+      releaseDate: movie.releaseDate,
+    }));
+
+    res.status(200).json({ data: { movies: formattedMovies } });
   } catch (error) {
     res.status(500).json({
-      message: "Internal server error",
-      error: (error as Error).message,
+      message: (error as Error).message,
     });
   }
 };
 
 //Top Rated Movies---------------------------------------------------------------------------
-export const getTopRatedMovies = async (req: Request, res: Response) => {
+export const getTopRatedMovies = async (
+  req: AuthRequest,
+  res: Response
+): Promise<string | any> => {
   try {
     const movies = await Movie.find()
-      .sort({ rating: -1 }) // Sort in descending order (highest-rated first)
-      .limit(20) // Get only the top 20
+      .sort({ rating: -1 })
+      .limit(20)
       .populate({
         path: "cast.castId",
         select: "name",
@@ -339,11 +366,25 @@ export const getTopRatedMovies = async (req: Request, res: Response) => {
         select: "name",
       });
 
-    res.status(200).json(movies);
+    if (movies.length === 0) {
+      return res.status(404).json({ message: "No top-rated movies found." });
+    }
+
+    const formattedMovies = movies.map((movie) => ({
+      _id: movie._id,
+      title: movie.title,
+      description: movie.description,
+      rating: movie.rating,
+      poster: movie.poster,
+      languages: movie.languages,
+      genres: movie.genres,
+      releaseDate: movie.releaseDate,
+    }));
+
+    res.status(200).json({ data: { movies: formattedMovies } });
   } catch (error) {
     res.status(500).json({
-      message: "Internal server error",
-      error: (error as Error).message,
+      message: (error as Error).message,
     });
   }
 };
