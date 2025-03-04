@@ -57,7 +57,7 @@ export const createOrUpdateReview = async (
 
       return res.status(200).json({
         message: "Review updated successfully",
-        review: existingReview,
+        data: { review: existingReview },
       });
     } else {
       // Create a new review
@@ -82,20 +82,19 @@ export const createOrUpdateReview = async (
 
       return res.status(201).json({
         message: "Review added successfully",
-        review: newReview,
+        data: { review: newReview },
       });
     }
   } catch (error) {
     return res.status(500).json({
-      message: "Internal server error",
-      error: (error as Error).message,
+      message: (error as Error).message,
     });
   }
 };
 
 //Get latest 5 review for movie/series --------------------------------------------------------------------
 export const getLatestReviews = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ): Promise<string | any> => {
   try {
@@ -132,14 +131,15 @@ export const getLatestReviews = async (
     }));
 
     return res.status(200).json({
-      contentId,
-      contentType: movie ? "Movie" : "Series",
-      reviews: filteredReviews,
+      data: {
+        contentId,
+        contentType: movie ? "Movie" : "Series",
+        reviews: filteredReviews,
+      },
     });
   } catch (err) {
     return res.status(500).json({
-      message: "Internal Server Error",
-      error: (err as Error).message,
+      message: (err as Error).message,
     });
   }
 };
@@ -157,10 +157,13 @@ export const getMovieWiseReview = async (
 
     const { id } = req.params;
 
-    // Check if movie exists
+    // Check if contentId exists in Movies or Series
     const movie = await Movie.findById(id);
-    if (!movie) {
-      return res.status(404).json({ message: "Movie not found" });
+    const series = !movie ? await Series.findById(id) : null;
+
+    // If neither Movie nor Series found, return error
+    if (!movie && !series) {
+      return res.status(404).json({ message: "Content not found" });
     }
 
     // Fetch all reviews for the given movie
@@ -172,15 +175,16 @@ export const getMovieWiseReview = async (
       });
 
     return res.status(200).json({
-      id,
-      movieTitle: movie.title,
-      totalReviews: reviews.length,
-      reviews,
+      data: {
+        id,
+        movieTitle: movie ? movie.title : series?.title,
+        totalReviews: reviews.length,
+        reviews,
+      },
     });
   } catch (err) {
     return res.status(500).json({
-      message: "Internal Server Error",
-      error: (err as Error).message,
+      message: (err as Error).message,
     });
   }
 };
@@ -211,8 +215,7 @@ export const deleteReview = async (
     return res.status(200).json({ message: "Review deleted successfully" });
   } catch (err) {
     return res.status(500).json({
-      message: "Internal Server Error",
-      error: (err as Error).message,
+      message: (err as Error).message,
     });
   }
 };

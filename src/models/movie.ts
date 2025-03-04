@@ -60,6 +60,11 @@
           ref: "Director",
         },
       ],
+      languages: [
+        {
+          type: String,
+        },
+      ],
       poster: {
         type: String,
       },
