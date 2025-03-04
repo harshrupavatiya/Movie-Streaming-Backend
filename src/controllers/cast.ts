@@ -126,7 +126,7 @@ export const addOrUpdateCast = async (
     const file = req?.files?.image as UploadedFile;
 
     // find cast by id
-    const existingCast = await Cast.findById(castId);
+    const existingCast = await Cast.findById(castId); 
 
     // get castPayload by validating req.body
     const castPayload = getValidCastPayload(req.body, existingCast ? true : false);
@@ -142,7 +142,7 @@ export const addOrUpdateCast = async (
       throw new Error("Name is required field");
     }
 
-    // image uploading proocess begins from here,
+    // image uploading process begins from here,
     let result = null;
     // if file(image) exists in request-files
     if (file) {

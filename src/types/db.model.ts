@@ -9,7 +9,7 @@ interface ISubscription {
   endDate?: Date;
 }
 
-interface ICastMember {
+export interface ICastMember {
   castId: mongoose.Types.ObjectId;
   roleName?: string;
 }
@@ -60,6 +60,7 @@ export interface IMovie extends Document {
   duration: number;
   rating: number;
   likes: number;
+  languages?: string[];
   reviews?: mongoose.Types.ObjectId;
   cast?: ICastMember[];
   director?: mongoose.Types.ObjectId;
@@ -73,17 +74,12 @@ export interface IMovie extends Document {
 export interface IEpisode {
   title: string;
   description?: string;
+  seriesId: mongoose.Types.ObjectId;
+  seasonNumber: number;
   duration: number;
   episodeNumber: number;
   episodeUrl: string;
   releaseDate?: Date;
-}
-
-// season
-export interface ISeason {
-  _id: string;
-  seasonNumber: number;
-  episodes: IEpisode[];
 }
 
 // series
@@ -91,15 +87,16 @@ export interface ISeries extends Document {
   title: string;
   description?: string;
   genres?: number[];
+  languages?: string[];
   releaseDate?: Date;
+  likes: number;
   rating?: number;
-  cast?: ICastMember[];
-  reviews?: mongoose.Types.ObjectId;
+  casts?: mongoose.Types.ObjectId[];
+  reviews?: mongoose.Types.ObjectId[];
   director?: mongoose.Types.ObjectId;
   poster: string;
   trailerUrl?: string;
   availableForStreaming?: boolean;
-  seasons: ISeason[];
 }
 
 // upcomingContent
@@ -129,8 +126,9 @@ export interface ICast extends Document {
 // director
 export interface IDirector extends Document {
   name: string;
+  gender?: "male" | "female" | "other" | "" | "prefer not to say";
   profilePicture?: string;
-  birthDate?: Date;
+  dateOfBirth?: Date;
   nationality?: string;
   movies?: mongoose.Types.ObjectId[];
   series?: mongoose.Types.ObjectId[];

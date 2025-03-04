@@ -20,3 +20,11 @@ export interface ICastInputData {
   gender?: string;
   profilePicture?: string;
 }
+
+export interface IDirectorInputData { 
+  name: string;
+  birthDate?: string;
+  nationality?: string;
+  gender?: string;
+  profilePicture?: string;
+}

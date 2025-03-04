@@ -5,7 +5,7 @@ import {
   validateName,
 } from "../validators/inputValidators";
 import { IEditDetails } from "../types/api";
-import { ICast } from "../types/db.model";
+import { ICast , IDirector} from "../types/db.model";
 import validator from "validator";
 
 interface IEditUserDataReqBody {
@@ -17,6 +17,14 @@ interface IEditUserDataReqBody {
 
 interface IEditCastReqBody {
   castId?: string;
+  name?: string;
+  gender?: "male" | "female" | "other" | "prefer not to say";
+  dateOfBirth?: string;
+  nationality?: string;
+}
+
+interface IEditDirectorReqBody {
+  directorId?: string;
   name?: string;
   gender?: "male" | "female" | "other" | "prefer not to say";
   dateOfBirth?: string;
@@ -63,6 +71,57 @@ export const getValidCastPayload = (
   const editData: Partial<ICast> = {};
 
   if (!existingCast) {
+    if (!name) {
+      throw new Error("Name field required");
+    }
+    validateName(name);
+    editData.name = name;
+    if (gender) {
+      validateGender(gender);
+      editData.gender = gender;
+    }
+    if (dateOfBirth) {
+      isValidISOBirthDate(dateOfBirth);
+      editData.dateOfBirth = new Date(dateOfBirth);
+    }
+    if (nationality && validator.isAlpha(nationality)) {
+      editData.nationality = nationality;
+    }
+
+    return editData;
+  }
+
+  if (name) {
+    validateName(name);
+    editData.name = name;
+  }
+  if (gender) {
+    validateGender(gender);
+    editData.gender = gender;
+  }
+  if (dateOfBirth) {
+    isValidISOBirthDate(dateOfBirth);
+    editData.dateOfBirth = new Date(dateOfBirth);
+  }
+  if (nationality) {
+    if(!validator.isAlpha(nationality)) {
+      throw new Error("Only alphabets are allowed in notionality");
+    }
+    editData.nationality = nationality;
+  }
+
+  return editData;
+};
+
+export const getValidDirectorPayload = (
+  reqBody: IEditDirectorReqBody,
+  existingDirector: boolean
+): Partial<IDirector> => {
+  const { name, gender, dateOfBirth, nationality } = reqBody;
+
+  const editData: Partial<IDirector> = {};
+
+  if (!existingDirector) {
     if (!name) {
       throw new Error("Name field required");
     }
