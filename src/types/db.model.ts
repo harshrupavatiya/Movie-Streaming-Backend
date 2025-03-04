@@ -125,8 +125,9 @@ export interface ICast extends Document {
 // director
 export interface IDirector extends Document {
   name: string;
+  gender?: "male" | "female" | "other" | "" | "prefer not to say";
   profilePicture?: string;
-  birthDate?: Date;
+  dateOfBirth?: Date;
   nationality?: string;
   movies?: mongoose.Types.ObjectId[];
   series?: mongoose.Types.ObjectId[];

@@ -126,7 +126,7 @@ export const addOrUpdateCast = async (
     const file = req?.files?.image as UploadedFile;
 
     // find cast by id
-    const existingCast = await Cast.findById(castId);
+    const existingCast = await Cast.findById(castId); 
 
     // get castPayload by validating req.body
     const castPayload = getValidCastPayload(req.body, existingCast ? true : false);

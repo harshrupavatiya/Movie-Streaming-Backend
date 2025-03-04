@@ -17,7 +17,7 @@ export const toggleLike = async (
     const { contentId, contentType } = req.body;
 
     if (contentType !== "Movie" && contentType !== "Series") {
-      return res.status(400).json({ message: "Invalid content Type" });
+      return res.status(400).json({ message: "Invalid content  Type" });
     }
     if (!contentId) {
       return res.status(400).json({ message: "Content ID are required" });
@@ -45,9 +45,13 @@ export const toggleLike = async (
     });
     await newLike.save();
 
-    return res.status(201).json({ message: "Liked successfully" });
-  } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    return res.status(201).json({ 
+      success: true,
+      message: "Liked successfully" });
+  } catch (err) {
+    return res.status(500).json({ 
+      success: false,
+      message: (err as Error).message });
   }
 };
 
