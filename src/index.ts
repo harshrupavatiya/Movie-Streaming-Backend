@@ -16,6 +16,7 @@ import directorRouter from "./routes/director";
 import connectCloudinary from "./config/cloudinary";
 import seriesRouter from "./routes/series";
 import fileUpload from "express-fileupload";
+import continueWatchingRouter from "./routes/continueWatching";
 
 // Create Express server
 const app = express();
@@ -67,6 +68,7 @@ app.use("/watchlist", watchlistRouter);
 app.use("/search", searchRouter);
 app.use("/cast", castRouter);
 app.use("/director", directorRouter);
+app.use("/continue-watching", continueWatchingRouter);
 const port = PORT || 3000;
 
 Promise.all([connectDB(), connectCloudinary()])
