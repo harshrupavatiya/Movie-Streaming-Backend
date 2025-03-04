@@ -6,27 +6,35 @@ import Director from "../models/director"; // Director model
 
 export const searchContent = async (req: Request, res: Response): Promise<String | any> => {
   try {
-    const { search } = req.body;
+    let { search } = req.body;
 
     if (!search || typeof search !== "string") {
       return res.status(400).json({ message: "Search Body is required" });
     }
 
+    search = search.trim(); // Remove extra spaces
+
     const searchRegex = new RegExp(search, "i"); // Case-insensitive search
 
     // Search movies & series by title
-    const movies = await Movie.find({ title: searchRegex }).select("_id title description rating poster languages genres releaseDate");
-    const series = await Series.find({ title: searchRegex }).select("_id title description rating poster languages genres releaseDate");
+    const movies = await Movie.find({ title: searchRegex })
+    .select("_id title description rating poster languages genres releaseDate")
+    .lean();
+    const series = await Series.find({ title: searchRegex })
+    .select("_id title description rating poster languages genres releaseDate")
+    .lean();
 
     // Search Cast by name and get related movies/series
     const castMembers = await Cast.find({ name: searchRegex }).select("_id name");
     const moviesByCast = await Movie.find({ "cast.castId": { $in: castMembers.map(c => c._id) } })
-      .select("_id title description rating poster languages genres releaseDate");
+      .select("_id title description rating poster languages genres releaseDate")
+      .lean();
 
     // Search Directors by name and get related movies/series
     const directors = await Director.find({ name: searchRegex }).select("_id name");
     const moviesByDirector = await Movie.find({ director: { $in: directors.map(d => d._id) } })
-      .select("_id title description rating poster languages genres releaseDate");
+      .select("_id title description rating poster languages genres releaseDate")
+      .lean();
 
     // Add a type identifier for filtering
     const formattedMovies = movies.map(movie => ({

@@ -1,10 +1,10 @@
 import express from "express";
 import { addCast, getAllCastNames , addOrUpdateCast , deleteCast} from "../controllers/cast";
 import { userAuth } from "../middlewares/Auth";
-const castrouter = express.Router();
+const castRouter = express.Router();
 
-castrouter.get("/getAllCastNames", userAuth, getAllCastNames); // Get all cast names
-castrouter.post("/addOrUpdateCast", userAuth, addOrUpdateCast); // Add or Update cast
-castrouter.delete("/deleteCast/:castId", userAuth, deleteCast); // Delete cast
+castRouter.get("/getAllCastNames", userAuth, getAllCastNames); // Get all cast names
+castRouter.post("/addOrUpdateCast", userAuth, addOrUpdateCast); // Add or Update cast
+castRouter.delete("/deleteCast/:castId", userAuth, deleteCast); // Delete cast
 
-export default castrouter;
+export default castRouter;
