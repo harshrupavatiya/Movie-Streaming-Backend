@@ -71,8 +71,8 @@ export interface IMovie extends Document {
   likes: number;
   languages?: string[];
   reviews?: mongoose.Types.ObjectId;
-  cast?: ICastMember[];
-  director?: mongoose.Types.ObjectId;
+  cast?: mongoose.Types.ObjectId[];
+  director?: mongoose.Types.ObjectId[];
   poster?: string;
   trailerUrl?: string;
   movieUrl?: string;
