@@ -12,9 +12,9 @@ export const validateUserData = (req: Request): void => {
   }
 
   validateContactNo(contactNo);
-  
+
   validateEmail(email);
-  
+
   validatePassword(password);
 };
 
@@ -23,6 +23,7 @@ export const validateSignUpData = (req: Request): void => {
   validateUserData(req);
 
   const { otp } = req.body;
+  console.log(otp, "otp in validate otp")
 
   const otpRegex = /^\d{6}$/;
 
