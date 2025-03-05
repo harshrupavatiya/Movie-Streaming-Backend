@@ -1,5 +1,7 @@
 import mongoose, { Model, Schema } from "mongoose";
 import { IMovie } from "../types/db.model";
+import Cast from "./cast";
+import Director from "./director";
 
 const movieSchema = new Schema<IMovie>(
   {
@@ -80,6 +82,21 @@ const movieSchema = new Schema<IMovie>(
   { timestamps: true }
 );
 
-const Movie: Model<IMovie> = mongoose.model<IMovie>("Movie", movieSchema);
+  movieSchema.post("save", async function () {
+    const movie = this;
+    if (movie.cast){ 
+      await Cast.updateMany(
+      { _id: { $in: movie.cast } },
+      { $push: { movies: movie._id } }
+    ); 
+  }
+    if (movie.director) {
+      await Director.updateMany(
+      { _id: { $in: movie.director } },
+      { $push: { movies: movie._id } }
+    ); }
+    });
+
+  const Movie: Model<IMovie> = mongoose.model<IMovie>("Movie", movieSchema);
 
 export default Movie;
