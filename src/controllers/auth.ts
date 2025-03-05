@@ -21,6 +21,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
   try {
     // Get data from req body
     const { email, password } = req.body;
+    console.log(email, password)
 
     // Check if user email exists
     const user = await User.findOne({ email });
@@ -50,13 +51,11 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     return res.status(200).json({
       message: "Login Successfully",
-      data: {
-        userData: {
-          _id,
-          name,
-          email,
-          contactNo,
-        },
+      userData: {
+        _id,
+        name,
+        email,
+        contactNo,
       },
     });
   } catch (err: any) {
