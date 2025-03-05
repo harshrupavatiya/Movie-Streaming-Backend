@@ -71,6 +71,10 @@
       trailerUrl: {
         type: String,
       },
+      viewCount: {
+        type: Number,
+        default: 0,
+      },
       movieUrl: {
         type: String,
       },

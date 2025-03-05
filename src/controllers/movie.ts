@@ -388,3 +388,38 @@ export const getTopRatedMovies = async (
     });
   }
 };
+
+//Movie view count---------------------------------------------------------------------------
+export const incrementMovieView = async (
+  req: AuthRequest,
+  res: Response
+): Promise<string | any> => {
+  try {
+    if (!req.user || req.user.role == "admin") {
+      return res
+        .status(403)
+        .json({ message: "Only view incremented for users" });
+    }
+
+    const { movieId } = req.params;
+
+    const updatedMovie = await Movie.findByIdAndUpdate(
+      movieId,
+      { $inc: { viewCount: 1 } },
+      { new: true }
+    );
+
+    if (!updatedMovie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    return res.status(200).json({
+      message: "View count updated",
+      data: { viewCount: updatedMovie.viewCount },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: (error as Error).message,
+    });
+  }
+};
