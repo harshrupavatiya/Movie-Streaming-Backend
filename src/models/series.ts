@@ -1,7 +1,8 @@
-import mongoose, { Model, Schema } from "mongoose";
+import mongoose, { Model, ObjectId, Schema } from "mongoose";
 import { ISeries } from "../types/db.model";
 import Cast from "./cast";
 import Director from "./director";
+import Episode from "./episode";
 
 const seriesSchema = new Schema<ISeries>(
   {
@@ -55,18 +56,20 @@ const seriesSchema = new Schema<ISeries>(
         ref: "Cast",
       },
     ],
-    director: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Director",
-    },
+    directors: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Director",
+      },
+    ],
 
     poster: {
       type: String,
-      required: true,
+      // required: true,
     },
     trailerUrl: {
       type: String,
-      required: true,
+      // required: true,
     },
     availableForStreaming: {
       type: Boolean,
@@ -76,22 +79,49 @@ const seriesSchema = new Schema<ISeries>(
   { timestamps: true }
 );
 
+seriesSchema.pre("findOneAndDelete", async function (next) {
+  // delete all episodes which has given seriesId
+  Episode.deleteMany({ seriesId: this.getQuery()._id })
+    .then(() => console.log("All episode deleted"))
+    .catch((err) => console.log("episode not deleted"));
+  next();
+});
+
 // TODO: check that post hook is working file or not ?
 
 seriesSchema.post("save", async function () {
   const series = this;
 
   if (series.casts) {
-    Cast.updateMany(
-      { _id: { $in: series?.casts } },
-      { $push: { series: series._id } }
+    // console.log("enters cast : ", series.casts);
+    // // Cast.updateMany(
+    // //   { _id: { $in: series?.casts.map(id => new mongoose.Types.ObjectId(id)) } },
+    // //   { $push: { series: series._id } }
+    // // );
+    // const cast = await Cast.findById(series.casts[0]);
+    // console.log("cast: ", cast);
+    // if (cast) {
+    //   cast?.series?.push(this._id as mongoose.Types.ObjectId); // Explicitly assert as ObjectId
+    //   await cast.save();
+    // }
+    // // series.casts.map(cast => { Cast.findByIdAndUpdate(cast.toString(), { $addToSet: { series: series._id} })})
+    // console.log("end cast");
+
+    series.casts.map((castId) =>
+      Cast.findByIdAndUpdate(castId, { $addToSet: { series: series._id } })
     );
   }
 
-  if (series.director) {
-    Director.updateMany(
-      { _id: { $in: series.director } },
-      { $push: { series: series._id } }
+  if (series.directors) {
+    // console.log("enters directors : ", series.directors);
+    // Director.updateMany(
+    //   { _id: { $in: series.directors } },
+    //   { $push: { series: series._id } }
+    // );
+    // console.log("end directors");
+
+    series.directors.map((castId) =>
+      Director.findByIdAndUpdate(castId, { $addToSet: { series: series._id } })
     );
   }
 });

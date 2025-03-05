@@ -93,8 +93,8 @@ export interface ISeries extends Document {
   rating?: number;
   casts?: mongoose.Types.ObjectId[];
   reviews?: mongoose.Types.ObjectId[];
-  director?: mongoose.Types.ObjectId;
-  poster: string;
+  directors?: mongoose.Types.ObjectId[];
+  poster?: string;
   trailerUrl?: string;
   availableForStreaming?: boolean;
 }
