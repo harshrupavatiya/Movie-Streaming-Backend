@@ -1,10 +1,10 @@
 import express from "express";
-import { getAllCastNames , addOrUpdateCast , deleteCast} from "../controllers/cast";
+import { addCast, searchCastByName , addOrUpdateCast , deleteCast} from "../controllers/cast";
 import { userAuth } from "../middlewares/Auth";
 const castRouter = express.Router();
 
-castRouter.get("/getAllCastNames", userAuth, getAllCastNames); // Get all cast names
-castRouter.post("/addOrUpdateCast", userAuth, addOrUpdateCast); // Add or Update cast
-castRouter.delete("/deleteCast/:castId", userAuth, deleteCast); // Delete cast
+castRouter.post("/getCastName", userAuth, searchCastByName); 
+castRouter.post("/addOrUpdateCast", userAuth, addOrUpdateCast);
+castRouter.delete("/deleteCast/:castId", userAuth, deleteCast); 
 
 export default castRouter;
