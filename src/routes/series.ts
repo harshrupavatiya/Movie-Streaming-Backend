@@ -2,7 +2,7 @@ import express from "express";
 // import { createSeries, getAllSeries, getSeriesById, updateSeriesById, addSeasonToSeries, addEpisodeToSeason, 
 //   deleteSeriesById, getEpisodesBySeason, deleteSeasonFromSeries, deleteEpisodeFromSeason , searchSeriesByTitle , filterSeriesByGenre , getTopRatedSeries } from "./../controllers/series";
 import { userAuth } from "../middlewares/Auth";
-import { addSeries } from "../controllers/series";
+import { addSeries, deleteSeries, updateSeries } from "../controllers/series";
 const seriesRouter = express.Router();
 
 // seriesRouter.post("/createSeries", userAuth, createSeries);
@@ -20,5 +20,7 @@ const seriesRouter = express.Router();
 // seriesRouter.get("/getTopRatedSeries", userAuth, getTopRatedSeries);  
 
 seriesRouter.post("/addSeries", userAuth, addSeries);
+seriesRouter.delete("/deleteAll", userAuth, deleteSeries);
+seriesRouter.put("/update", userAuth, updateSeries);
 
 export default seriesRouter;  
