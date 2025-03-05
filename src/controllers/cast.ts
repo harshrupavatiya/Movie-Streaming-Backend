@@ -84,26 +84,58 @@ export const addCast = async (
   }
 };
 
-// Get All Cast Names with Object ID--------------------------------------------------------------------------------
-export const getAllCastNames = async (
+// // Get All Cast Names with Object ID--------------------------------------------------------------------------------
+// export const getAllCastNames = async (
+//   req: AuthRequest,
+//   res: Response
+// ): Promise<string | any> => {
+//   try {
+//     // TODO: ensure that user and admin both need this api
+
+//     // get only name and objectId of Casts
+//     const castList = await Cast.aggregate([
+//       {
+//         $project: {
+//           name: 1,
+//           _id: 1,
+//         },
+//       },
+//     ]);
+
+//     return res.status(200).json({
+//       message: "Cast list with name and id",
+//       data: { castList },
+//     });
+//   } catch (error) {
+//     return res.status(500).json({ message: (error as Error).message });
+//   }
+// };
+
+//Get searched Cast by name--------------------------------------------------------------------------------
+export const searchCastByName = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<any> => {
   try {
-    // TODO: ensure that user and admin both need this api
+    const { query } = req.body;
 
-    // get only name and objectId of Casts
-    const castList = await Cast.aggregate([
-      {
-        $project: {
-          name: 1,
-          _id: 1,
-        },
-      },
-    ]);
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({ message: "Query parameter is required." });
+    }
+
+    // Search for cast members whose names start with the given query
+    const castList = await Cast.find({
+      name: { $regex: `^${query}`, $options: "i" },
+    }).select("name _id");
+
+    if (castList.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No matching cast members found." });
+    }
 
     return res.status(200).json({
-      message: "Cast list with name and id",
+      message: "Cast list matching the search query",
       data: { castList },
     });
   } catch (error) {
@@ -126,19 +158,22 @@ export const addOrUpdateCast = async (
     const file = req?.files?.image as UploadedFile;
 
     // find cast by id
-    const existingCast = await Cast.findById(castId); 
+    const existingCast = await Cast.findById(castId);
 
     // get castPayload by validating req.body
-    const castPayload = getValidCastPayload(req.body, existingCast ? true : false);
+    const castPayload = getValidCastPayload(
+      req.body,
+      existingCast ? true : false
+    );
 
-    // corner-cases error handling 
-    if(!existingCast && castId) {
+    // corner-cases error handling
+    if (!existingCast && castId) {
       throw new Error("Cast not found in DB");
     }
-    if(existingCast && Object.keys(castPayload).length === 0 && !file) {
+    if (existingCast && Object.keys(castPayload).length === 0 && !file) {
       throw new Error("Atleast one field required to update Cast information");
     }
-    if(!existingCast && !Object.keys(castPayload).includes("name")) {
+    if (!existingCast && !Object.keys(castPayload).includes("name")) {
       throw new Error("Name is required field");
     }
 
@@ -164,7 +199,7 @@ export const addOrUpdateCast = async (
     const profilePicture = result?.secure_url || null;
 
     // if url not generated
-    if(file && !profilePicture) {
+    if (file && !profilePicture) {
       throw new Error("Something went wrong while uploading Image");
     }
     // adding url in payload

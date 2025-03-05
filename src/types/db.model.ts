@@ -71,10 +71,11 @@ export interface IMovie extends Document {
   likes: number;
   languages?: string[];
   reviews?: mongoose.Types.ObjectId;
-  cast?: ICastMember[];
-  director?: mongoose.Types.ObjectId;
+  cast?: mongoose.Types.ObjectId[];
+  director?: mongoose.Types.ObjectId[];
   poster?: string;
   trailerUrl?: string;
+  viewCount: number;
   movieUrl?: string;
   availableForStreaming?: boolean;
 }
@@ -99,6 +100,7 @@ export interface ISeries extends Document {
   languages?: string[];
   releaseDate?: Date;
   likes: number;
+  viewCount: number;
   rating?: number;
   casts?: mongoose.Types.ObjectId[];
   reviews?: mongoose.Types.ObjectId[];
