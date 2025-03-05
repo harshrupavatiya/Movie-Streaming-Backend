@@ -92,21 +92,6 @@ export const createMovie = async (
      await newMovie.save();
      const movieId = newMovie._id;
 
-    //  // Update Cast members by adding the new movie ID
-    // if (moviePayload.cast) {
-    //   await Cast.updateMany(
-    //     { _id: { $in: moviePayload.cast.map((member) => member) } },
-    //     { $push: { movies: movieId } }
-    //   );
-    // }
-
-    // // Update Director(s) by adding the new movie ID
-    // if (moviePayload.director) {
-    //   await Director.updateMany(
-    //     { _id: { $in: moviePayload.director } },
-    //     { $push: { movies: movieId } }
-    //   );
-    // }
       res.status(201).json({
       message: "Movie created successfully",
       data: { movie: newMovie },

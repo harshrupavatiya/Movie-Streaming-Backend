@@ -752,12 +752,11 @@ export const addSeries = async (
     ]);
 
     // Delete the temporary file
-    fs.unlink(posterFile.tempFilePath, (err) => {
-      if (err) console.log("Failed to delete temp file:", err);
-    });
-    fs.unlink(trailerFile.tempFilePath, (err) => {
-      if (err) console.log("Failed to delete temp file:", err);
-    });
+    [posterFile, trailerFile].map((file) =>
+      fs.unlink(file.tempFilePath, (err) => {
+        if (err) console.log("Failed to delete temp file:", err);
+      })
+    );
 
     // get secureURL after uploading successfully
     const poster = result[0]?.secure_url ?? null;
@@ -774,10 +773,6 @@ export const addSeries = async (
     // adding URLs to seriesPayload
     seriesPayload.poster = poster;
     seriesPayload.trailerUrl = trailerUrl;
-
-    // // TEMPORARY CODE
-    // seriesPayload.poster = "poster";
-    // seriesPayload.trailerUrl = "trailerUrl";
 
     // everything seems fine, so creating series model
     const newSeries = new Series(seriesPayload);
@@ -1002,6 +997,7 @@ export const getSeriesByGenre = async (
           description: 1,
           genres: 1,
           languages: 1,
+          releaseDate: 1,
           rating: 1,
           poster: 1,
           availableForStreaming: 1,
@@ -1033,7 +1029,7 @@ export const getSeriesById = async (
 ): Promise<void> => {
   try {
     // Ensure that user is exists or not
-    if(!req.user) {
+    if (!req.user) {
       res.status(400).json({ message: "Access denied, Please login" });
     }
 
@@ -1060,7 +1056,7 @@ export const getSeriesById = async (
           createdAt: 0,
           updatedAt: 0,
           seriesId: 0,
-        }
+        },
       },
       {
         $group: {
@@ -1078,16 +1074,132 @@ export const getSeriesById = async (
       },
     ]);
 
+    res.status(200).json({
+      message: `Series ${series?.title} is here`,
+      data: {
+        seriesInfo: series,
+        seriesContent: seasonwiseEpisode,
+      },
+    });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+export const getMostLikedSeriesList = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Ensure that user is exists or not
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+    }
+
+    // get page and limit from query parameters
+    let { page = "1", limit = "20" } = req.query;
+
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    // validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+    // validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    // calculate the number for skip docs
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const seriesList = await Series.aggregate([
+      {
+        $sort: {
+          likes: -1,
+        },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          genres: 1,
+          languages: 1,
+          releaseDate: 1,
+          rating: 1,
+          poster: 1,
+          availableForStreaming: 1,
+        },
+      },
+    ]);
+
+    if (!seriesList || seriesList.length <= 0) {
+      res.status(400).json({ message: "data not available" });
+    }
+
     res
       .status(200)
-      .json({
-        message: `Series ${series?.title} is here`,
-        data: {
-          seriesInfo: series,
-          seriesContent: seasonwiseEpisode
-        },
-      });
+      .json({ message: "Most Liked Series List", data: { seriesList } });
     return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+export const getTopRatedSeriesList = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Ensure that user is exists or not
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+export const getLatestReleasedSeriesList = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Ensure that user is exists or not
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+export const getPopularSeriesList = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Ensure that user is exists or not
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+    }
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
     return;
