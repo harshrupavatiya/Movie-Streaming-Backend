@@ -37,7 +37,7 @@ export const addEpisode = async (
     const episodePayload = getEpisodePayload(req.body, false);
 
     const isDuplicateEpisodeNumber = (
-      await Episode.find({ seriesId: series?._id })
+      await Episode.find({ seriesId: series?._id, seasonNumber: episodePayload.seasonNumber })
     ).some((episode) => episode.episodeNumber === episodePayload.episodeNumber);
     if (isDuplicateEpisodeNumber) {
       res.status(500).json({
@@ -78,6 +78,9 @@ export const addEpisode = async (
 
     // add video URL to payload
     episodePayload.episodeUrl = result.secure_url;
+
+    // // TEMPORARY CODE
+    // episodePayload.episodeUrl = "episodeURL";
 
     // creating new instance of episode model
     const newEpisode = new Episode(episodePayload);
@@ -148,7 +151,7 @@ export const updateEpisode = async (
 
     if (editEpisodePayload.episodeNumber) {
       const isDuplicateEpisodeNumber = (
-        await Episode.find({ seriesId: episode.seriesId })
+        await Episode.find({ seriesId: episode.seriesId, seasonNumber: editEpisodePayload.seasonNumber })
       ).some(
         (episode) => episode.episodeNumber === editEpisodePayload.episodeNumber
       );
