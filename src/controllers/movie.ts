@@ -1,8 +1,13 @@
 import { Request, Response } from "express";
-import Movie from "../models/movie";
 import { AuthRequest } from "../types/api";
+import Movie from "../models/movie";
 import Director from "../models/director";
 import Cast from "../models/cast";
+import { getMoviePayload } from "../utils/movieData"; // New validator
+import { UploadedFile } from "express-fileupload";
+import { validateFileContent } from "../validators/mediaFile";
+import { uploadImageToCloudinary } from "../utils/fileUploader";
+import fs from "fs";
 
 // Create a new movie (Admin only)---------------------------------------------------------------------------
 export const createMovie = async (
@@ -10,94 +15,99 @@ export const createMovie = async (
   res: Response
 ): Promise<any> => {
   try {
-    // Check if the user is an admin
-    if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only." });
+      // Check if the user is an admin
+    const user = req.user;
+    if (user?.role !== "admin") {
+      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      return;
     }
 
-    const {
-      title,
-      description,
-      releaseDate,
-      genres,
-      duration,
-      rating,
-      reviews,
-      cast,
-      director,
-      languages,
-      poster,
-      trailerUrl,
-      movieUrl,
-      availableForStreaming,
-    } = req.body;
+    // Validate fields and get payload
+    const moviePayload = getMoviePayload(req.body);
 
-    // Validate required fields
-    if (!title || !duration || !cast || !director) {
-      return res.status(400).json({
-        message: "Missing required fields: title, duration, cast, or director.",
+    // Get poster, trailer, and movie files from request
+    const posterFile = req?.files?.poster as UploadedFile;
+    const trailerFile = req?.files?.trailer as UploadedFile;
+    const movieFile = req?.files?.movieUrl as UploadedFile;
+    
+     // Check if poster, trailer, and movie files are present
+     if (!trailerFile || !posterFile || !movieFile) {
+      res.status(400).json({
+        message: "Poster, trailer, and movie file are all required.",
       });
-    }
-    // Validate cast members
-    if (!Array.isArray(cast) || cast.length === 0) {
-      return res.status(400).json({ message: "Cast list cannot be empty." });
+      return;
     }
 
-    // Validate Director
-    if (!Array.isArray(director) || director.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Director list cannot be empty." });
-    }
+    // Validate file types
+    validateFileContent(posterFile.mimetype, "image");
+    validateFileContent(trailerFile.mimetype, "video");
+    validateFileContent(movieFile.mimetype, "video");
 
-    // Validate each cast member
-    for (const member of cast) {
-      if (!member.castId || !member.roleName) {
-        return res.status(400).json({
-          message: "Each cast member must have a castId and roleName.",
-        });
-      }
-    }
-    // Validate genres (ensure it's an array of numbers)
-    if (!Array.isArray(genres) || genres.some((g) => typeof g !== "number")) {
-      return res
-        .status(400)
-        .json({ message: "Genres must be an array of numbers." });
-    }
+    // Upload files to cloudinary
+    const result = await Promise.all([
+      uploadImageToCloudinary(posterFile.tempFilePath, {
+        folder: "posters",
+        height: 800,
+        quality: 500,
+      }),
+      uploadImageToCloudinary(trailerFile.tempFilePath, {
+        folder: "trailers",
+        height: 800,
+        quality: 500,
+      }),
+      uploadImageToCloudinary(movieFile.tempFilePath, {
+        folder: "movies",
+        height: 800,
+        quality: 500,
+      }),
+    ]);
 
-    // Create a new movie
-    const newMovie = new Movie({
-      title,
-      description,
-      releaseDate,
-      genres,
-      duration,
-      rating,
-      reviews,
-      cast,
-      director,
-      languages,
-      poster,
-      trailerUrl,
-      movieUrl,
-      availableForStreaming,
+    // Delete temporary files
+    [posterFile, trailerFile, movieFile].forEach(file => {
+      fs.unlink(file.tempFilePath, (err) => {
+        if (err) console.log("Failed to delete temp file:", err);
+      });
     });
-    await newMovie.save();
-    const movieId = newMovie._id;
 
-    // Update Cast members by adding the new movie ID
-    await Cast.updateMany(
-      { _id: { $in: cast.map((member) => member.castId) } },
-      { $push: { movies: movieId } }
-    );
+    // Get secure URLs
+    const poster = result[0].secure_url;
+    const trailerUrl = result[1].secure_url;
+    const movieUrl = result[2].secure_url;
 
-    // Update Director(s) by adding the new movie ID
-    await Director.updateMany(
-      { _id: { $in: director } },
-      { $push: { movies: movieId } }
-    );
+    // Validate URL generation
+    if (!poster || !trailerUrl || !movieUrl) {
+      res
+        .status(500)
+        .json({ message: "Something went wrong while generating URLs" });
+      return;
+    }
 
-    res.status(201).json({
+    // Add URLs to movie payload
+    moviePayload.poster = poster;
+    moviePayload.trailerUrl = trailerUrl;
+    moviePayload.movieUrl = movieUrl;
+
+     // Create and save new movie
+     const newMovie = new Movie(moviePayload);
+     await newMovie.save();
+     const movieId = newMovie._id;
+
+    //  // Update Cast members by adding the new movie ID
+    // if (moviePayload.cast) {
+    //   await Cast.updateMany(
+    //     { _id: { $in: moviePayload.cast.map((member) => member) } },
+    //     { $push: { movies: movieId } }
+    //   );
+    // }
+
+    // // Update Director(s) by adding the new movie ID
+    // if (moviePayload.director) {
+    //   await Director.updateMany(
+    //     { _id: { $in: moviePayload.director } },
+    //     { $push: { movies: movieId } }
+    //   );
+    // }
+      res.status(201).json({
       message: "Movie created successfully",
       data: { movie: newMovie },
     });
@@ -278,7 +288,7 @@ export const deleteMovieById = async (
 
     // Remove the movie ID from the casts' movie lists
     await Cast.updateMany(
-      { _id: { $in: (movie.cast || []).map((member) => member.castId) } },
+      { _id: { $in: (movie.cast || []).map((member) => member) } },
       { $pull: { movies: id } }
     );
 
