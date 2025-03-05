@@ -278,7 +278,7 @@ export const deleteMovieById = async (
 
     // Remove the movie ID from the casts' movie lists
     await Cast.updateMany(
-      { _id: { $in: (movie.cast || []).map((member) => member.castId) } },
+      { _id: { $in: (movie.cast || []).map((member) => member) } },
       { $pull: { movies: id } }
     );
 

@@ -6,6 +6,8 @@ import { UploadedFile } from "express-fileupload";
 import { validateFileContent } from "../validators/mediaFile";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
+import { isNumeric } from "validator";
+import Episode from "../models/episode";
 
 // // Create Series (Admin only)---------------------------------------------------------------------------
 // export const createSeries = async (
@@ -773,6 +775,10 @@ export const addSeries = async (
     seriesPayload.poster = poster;
     seriesPayload.trailerUrl = trailerUrl;
 
+    // // TEMPORARY CODE
+    // seriesPayload.poster = "poster";
+    // seriesPayload.trailerUrl = "trailerUrl";
+
     // everything seems fine, so creating series model
     const newSeries = new Series(seriesPayload);
     // saving series model in DB
@@ -871,11 +877,9 @@ export const updateSeries = async (
 
       // if poster or trailer URL not present then send Error
       if (!poster) {
-        res
-          .status(500)
-          .json({
-            message: "something went wrong while generating URL of poster",
-          });
+        res.status(500).json({
+          message: "something went wrong while generating URL of poster",
+        });
         return;
       }
 
@@ -889,10 +893,10 @@ export const updateSeries = async (
 
       // uploading image to cloudinary
       const result = await uploadImageToCloudinary(trailerFile.tempFilePath, {
-          folder: "trailers",
-          height: 800,
-          quality: 500,
-        });
+        folder: "trailers",
+        height: 800,
+        quality: 500,
+      });
 
       // Delete the temporary file
       fs.unlink(trailerFile.tempFilePath, (err) => {
@@ -904,9 +908,9 @@ export const updateSeries = async (
 
       // if poster or trailer URL not present then send Error
       if (!trailerUrl) {
-        res
-          .status(500)
-          .json({ message: "something went wrong while generating URL of trailer" });
+        res.status(500).json({
+          message: "something went wrong while generating URL of trailer",
+        });
         return;
       }
 
@@ -915,8 +919,10 @@ export const updateSeries = async (
     }
 
     // if editSeriesPayload in empty then send error
-    if(Object.keys(editSeriesPayload).length <= 0) {
-      res.status(400).json({ message: "Atleast one field is required to update series info."});
+    if (Object.keys(editSeriesPayload).length <= 0) {
+      res.status(400).json({
+        message: "Atleast one field is required to update series info.",
+      });
       return;
     }
 
@@ -926,7 +932,7 @@ export const updateSeries = async (
     // saving updated document
     await series.save();
 
-    res.status(200).json({ message: "series info updated successfully."});
+    res.status(200).json({ message: "series info updated successfully." });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -934,25 +940,61 @@ export const updateSeries = async (
   }
 };
 
-export const getSeriesByGenre = async(req: AuthRequest, res: Response): Promise<void> => {
+export const getSeriesByGenre = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
-    // getting user from req
-    const user = req.user;
     // Ensure that user is exists or not
-    if (!user) {
+    if (!req.user) {
       res.status(400).json({ message: "Access denied, Please login" });
     }
 
+    // get genre from parameters
     const { genre } = req.params;
-    const { page, limit} = req.query;
+    // get page and limit from query parameters
+    let { page = "1", limit = "20" } = req.query;
 
-    // const valueToSkip = (page - 1) * limit;
+    // Convert parameters to numbers
+    const genreNumber: number = parseInt(genre as string, 10);
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
 
+    // Validatiing genreNumber
+    if (isNaN(genreNumber) || genreNumber < 1) {
+      res
+        .status(400)
+        .json({ message: "Genre ID must be a positive integer (≥1)" });
+      return;
+    }
+    // validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+    // validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    // calculate the number for skip docs
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    // applying aggregation on series collection
     const seriesData = await Series.aggregate([
       {
         $match: {
-          genres: genre
+          genres: genreNumber,
         },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
       },
       {
         $project: {
@@ -963,14 +1005,91 @@ export const getSeriesByGenre = async(req: AuthRequest, res: Response): Promise<
           rating: 1,
           poster: 1,
           availableForStreaming: 1,
-        }
+        },
       },
-    ])
+    ]);
 
-    // TODO: adhuru che pagination
+    // if seriesData is empty then send error of invalid genreId
+    if (!seriesData || seriesData.length <= 0) {
+      res
+        .status(400)
+        .json({ message: "no series available with given genreId" });
+      return;
+    }
 
-  } catch(err) {
+    res
+      .status(200)
+      .json({ message: "list of series", data: { seriesList: seriesData } });
+    return;
+  } catch (err) {
     res.status(500).json({ message: (err as Error).message });
     return;
   }
-}
+};
+
+export const getSeriesById = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Ensure that user is exists or not
+    if(!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+    }
+
+    const { seriesId } = req.params;
+
+    // get series Info
+    const series = await Series.findById(seriesId);
+
+    // if series not present
+    if (!series) {
+      res.status(400).json({ message: "Please provide valid seriesId" });
+      return;
+    }
+
+    // get episode season wise
+    const seasonwiseEpisode = await Episode.aggregate([
+      {
+        $match: {
+          seriesId: seriesId,
+        },
+      },
+      {
+        $project: {
+          createdAt: 0,
+          updatedAt: 0,
+          seriesId: 0,
+        }
+      },
+      {
+        $group: {
+          _id: "$seasonNumber",
+          episodes: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+    ]);
+
+    res
+      .status(200)
+      .json({
+        message: `Series ${series?.title} is here`,
+        data: {
+          seriesInfo: series,
+          seriesContent: seasonwiseEpisode
+        },
+      });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};

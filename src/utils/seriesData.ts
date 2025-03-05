@@ -92,6 +92,7 @@ export const getSeriesPayload = (reqBody: ISeriesData): Partial<ISeries> => {
   return newPayload;
 };
 
+
 export const getEditSeriesPayload = (reqBody: Partial<ISeriesData>): Partial<ISeries> => {
   
   // wrapping single elements into array

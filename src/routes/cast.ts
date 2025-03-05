@@ -1,5 +1,5 @@
 import express from "express";
-import { addCast, getAllCastNames , addOrUpdateCast , deleteCast} from "../controllers/cast";
+import { getAllCastNames , addOrUpdateCast , deleteCast} from "../controllers/cast";
 import { userAuth } from "../middlewares/Auth";
 const castRouter = express.Router();
 
