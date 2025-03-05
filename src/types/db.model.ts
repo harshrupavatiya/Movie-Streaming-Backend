@@ -1,7 +1,7 @@
 import mongoose, { Document } from "mongoose";
 import { StringValue } from "ms";
 
-type ContentType = "Movie" | "Series";
+type ContentType = "Movie" | "Series" | "Episode";
 
 interface ISubscription {
   plan: "free" | "basic" | "premium";
@@ -26,6 +26,14 @@ export interface IWatchlistContent {
   contentType: ContentType;
 }
 
+// Define Continue Watching Interface
+export interface IContinueWatching {
+  contentId: mongoose.Types.ObjectId;
+  contentType: ContentType;
+  progress: number; // Store watch time in seconds
+  lastWatched: Date;
+}
+
 // User
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId | string;
@@ -39,6 +47,7 @@ export interface IUser extends Document {
   subscription?: ISubscription;
   watchlist: IWatchlistContent[];
   likedContent: ILikedContent[];
+  continueWatching: IContinueWatching[]; // Added this field
   role: "user" | "admin";
   getJWT(secret: string, duration: StringValue): Promise<string>;
   validatePassword(passwordInputByUser: string): Promise<boolean>;
@@ -71,7 +80,7 @@ export interface IMovie extends Document {
 }
 
 // episode
-export interface IEpisode {
+export interface IEpisode extends Document {
   title: string;
   description?: string;
   seriesId: mongoose.Types.ObjectId;
@@ -93,8 +102,8 @@ export interface ISeries extends Document {
   rating?: number;
   casts?: mongoose.Types.ObjectId[];
   reviews?: mongoose.Types.ObjectId[];
-  director?: mongoose.Types.ObjectId;
-  poster: string;
+  directors?: mongoose.Types.ObjectId[];
+  poster?: string;
   trailerUrl?: string;
   availableForStreaming?: boolean;
 }
@@ -134,7 +143,7 @@ export interface IDirector extends Document {
   series?: mongoose.Types.ObjectId[];
 }
 
-//liked section
+// liked section
 export interface ILike extends Document {
   userId: mongoose.Types.ObjectId;
   contentId: mongoose.Types.ObjectId;

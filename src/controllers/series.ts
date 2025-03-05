@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { AuthRequest } from "../types/api";
 import Series from "../models/series";
-import { validateSeriesData } from "../validators/seriesData";
+import { getEditSeriesPayload, getSeriesPayload } from "../utils/seriesData";
 import { UploadedFile } from "express-fileupload";
 import { validateFileContent } from "../validators/mediaFile";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
@@ -712,20 +712,22 @@ export const addSeries = async (
     const user = req.user;
 
     // check user is admin
-    if(user?.role !== "admin") {
+    if (user?.role !== "admin") {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
     }
 
     // validate fields and get payload
-    const seriesPayload = validateSeriesData(req.body);
+    const seriesPayload = getSeriesPayload(req.body);
 
     // get poster & trailer file from req
     const posterFile = req?.files?.poster as UploadedFile;
     const trailerFile = req?.files?.trailer as UploadedFile;
-    
+
     // checking poster & trailer are present
-    if(!trailerFile || !posterFile) {
-      res.status(400).json({ message: "poster and trailer are both required for adding series." });
+    if (!trailerFile || !posterFile) {
+      res.status(400).json({
+        message: "poster and trailer are both required for adding series.",
+      });
       return;
     }
 
@@ -760,8 +762,10 @@ export const addSeries = async (
     const trailerUrl = result[1]?.secure_url ?? null;
 
     // if poster or trailer URL not present then send Error
-    if(!poster || !trailerUrl) {
-      res.status(500).json({ message: "something went wrong while generating URL"});
+    if (!poster || !trailerUrl) {
+      res
+        .status(500)
+        .json({ message: "something went wrong while generating URL" });
       return;
     }
 
@@ -774,10 +778,199 @@ export const addSeries = async (
     // saving series model in DB
     await newSeries.save();
 
-    res.status(200).json({ message: "Series added successfully."});
+    res.status(200).json({ message: "Series added successfully." });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
     return;
   }
 };
+
+export const deleteSeries = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // getting user from req
+    const user = req.user;
+    // check user is admin
+    if (user?.role !== "admin") {
+      res.status(400).json({ message: "Access denied, Admins only allowed" });
+    }
+
+    // get seriesId from URL query parameters
+    const { seriesId } = req.query;
+
+    // delete series
+    const deletedSeries = await Series.findOneAndDelete({ _id: seriesId });
+
+    if (!deletedSeries) {
+      res.status(400).json({ message: "Series not found or invalid SeriesId" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Series and all Seasons & Episodes are deleted" });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+export const updateSeries = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // getting user from req
+    const user = req.user;
+    // check user is admin
+    if (user?.role !== "admin") {
+      res.status(400).json({ message: "Access denied, Admins only allowed" });
+    }
+
+    // get seriesId from req.body
+    const { seriesId } = req.body;
+
+    // find series by id
+    const series = await Series.findById(seriesId);
+
+    // ensure that series exists
+    if (!series) {
+      res.status(400).json({ message: "Invalid series Id" });
+      return;
+    }
+
+    // validate reqData and get editSeriesPayload
+    const editSeriesPayload = getEditSeriesPayload(req.body);
+
+    // get poster & trailer file from req
+    const posterFile = req?.files?.poster as UploadedFile;
+    const trailerFile = req?.files?.trailer as UploadedFile;
+
+    // upload poster to cloudinary
+    if (posterFile) {
+      // validating file type
+      validateFileContent(posterFile.mimetype, "image");
+
+      // uploading image to cloudinary
+      const result = await uploadImageToCloudinary(posterFile.tempFilePath, {
+        folder: "posters",
+        height: 800,
+        quality: 500,
+      });
+
+      // Delete the temporary file
+      fs.unlink(posterFile.tempFilePath, (err) => {
+        if (err) console.log("Failed to delete temp file:", err);
+      });
+
+      // get secureURL after uploading successfully
+      const poster = result?.secure_url ?? null;
+
+      // if poster or trailer URL not present then send Error
+      if (!poster) {
+        res
+          .status(500)
+          .json({
+            message: "something went wrong while generating URL of poster",
+          });
+        return;
+      }
+
+      // adding URLs to seriesPayload
+      editSeriesPayload.poster = poster;
+    }
+    // upload trailer to cloudinary
+    if (trailerFile) {
+      // validating file type
+      validateFileContent(trailerFile.mimetype, "video");
+
+      // uploading image to cloudinary
+      const result = await uploadImageToCloudinary(trailerFile.tempFilePath, {
+          folder: "trailers",
+          height: 800,
+          quality: 500,
+        });
+
+      // Delete the temporary file
+      fs.unlink(trailerFile.tempFilePath, (err) => {
+        if (err) console.log("Failed to delete temp file:", err);
+      });
+
+      // get secureURL after uploading successfully
+      const trailerUrl = result?.secure_url ?? null;
+
+      // if poster or trailer URL not present then send Error
+      if (!trailerUrl) {
+        res
+          .status(500)
+          .json({ message: "something went wrong while generating URL of trailer" });
+        return;
+      }
+
+      // adding URLs to seriesPayload
+      editSeriesPayload.trailerUrl = trailerUrl;
+    }
+
+    // if editSeriesPayload in empty then send error
+    if(Object.keys(editSeriesPayload).length <= 0) {
+      res.status(400).json({ message: "Atleast one field is required to update series info."});
+      return;
+    }
+
+    // update existing series document
+    Object.assign(series, editSeriesPayload);
+
+    // saving updated document
+    await series.save();
+
+    res.status(200).json({ message: "series info updated successfully."});
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+export const getSeriesByGenre = async(req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    // getting user from req
+    const user = req.user;
+    // Ensure that user is exists or not
+    if (!user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+    }
+
+    const { genre } = req.params;
+    const { page, limit} = req.query;
+
+    // const valueToSkip = (page - 1) * limit;
+
+    const seriesData = await Series.aggregate([
+      {
+        $match: {
+          genres: genre
+        },
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          genres: 1,
+          languages: 1,
+          rating: 1,
+          poster: 1,
+          availableForStreaming: 1,
+        }
+      },
+    ])
+
+    // TODO: adhuru che pagination
+
+  } catch(err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+}

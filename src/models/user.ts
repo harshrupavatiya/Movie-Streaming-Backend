@@ -90,6 +90,29 @@ const userSchema = new Schema<IUser>(
       enum: ["user", "admin"],
       default: "user",
     },
+    continueWatching: [
+      {
+        contentId: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "continueWatching.contentType",
+        },
+        contentType: {
+          type: String,
+          enum: ["Movie", "Episode"],
+          required: true,
+        },
+        progress: {
+          type: Number, // Time in seconds where the user stopped
+          required: true,
+          default: 0,
+        },
+        lastWatched: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
