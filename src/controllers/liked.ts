@@ -73,7 +73,8 @@ export const getLikedContent = async (
         path: "contentId",
         select: "title poster",
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       message: "Liked content by user",
