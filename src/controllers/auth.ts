@@ -48,7 +48,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    const { _id, name, contactNo } = user;
+    const { _id, name, contactNo, role } = user;
 
     return res.status(200).json({
       message: "Login Successfully",
@@ -57,6 +57,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         name,
         email,
         contactNo,
+        role,
       },
     });
   } catch (err: any) {
