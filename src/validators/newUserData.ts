@@ -26,12 +26,7 @@ export const validateSignUpData = (reqBody: Required<IUserRequiredField>): void 
   // validate name, email, contactNo, password
   validateUserData(reqBody);
 
-<<<<<<< HEAD
-  const { otp } = req.body;
-  console.log(otp, "otp in validate otp")
-=======
   const { otp } = reqBody;
->>>>>>> 653ea8d7a607ba55ef6add00c7f340708c97c25a
 
   const otpRegex = /^\d{6}$/;
 
