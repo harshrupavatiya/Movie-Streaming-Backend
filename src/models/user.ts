@@ -72,8 +72,16 @@ const userSchema = new Schema<IUser>(
     },
     watchlist: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Movie",
+        contentId: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "watchlist.contentType",
+        },
+        contentType: {
+          type: String,
+          enum: ["Movie", "Series"],
+          required: true,
+        },
       },
     ],
     role: {
@@ -82,21 +90,29 @@ const userSchema = new Schema<IUser>(
       enum: ["user", "admin"],
       default: "user",
     },
-    likedContent: [
+    continueWatching: [
       {
         contentId: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,
-          refPath: "likedContent.contentType", // Dynamic reference
+          refPath: "continueWatching.contentType",
         },
         contentType: {
           type: String,
+          enum: ["Movie", "Episode"],
           required: true,
-          enum: ["Movie", "Series"], // Allowed types
+        },
+        progress: {
+          type: Number, // Time in seconds where the user stopped
+          required: true,
+          default: 0,
+        },
+        lastWatched: {
+          type: Date,
+          default: Date.now,
         },
       },
     ],
-    
   },
   { timestamps: true }
 );

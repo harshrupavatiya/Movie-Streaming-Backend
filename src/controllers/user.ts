@@ -1,9 +1,12 @@
 import { Response } from "express";
-import { AuthRequest, IEditDetails } from "../types/api";
+import { AuthRequest } from "../types/api";
 import { validatePassword } from "../validators/inputValidators";
 import bcrypt from "bcrypt";
-import User from "../models/user";
-import { isValidField } from "../validators/editUserData";
+import { getValidUserUpdatePayload } from "../utils/getPayload";
+import { UploadedFile } from "express-fileupload";
+import { uploadImageToCloudinary } from "../utils/fileUploader";
+import fs from "fs";
+import { validateFileContent } from "../validators/mediaFile";
 
 export const changePassword = async (
   req: AuthRequest,
@@ -20,6 +23,10 @@ export const changePassword = async (
     // user from middleware
     const user = req.user;
 
+    if(!user) {
+      throw new Error("User not found in middleware");
+    }
+
     // compare old password with existing password hash
     const isPasswordValid = await user?.validatePassword(password);
 
@@ -31,12 +38,10 @@ export const changePassword = async (
     // hashing of new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // update new hashed password
-    const userInfo = await User.findByIdAndUpdate(
-      user?._id.toString(),
-      { password: hashedPassword },
-      { new: true }
-    );
+    // update the password in user model
+    user.password = hashedPassword;
+    // saving user model
+    await user.save();
 
     return res.status(200).json({ message: "Password updated successfully" });
   } catch (err) {
@@ -49,37 +54,77 @@ export const editProfile = async (
   res: Response
 ): Promise<any> => {
   try {
-    isValidField(req);
+    // get object of updating field
+    const editData = getValidUserUpdatePayload(req.body);
 
-    const { name, contactNo, dateOfBirth, gender } = req.body;
+    // get profile image from req.files
+    const file = req?.files?.image as UploadedFile;
 
-    const editDetails: Partial<IEditDetails> = {
-      ...(name && { name }),
-      ...(contactNo && { contactNo }),
-      ...(dateOfBirth && { dateOfBirth }),
-      ...(gender && { gender }),
-    };
+    // if file is not present and editData also empty
+    if(!file && Object.keys(editData).length === 0 ) {
+      throw new Error("Atleast one field required to update the data");
+    }
 
+    // Upload the image to Cloudinary
+    let result = null;
+    if(file) {
+      // validating file type
+      validateFileContent(file.mimetype, "image");
+
+      // uploading image to cloudinary
+      result = await uploadImageToCloudinary(file.tempFilePath, {
+        folder: "profilePics",
+        height: 800,
+        quality: 100,
+      });
+
+      // Delete the temporary file
+      fs.unlink(file.tempFilePath, (err) => {
+        if (err) console.log("Failed to delete temp file:", err);
+      });
+    }
+    // getting secure url from received data from cloudinary uploader
+    const profilePicture = result?.secure_url || null;
+
+    // if url not generated
+    if(file && !profilePicture) {
+      throw new Error("Something went wrong while uploading Image");
+    }
+
+    // add profilePicture field in editData(if profilePicture is notNull)
+    if(profilePicture) {
+      editData.profilePicture = profilePicture;
+    }
+    if(Object.keys(editData).length === 0 ) {
+      throw new Error("It seems like we are getting an error while updating profile Image");
+    }
+
+    // get user from request(via middleware - userAuth)
     const user = req.user;
 
-    const updatedUser = await User.findByIdAndUpdate(user?._id, editDetails, {
-      new: true,
-      runValidators: true,
-    });
+    if(!user) {
+      throw new Error("It seems like User not found");
+    }
+
+    // assign updatedField to user model
+    Object.assign(user, editData);
+    // saving updated user model
+    await user.save();
 
     return res.status(200).json({
       message: "User details updated successfully",
-      userData: updatedUser,
+      data: { user },
     });
+
   } catch (err) {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-export const createAdmin = async(req: AuthRequest, res: Response) => {
-    try {
-        // TODO: all
-    } catch(err) {
-        return res.status(500).json({message: (err as Error).message});
-    }
-}
+export const createAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    // TODO: all
+  } catch (err) {
+    return res.status(500).json({ message: (err as Error).message });
+  }
+};

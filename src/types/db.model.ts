@@ -1,7 +1,19 @@
 import mongoose, { Document } from "mongoose";
 import { StringValue } from "ms";
 
+<<<<<<< HEAD
 interface ICastMember {
+=======
+type ContentType = "Movie" | "Series" | "Episode";
+
+interface ISubscription {
+  plan: "free" | "basic" | "premium";
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface ICastMember {
+>>>>>>> 653ea8d7a607ba55ef6add00c7f340708c97c25a
   castId: mongoose.Types.ObjectId;
   roleName?: string;
 }
@@ -9,7 +21,21 @@ interface ICastMember {
 // Define Liked Content Interface
 export interface ILikedContent {
   contentId: mongoose.Types.ObjectId;
-  contentType: "Movie" | "Series";
+  contentType: ContentType;
+}
+
+// Define Watchlist Content Interface
+export interface IWatchlistContent {
+  contentId: mongoose.Types.ObjectId;
+  contentType: ContentType;
+}
+
+// Define Continue Watching Interface
+export interface IContinueWatching {
+  contentId: mongoose.Types.ObjectId;
+  contentType: ContentType;
+  progress: number; // Store watch time in seconds
+  lastWatched: Date;
 }
 
 // User
@@ -23,8 +49,9 @@ export interface IUser extends Document {
   gender?: "" | "male" | "female" | "other" | "prefer not to say";
   profilePicture?: string;
   subscription?: ISubscription;
-  watchlist: mongoose.Types.ObjectId[];
+  watchlist: IWatchlistContent[];
   likedContent: ILikedContent[];
+  continueWatching: IContinueWatching[]; // Added this field
   role: "user" | "admin";
   getJWT(secret: string, duration: StringValue): Promise<string>;
   validatePassword(passwordInputByUser: string): Promise<boolean>;
@@ -44,45 +71,47 @@ export interface IMovie extends Document {
   releaseDate?: Date;
   genres?: number[];
   duration: number;
-  rating?: number;
+  rating: number;
+  likes: number;
+  languages?: string[];
   reviews?: mongoose.Types.ObjectId;
-  cast?: ICastMember[];
-  director?: mongoose.Types.ObjectId;
+  cast?: mongoose.Types.ObjectId[];
+  director?: mongoose.Types.ObjectId[];
   poster?: string;
   trailerUrl?: string;
+  viewCount: number;
   movieUrl?: string;
   availableForStreaming?: boolean;
 }
 
 // episode
-export interface IEpisode {
+export interface IEpisode extends Document {
   title: string;
   description?: string;
+  seriesId: mongoose.Types.ObjectId;
+  seasonNumber: number;
   duration: number;
   episodeNumber: number;
   episodeUrl: string;
   releaseDate?: Date;
 }
 
-// season
-export interface ISeason {
-  seasonNumber: number;
-  episodes: IEpisode[];
-}
-
 // series
 export interface ISeries extends Document {
   title: string;
   description?: string;
-  genre?: number[];
+  genres?: number[];
+  languages?: string[];
   releaseDate?: Date;
+  likes: number;
+  viewCount: number;
   rating?: number;
-  cast?: ICastMember[];
-  director?: mongoose.Types.ObjectId;
-  poster: string;
+  casts?: mongoose.Types.ObjectId[];
+  reviews?: mongoose.Types.ObjectId[];
+  directors?: mongoose.Types.ObjectId[];
+  poster?: string;
   trailerUrl?: string;
   availableForStreaming?: boolean;
-  seasons: ISeason[];
 }
 
 // upcomingContent
@@ -90,7 +119,7 @@ export interface IUpcomingContent extends Document {
   title: string;
   description?: string;
   releaseDate: Date;
-  contentType: "movie" | "tvSeries";
+  contentType: ContentType;
   genre?: number[];
   cast?: mongoose.Types.ObjectId[];
   director?: mongoose.Types.ObjectId;
@@ -101,35 +130,32 @@ export interface IUpcomingContent extends Document {
 // cast
 export interface ICast extends Document {
   name: string;
-  age?: number;
-  gender?: "male" | "female" | "other";
+  gender?: "male" | "female" | "other" | "" | "prefer not to say";
   profilePicture?: string;
-  birthDate?: Date;
+  dateOfBirth?: Date;
   nationality?: string;
   movies?: mongoose.Types.ObjectId[];
-  tvSeries?: mongoose.Types.ObjectId[];
+  series?: mongoose.Types.ObjectId[];
 }
 
 // director
 export interface IDirector extends Document {
   name: string;
+  gender?: "male" | "female" | "other" | "" | "prefer not to say";
   profilePicture?: string;
-  birthDate?: Date;
+  dateOfBirth?: Date;
   nationality?: string;
   movies?: mongoose.Types.ObjectId[];
-  tvSeries?: mongoose.Types.ObjectId[];
+  series?: mongoose.Types.ObjectId[];
 }
 
-//liked section
+// liked section
 export interface ILike extends Document {
-  user: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   contentId: mongoose.Types.ObjectId;
-  contentType: "Movie" | "Series";
-  createdAt: Date;
-  updatedAt: Date;
+  contentType: ContentType;
 }
 
-type ContentType = "Movie" | "Series";
 export interface IReview extends Document {
   contentId: mongoose.Types.ObjectId;
   contentType: ContentType;
