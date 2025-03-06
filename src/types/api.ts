@@ -12,3 +12,19 @@ export interface IEditDetails {
   dateOfBirth?: Date;
   gender?: "" | "male" | "female" | "other" | "prefer not to say";
 }
+
+export interface ICastInputData {
+  name: string;
+  birthDate?: string;
+  nationality?: string;
+  gender?: string;
+  profilePicture?: string;
+}
+
+export interface IDirectorInputData { 
+  name: string;
+  birthDate?: string;
+  nationality?: string;
+  gender?: string;
+  profilePicture?: string;
+}

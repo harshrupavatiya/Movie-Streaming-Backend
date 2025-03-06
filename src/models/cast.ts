@@ -10,19 +10,16 @@ const castSchema = new Schema<ICast>(
       minLength: 2,
       maxLength: 50,
     },
-    age: {
-      type: Number,
-      max: 150,
-    },
     gender: {
       type: String,
-      enum: ["male", "female", "other"],
+      enum: ["male", "female", "other", "", "prefer not to say"],
+      default: "",
     },
     profilePicture: {
       type: String,
       default: "https://geographyandyou.com/images/user-profile.png"
     },
-    birthDate: {
+    dateOfBirth: {
       type: Date,
     },
     nationality: {
@@ -32,12 +29,14 @@ const castSchema = new Schema<ICast>(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Movie",
+        default: [],
       },
     ],
-    tvSeries: [
+    series: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "TVSeries",
+        ref: "Series",
+        default: [],
       },
     ],
   },

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import {
@@ -16,7 +16,8 @@ import mailSender from "../utils/mailSender";
 import { forgotPassTemplate } from "../utils/mailTemplates";
 import jwt from "jsonwebtoken";
 
-// LOGIN
+// LOGIN--------------------------------------------------------------------------------------------------
+// add validators
 export const login = async (req: Request, res: Response): Promise<any> => {
   try {
     // Get data from req body
@@ -63,15 +64,14 @@ export const login = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-// SIGNUP
+// SIGNUP-------------------------------------------------------------------------------------------------
 export const signUp = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<Response | any> => {
   try {
     // Validate signup data
-    validateSignUpData(req);
+    validateSignUpData(req.body);
 
     // Extract user details
     const { name, email, contactNo, password, otp } = req.body;
@@ -106,17 +106,17 @@ export const signUp = async (
   }
 };
 
-// validate data and send OTP
+// Generate OTP-------------------------------------------------------------------------------------------
 export const generateOTP = async (
   req: Request,
   res: Response
 ): Promise<Response | any> => {
   try {
     // Validate signup data
-    validateUserData(req);
+    validateUserData(req.body);
 
     // Extract user details
-    const { name, email, contactNo, password } = req.body;
+    const { email } = req.body;
 
     // Check if user exists with given email
     const user: IUser | null = await User.findOne({ email });
@@ -158,7 +158,7 @@ export const generateOTP = async (
   }
 };
 
-// Logout
+// Logout-------------------------------------------------------------------------------------------------
 export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
   // set token as null in cookie
   res.cookie("token", null, { expires: new Date(Date.now()) });
@@ -166,7 +166,7 @@ export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
   res.status(200).json({ message: "User logout successfully" });
 };
 
-// Send mail for reset Password
+// Send mail for reset Password-------------------------------------------------------------------------------------------------
 export const sendMailResetPassword = async (
   req: Request,
   res: Response
@@ -209,7 +209,7 @@ export const sendMailResetPassword = async (
   }
 };
 
-// Forgot password
+// Forgot password-------------------------------------------------------------------------------------------------
 export const resetPassword = async (
   req: Request,
   res: Response

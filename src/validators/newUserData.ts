@@ -1,15 +1,19 @@
-import { Request } from "express";
-import { validateContactNo, validateEmail, validatePassword } from "./inputValidators";
+import { validateContactNo, validateEmail, validateName, validatePassword } from "./inputValidators";
 
-export const validateUserData = (req: Request): void => {
+interface IUserRequiredField {
+  name: string;
+  email: string;
+  password: string;
+  contactNo: string;
+  otp?: number;
+}
+
+export const validateUserData = (reqBody: IUserRequiredField): void => {
   // Extract data
-  const { name, email, password, contactNo } = req.body;
+  const { name, email, password, contactNo } = reqBody;
 
   // If Name not present
-  const nameRegex = /^[A-Za-z ]+$/;
-  if (!nameRegex.test(name)) {
-    throw new Error("Name is not valid");
-  }
+  validateName(name);
 
   validateContactNo(contactNo);
 
@@ -18,17 +22,21 @@ export const validateUserData = (req: Request): void => {
   validatePassword(password);
 };
 
-export const validateSignUpData = (req: Request): void => {
+export const validateSignUpData = (reqBody: Required<IUserRequiredField>): void => {
   // validate name, email, contactNo, password
-  validateUserData(req);
+  validateUserData(reqBody);
 
+<<<<<<< HEAD
   const { otp } = req.body;
   console.log(otp, "otp in validate otp")
+=======
+  const { otp } = reqBody;
+>>>>>>> 653ea8d7a607ba55ef6add00c7f340708c97c25a
 
   const otpRegex = /^\d{6}$/;
 
   // validating OTP
-  if (!otpRegex.test(otp)) {
+  if (!otpRegex.test(otp.toString())) {
     throw new Error("Invalid OTP format");
   }
 };

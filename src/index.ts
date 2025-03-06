@@ -10,6 +10,15 @@ import movieRouter from "./routes/movie";
 import reviewRouter from "./routes/review";
 import likedRouter from "./routes/like";
 import subscriptionRouter from './routes/subscription'
+import watchlistRouter from "./routes/watchlist";
+import searchRouter from "./routes/search";
+import castRouter from "./routes/cast";
+import directorRouter from "./routes/director";
+import connectCloudinary from "./config/cloudinary";
+import seriesRouter from "./routes/series";
+import fileUpload from "express-fileupload";
+import episodeRouter from "./routes/episode";
+import continueWatchingRouter from "./routes/continueWatching";
 
 // Create Express server
 const app = express();
@@ -37,28 +46,44 @@ app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+// Middleware to handle file uploads
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
+
 // Define a route handler for the root route
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
 });
 
+
 app.use("/auth", authRouter);
 app.use("/movie", movieRouter);
 app.use("/user", userRouter);
+app.use("/series", seriesRouter);
 app.use("/review", reviewRouter);
 app.use("/liked", likedRouter);
 app.use("/stripe", subscriptionRouter);
 
 
+app.use("/watchlist", watchlistRouter);
+app.use("/search", searchRouter);
+app.use("/cast", castRouter);
+app.use("/director", directorRouter);
+app.use("/episode", episodeRouter);
+app.use("/continue-watching", continueWatchingRouter);
 const port = PORT || 3000;
 
-// Connect database
-connectDB()
+Promise.all([connectDB(), connectCloudinary()])
   .then(() => {
-    console.log("Database connected successfully.");
-    // Start the server
+    console.log("Database connected ✅ \nCloudinary configured ✅");
+
+    // start server
     app.listen(port, () => {
-      console.log(`Server is running on http://localhost:${port}`);
+      console.log(`Server is running on 👉 http://localhost:${port}`);
     });
   })
   .catch((err) => {
