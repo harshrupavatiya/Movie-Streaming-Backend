@@ -10,6 +10,7 @@ const movieSchema = new Schema<IMovie>(
       required: true,
       trim: true,
       maxLength: 254,
+      index: true,
     },
     description: {
       type: String,
@@ -71,6 +72,10 @@ const movieSchema = new Schema<IMovie>(
     trailerUrl: {
       type: String,
     },
+    views: {
+      type: Number,
+      default: 0,
+    },
     movieUrl: {
       type: String,
     },
@@ -82,21 +87,22 @@ const movieSchema = new Schema<IMovie>(
   { timestamps: true }
 );
 
-  movieSchema.post("save", async function () {
-    const movie = this;
-    if (movie.cast){ 
-      await Cast.updateMany(
+movieSchema.post("save", async function () {
+  const movie = this;
+  if (movie.cast) {
+    await Cast.updateMany(
       { _id: { $in: movie.cast } },
       { $push: { movies: movie._id } }
-    ); 
+    );
   }
-    if (movie.director) {
-      await Director.updateMany(
+  if (movie.director) {
+    await Director.updateMany(
       { _id: { $in: movie.director } },
       { $push: { movies: movie._id } }
-    ); }
-    });
+    );
+  }
+});
 
-  const Movie: Model<IMovie> = mongoose.model<IMovie>("Movie", movieSchema);
+const Movie: Model<IMovie> = mongoose.model<IMovie>("Movie", movieSchema);
 
 export default Movie;
