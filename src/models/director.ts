@@ -9,6 +9,7 @@ const directorSchema = new Schema<IDirector>(
       trim: true,
       minLength: 2,
       maxLength: 50,
+      index: true,
     },
     gender: {
       type: String,

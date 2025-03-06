@@ -7,109 +7,8 @@ import { validateFileContent } from "../validators/mediaFile";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import { UploadedFile } from "express-fileupload";
 import fs from "fs";
-import {
-  isValidISOBirthDate,
-  validateName,
-} from "../validators/inputValidators";
 import { getValidCastPayload } from "../utils/getPayload";
 
-// Add Cast (Admin Only)
-// NOW IT IS NOT USEFUL ANYMORE, SO REMOVE IT AFTER TESTING "addOrUpdateCast"
-export const addCast = async (
-  req: AuthRequest,
-  res: Response
-): Promise<string | any> => {
-  try {
-    // Check if the user is an admin
-    if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only." });
-    }
-
-    const { name, gender, birthDate, nationality } = req.body;
-
-    // validating the data
-    validateName(name);
-    if (birthDate) {
-      isValidISOBirthDate(birthDate);
-    }
-    if (nationality && typeof nationality !== "string") {
-      throw new Error("value of nationality should be in string type");
-    }
-    if (gender && typeof gender !== "string") {
-      throw new Error("value of gender should nbe in string type");
-    }
-
-    const file = req?.files?.image as UploadedFile;
-
-    // Upload image to Cloudinary
-    let result = null;
-    if (file) {
-      validateFileContent(file.mimetype, "image");
-
-      result = await uploadImageToCloudinary(file.tempFilePath, {
-        folder: "cast",
-        height: 800,
-        quality: 100,
-      });
-
-      // Delete the temporary file
-      fs.unlink(file.tempFilePath, (err) => {
-        if (err) console.log("Failed to delete temp file:", err);
-      });
-    }
-
-    // getting secure url from received data from cloudinary uploader
-    const profilePicture = result?.secure_url || null;
-
-    // new cast payload
-    const newCastPayload: ICastInputData = {
-      name,
-      ...(birthDate && { birthDate: new Date(birthDate) }),
-      ...(gender && { gender }),
-      ...(nationality && { nationality }),
-      ...(profilePicture && { profilePicture }),
-    };
-
-    // Create a new cast member
-    const newCast = new Cast(newCastPayload);
-
-    await newCast.save();
-
-    return res.status(201).json({
-      message: "Cast member added successfully",
-      cast: newCast,
-    });
-  } catch (err) {
-    return res.status(500).json({ message: (err as Error).message });
-  }
-};
-
-// // Get All Cast Names with Object ID--------------------------------------------------------------------------------
-// export const getAllCastNames = async (
-//   req: AuthRequest,
-//   res: Response
-// ): Promise<string | any> => {
-//   try {
-//     // TODO: ensure that user and admin both need this api
-
-//     // get only name and objectId of Casts
-//     const castList = await Cast.aggregate([
-//       {
-//         $project: {
-//           name: 1,
-//           _id: 1,
-//         },
-//       },
-//     ]);
-
-//     return res.status(200).json({
-//       message: "Cast list with name and id",
-//       data: { castList },
-//     });
-//   } catch (error) {
-//     return res.status(500).json({ message: (error as Error).message });
-//   }
-// };
 
 //Get searched Cast by name--------------------------------------------------------------------------------
 export const searchCastByName = async (
@@ -117,7 +16,7 @@ export const searchCastByName = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { query } = req.body;
+    const { query } = req.query;
 
     if (!query || typeof query !== "string") {
       return res.status(400).json({ message: "Query parameter is required." });
