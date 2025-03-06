@@ -255,33 +255,38 @@ export const deleteMovieById = async (
   res: Response
 ): Promise<string | any> => {
   try {
-    const { id } = req.params;
+    const user = req.user;
+    const { movieId } = req.params;
 
     // Check if user is admin
-    if (!req.user || req.user.role !== "admin") {
+    if (user?.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
-    // Find the movie before deleting to get associated cast and directors
-    const movie = await Movie.findById(id);
-    if (!movie) {
-      return res.status(404).json({ message: "Movie not found" });
-    }
+    // // Find the movie before deleting to get associated cast and directors
+    // const movie = await Movie.findById(movieId);
+    // if (!movie) {
+    //   return res.status(404).json({ message: "Movie not found" });
+    // }
 
     // Delete the movie
-    await Movie.findByIdAndDelete(id);
+    const deletedMovie = await Movie.findOneAndDelete({ _id: movieId });
 
-    // Remove the movie ID from the casts' movie lists
-    await Cast.updateMany(
-      { _id: { $in: (movie.cast || []).map((member) => member) } },
-      { $pull: { movies: id } }
-    );
+    if(!deletedMovie){
+      return res.status(404).json({ message: "Movie not found or invalid MovieId" });
+    }
 
-    // Remove the movie ID from the directors' movie lists
-    await Director.updateMany(
-      { _id: { $in: movie.director } },
-      { $pull: { movies: id } }
-    );
+    // // Remove the movie ID from the casts' movie lists
+    // await Cast.updateMany(
+    //   { _id: { $in: (movie.cast || []).map((member) => member) } },
+    //   { $pull: { movies: movieId } }
+    // );
+
+    // // Remove the movie ID from the directors' movie lists
+    // await Director.updateMany(
+    //   { _id: { $in: movie.director } },
+    //   { $pull: { movies: movieId } }
+    // );
 
     return res.status(200).json({ message: "Movie deleted successfully" });
   } catch (error) {
