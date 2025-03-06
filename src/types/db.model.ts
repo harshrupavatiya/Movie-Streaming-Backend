@@ -1,22 +1,14 @@
 import mongoose, { Document } from "mongoose";
 import { StringValue } from "ms";
 
-<<<<<<< HEAD
-interface ICastMember {
-=======
 type ContentType = "Movie" | "Series" | "Episode";
 
-interface ISubscription {
+export interface ISubscription {
   plan: "free" | "basic" | "premium";
   startDate?: Date;
   endDate?: Date;
 }
 
-export interface ICastMember {
->>>>>>> 653ea8d7a607ba55ef6add00c7f340708c97c25a
-  castId: mongoose.Types.ObjectId;
-  roleName?: string;
-}
 
 // Define Liked Content Interface
 export interface ILikedContent {
@@ -165,14 +157,3 @@ export interface IReview extends Document {
 }
 
 
-// Subscription 
-
-export interface ISubscription extends Document {
-  subscriptionID: string;
-  userID: string
-  paymentDate: Date;
-  planEndingDate: Date;
-  amount: number;
-  subscriptionType: "free" | "basic" | "premium";
-  transactionId: string
-}
