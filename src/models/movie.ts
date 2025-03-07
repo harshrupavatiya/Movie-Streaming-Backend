@@ -59,6 +59,7 @@ const movieSchema = new Schema<IMovie>(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Director",
+        required: true,
       },
     ],
     languages: [
@@ -89,18 +90,33 @@ const movieSchema = new Schema<IMovie>(
 
 movieSchema.post("save", async function () {
   const movie = this;
-  if (movie.cast) {
+  if (movie.cast && movie.cast.length > 0) {
     await Cast.updateMany(
       { _id: { $in: movie.cast } },
       { $push: { movies: movie._id } }
     );
   }
-  if (movie.director) {
+  if (movie.director && movie.director.length > 0) {
     await Director.updateMany(
       { _id: { $in: movie.director } },
       { $push: { movies: movie._id } }
     );
   }
+});
+
+movieSchema.pre("findOneAndDelete", async function (next) {
+  const movie = await this.model.findOne(this.getQuery());
+  if (movie) {
+    await Cast.updateMany(
+      { _id: { $in: movie.cast } },
+      { $pull: { movies: movie._id } }
+    );
+    await Director.updateMany(
+      { _id: { $in: movie.director } },
+      { $pull: { movies: movie._id } }
+    );
+  }
+  next();
 });
 
 const Movie: Model<IMovie> = mongoose.model<IMovie>("Movie", movieSchema);

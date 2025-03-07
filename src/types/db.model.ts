@@ -86,6 +86,7 @@ export interface IMovie extends Document {
   views: number;
   movieUrl?: string;
   availableForStreaming?: boolean;
+  isLiked: boolean;
 }
 
 // episode
