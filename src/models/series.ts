@@ -83,8 +83,6 @@ const seriesSchema = new Schema<ISeries>(
 );
 
 seriesSchema.pre("findOneAndDelete", async function (next) {
-  
-
   // delete all episodes which has given seriesId
   Episode.deleteMany({ seriesId: this.getQuery()._id });
   next();
@@ -92,7 +90,6 @@ seriesSchema.pre("findOneAndDelete", async function (next) {
 
 seriesSchema.post("save", async function () {
   const series = this;
-  console.log("series: ", series);
 
   if (series.casts && series.casts.length > 0) {
     Promise.all(
