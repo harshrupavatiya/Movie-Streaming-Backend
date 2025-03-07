@@ -8,10 +8,10 @@ userRouter.put("/changePassword", userAuth ,changePassword);
 
 userRouter.put("/editProfile", userAuth, editProfile);
 
-userRouter.get("/getUserList", userAuth, getUserList);
+userRouter.get("/list", userAuth, getUserList);
 
 userRouter.put("/createAdmin", userAuth, createAdmin);
 
-userRouter.put("/toggleUserIsActive", userAuth, toggleUserIsActive);
+userRouter.put("/toggleIsActive", userAuth, toggleUserIsActive);
 
 export default userRouter;
