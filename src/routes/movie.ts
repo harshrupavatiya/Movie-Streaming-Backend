@@ -9,9 +9,9 @@ movieRouter.get("/getMovieById/:movieId", userAuth, getMovieById);
 movieRouter.put("/updateMovieById", userAuth, updateMovieById);
 movieRouter.delete("/deleteMovieById", userAuth, deleteMovieById);
 movieRouter.get("/getMoviesByGenre/:genre", userAuth, getMoviesByGenre);
-movieRouter.get("/getTopRatedMovies", userAuth, getTopRatedMovies);
-movieRouter.post("/viewIncrement/:movieId", userAuth, incrementMovieView);
-movieRouter.get("/getLatestMovies", userAuth, getLatestReleasedMovies);
-movieRouter.get("/searchMovie", userAuth, searchMoviesByTitle);
+// movieRouter.get("/getTopRatedMovies", userAuth, getTopRatedMovies);
+// movieRouter.post("/viewIncrement/:movieId", userAuth, incrementMovieView);
+// movieRouter.get("/getLatestMovies", userAuth, getLatestReleasedMovies);
+// movieRouter.get("/searchMovie", userAuth, searchMoviesByTitle);
 
 export default movieRouter;
