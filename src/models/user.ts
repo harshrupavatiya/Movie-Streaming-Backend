@@ -86,9 +86,12 @@ const userSchema = new Schema<IUser>(
     ],
     role: {
       type: String,
-      immutable: true,
       enum: ["user", "admin"],
       default: "user",
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
     continueWatching: [
       {
