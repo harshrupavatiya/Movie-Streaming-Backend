@@ -10,8 +10,8 @@ userRouter.put("/editProfile", userAuth, editProfile);
 
 userRouter.get("/list", userAuth, getUserList);
 
-userRouter.put("/createAdmin", userAuth, createAdmin);
+userRouter.put("/updateRole", userAuth, createAdmin);
 
-userRouter.put("/toggleIsActive", userAuth, toggleUserIsActive);
+userRouter.put("/updateActiveStatus", userAuth, toggleUserIsActive);
 
 export default userRouter;
