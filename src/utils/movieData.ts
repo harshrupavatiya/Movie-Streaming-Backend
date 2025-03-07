@@ -91,7 +91,7 @@ export const getMoviePayload = (reqBody: IMovieData): Partial<IMovie> => {
     newPayload.director = directors.map(dir => new mongoose.Types.ObjectId(dir));
   }
   
-  newPayload.availableForStreaming = availableForStreaming || false;
+  newPayload.availableForStreaming = availableForStreaming || true;
   
   return newPayload;
 };
@@ -178,7 +178,7 @@ export const getEditMoviePayload = (reqBody: Partial<IMovieData>): Partial<IMovi
     newPayload.director = directors.map(dir => new mongoose.Types.ObjectId(dir));
   }
   
-  newPayload.availableForStreaming = availableForStreaming || false;
+  newPayload.availableForStreaming = availableForStreaming || true;
 
   return newPayload;
 };
