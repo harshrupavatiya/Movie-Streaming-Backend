@@ -67,6 +67,7 @@ app.use("/series", seriesRouter);
 app.use("/review", reviewRouter);
 app.use("/liked", likedRouter);
 app.use("/stripe", subscriptionRouter);
+app.use('/webhook', subscriptionRouter);
 
 
 app.use("/watchlist", watchlistRouter);
@@ -75,6 +76,8 @@ app.use("/cast", castRouter);
 app.use("/director", directorRouter);
 app.use("/episode", episodeRouter);
 app.use("/continue-watching", continueWatchingRouter);
+
+
 const port = PORT || 3000;
 
 Promise.all([connectDB(), connectCloudinary()])
