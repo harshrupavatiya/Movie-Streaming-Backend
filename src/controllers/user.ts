@@ -12,7 +12,7 @@ import User from "../models/user";
 export const changePassword = async (
   req: AuthRequest,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
     // Extract information
     const { password, newPassword } = req.body;
@@ -33,7 +33,8 @@ export const changePassword = async (
 
     // if password is not valid
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid Password" });
+      res.status(400).json({ message: "Invalid Password" });
+      return;
     }
 
     // hashing of new password
@@ -44,16 +45,18 @@ export const changePassword = async (
     // saving user model
     await user.save();
 
-    return res.status(200).json({ message: "Password updated successfully" });
+    res.status(200).json({ message: "Password updated successfully" });
+    return;
   } catch (err) {
-    return res.status(400).json({ message: (err as Error).message });
+    res.status(400).json({ message: (err as Error).message });
+    return;
   }
 };
 
 export const editProfile = async (
   req: AuthRequest,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
     // get object of updating field
     const editData = getValidUserUpdatePayload(req.body);
@@ -66,6 +69,7 @@ export const editProfile = async (
       res
         .status(400)
         .json({ message: "Atleast one field required to update the data" });
+      return;
     }
 
     // Upload the image to Cloudinary
@@ -142,7 +146,7 @@ export const getUserList = async (
     if (req.user?.role !== "admin") {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
-    }    
+    }
 
     // get page and limit from query parameters
     let { search = "", page = "1", limit = "20" } = req.query;
@@ -281,8 +285,10 @@ export const toggleUserIsActive = async (
       return;
     }
 
-    if(user.role === "admin") {
-      res.status(400).json({ message: "Access Denied, Admin can suspend only users"});
+    if (user.role === "admin") {
+      res
+        .status(400)
+        .json({ message: "Access Denied, Admin can suspend only users" });
       return;
     }
 

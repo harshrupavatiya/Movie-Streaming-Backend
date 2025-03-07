@@ -6,12 +6,13 @@ import { AuthRequest } from "../types/api";
 export const toggleLike = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     const user = req.user;
 
     if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: "Unauthorized" });
+      return;
     }
 
     const { contentId, contentType } = req.body;
@@ -19,10 +20,12 @@ export const toggleLike = async (
     console.log(contentId, contentType);
 
     if (contentType !== "Movie" && contentType !== "Series") {
-      return res.status(400).json({ message: "Invalid content  Type" });
+      res.status(400).json({ message: "Invalid content  Type" });
+      return;
     }
     if (!contentId) {
-      return res.status(400).json({ message: "Content ID are required" });
+      res.status(400).json({ message: "Content ID are required" });
+      return;
     }
 
     console.log("1");
@@ -35,7 +38,8 @@ export const toggleLike = async (
     console.log("2");
 
     if (likeInfo) {
-      return res.status(200).json({ message: "Unliked successfully" });
+      res.status(200).json({ message: "Unliked successfully" });
+      return;
     }
 
     // Like: Add to like collection
@@ -46,15 +50,17 @@ export const toggleLike = async (
     });
     await newLike.save();
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       message: "Liked successfully",
     });
+    return;
   } catch (err) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: (err as Error).message,
     });
+    return;
   }
 };
 
@@ -62,15 +68,15 @@ export const toggleLike = async (
 export const getLikedContent = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     const user = req.user;
 
     if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: "Unauthorized" });
+      return;
     }
 
-    // TODO: add model function in populate
     const likedContent = await Like.find({ userId: user._id })
       .populate({
         path: "contentId",
@@ -79,11 +85,13 @@ export const getLikedContent = async (
       .sort({ createdAt: -1 })
       .lean();
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Liked content by user",
       data: { likedContent },
     });
+    return;
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    res.status(500).json({ message: (error as Error).message });
+    return;
   }
 };

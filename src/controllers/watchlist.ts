@@ -6,19 +6,19 @@ import User from "../models/user";
 export const toggleWatchlist = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: "Unauthorized access" });
+      return;
     }
 
     const { contentId, contentType } = req.body;
     const userId = req.user._id;
 
     if (!contentId || !contentType) {
-      return res
-        .status(400)
-        .json({ message: "Content ID and type are required" });
+      res.status(400).json({ message: "Content ID and type are required" });
+      return;
     }
 
     // Check if the content is already in the watchlist
@@ -32,19 +32,22 @@ export const toggleWatchlist = async (
         $pull: { watchlist: { contentId } },
       });
 
-      return res.status(200).json({ message: "Removed from watchlist" });
+      res.status(200).json({ message: "Removed from watchlist" });
+      return;
     } else {
       // Add to watchlist
       await User.findByIdAndUpdate(userId, {
         $addToSet: { watchlist: { contentId, contentType } },
       });
 
-      return res.status(201).json({ message: "Added to watchlist" });
+      res.status(201).json({ message: "Added to watchlist" });
+      return;
     }
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       message: (error as Error).message,
     });
+    return;
   }
 };
 
@@ -52,10 +55,11 @@ export const toggleWatchlist = async (
 export const getWatchlist = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: "Unauthorized" });
+      return;
     }
 
     const watchlist = await User.findById(req.user._id)
@@ -65,10 +69,12 @@ export const getWatchlist = async (
         select: "title poster",
       });
 
-    return res.status(200).json({ data: { watchlist } });
+    res.status(200).json({ data: { watchlist } });
+    return;
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       message: (error as Error).message,
     });
+    return;
   }
 };
