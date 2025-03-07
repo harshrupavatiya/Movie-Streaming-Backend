@@ -8,6 +8,7 @@ import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
 import Episode from "../models/episode";
 import Like from "../models/like";
+import mongoose, { Document } from "mongoose";
 
 export const createSeries = async (
   req: AuthRequest,
@@ -106,7 +107,7 @@ export const deleteSeries = async (
     }
 
     // get seriesId from URL query parameters
-    const { seriesId } = req.query;
+    const { seriesId } = req.params;
 
     // delete series
     const deletedSeries = await Series.findOneAndDelete({ _id: seriesId });
@@ -346,7 +347,17 @@ export const getSeriesById = async (
     const { seriesId } = req.params;
 
     // get series Info
-    const series = await Series.findById(seriesId);
+    const series = await Series.findById(seriesId)
+      .select(
+        "title description genres languages releaseDate rating likes poster trailerUrl"
+      )
+      .populate({
+        path: "reviews",
+        options: { sort: { createdAt: -1 }, limit: 5 },
+      })
+      .populate("casts")
+      .populate("directors")
+      .exec();
 
     // if series not present
     if (!series) {
@@ -354,37 +365,84 @@ export const getSeriesById = async (
       return;
     }
 
-    // get episode season wise
-    const seasonwiseEpisode = await Episode.aggregate([
-      {
-        $match: {
-          seriesId: seriesId,
-        },
-      },
-      {
-        $project: {
-          createdAt: 0,
-          updatedAt: 0,
-          seriesId: 0,
-        },
-      },
-      {
-        $group: {
-          _id: "$seasonNumber",
-          episodes: { $push: "$$ROOT" },
-        },
-      },
-      {
-        $sort: { _id: 1 },
-      },
-      {
-        $project: {
-          _id: 0,
-        },
-      },
-    ]);
+    const aggregateArray =
+      req.user.subscription?.plan === "free"
+        ? [
+            {
+              $match: {
+                seriesId: new mongoose.Types.ObjectId(seriesId),
+              },
+            },
+            {
+              $project: {
+                createdAt: 0,
+                updatedAt: 0,
+                seriesId: 0,
+                episodeUrl: 0,
+              },
+            },
+            {
+              $group: {
+                _id: "$seasonNumber",
+                episodes: { $push: "$$ROOT" },
+              },
+            },
+            {
+              $sort: { _id: 1 },
+            },
+            {
+              $addFields: {
+                season: "$_id",
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+              },
+            },
+          ]
+        : [
+            {
+              $match: {
+                seriesId: new mongoose.Types.ObjectId(seriesId),
+              },
+            },
+            {
+              $project: {
+                createdAt: 0,
+                updatedAt: 0,
+                seriesId: 0,
+              },
+            },
+            {
+              $group: {
+                _id: "$seasonNumber",
+                episodes: { $push: "$$ROOT" },
+              },
+            },
+            {
+              $sort: { _id: 1 },
+            },
+            {
+              $addFields: {
+                season: "$_id",
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+              },
+            },
+          ];
 
-    const isLiked= await Like.findOne({ userId: req.user?._id.toString(), contentId: seriesId, contentType: "Series"});
+    // get episode season wise
+    const seasonwiseEpisode = await Episode.aggregate(aggregateArray as any[]);
+
+    const isLiked = await Like.findOne({
+      userId: req.user?._id.toString(),
+      contentId: seriesId,
+      contentType: "Series",
+    });
 
     series.isLiked = isLiked ? true : false;
 

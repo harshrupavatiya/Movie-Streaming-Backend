@@ -4,16 +4,25 @@ import { createSeries, deleteSeries, getLatestReleasedSeriesList, getMostLikedSe
 const seriesRouter = express.Router();
 
 seriesRouter.get("/:seriesId", userAuth, getSeriesById);
+
 seriesRouter.get("/genre/:genre", userAuth, getSeriesByGenre);
+
 seriesRouter.get("/mostLiked", userAuth, getMostLikedSeriesList);
+
 seriesRouter.get("/mostViewed", userAuth, getMostViewedSeriesList);
+
 seriesRouter.get("/topRated", userAuth, getTopRatedSeriesList);
+
 seriesRouter.get("/latestReleased", userAuth, getLatestReleasedSeriesList);
+
 seriesRouter.get("/popular", userAuth, getPopularSeriesList);
+
 seriesRouter.get("/search", userAuth, getSeriesListBySearch);
+
 seriesRouter.get("/searchByAdmin", userAuth, getSeriesNamesAndIdBySearch);
+
 seriesRouter.post("/create", userAuth, createSeries);
-seriesRouter.delete("/deleteAll", userAuth, deleteSeries);
+seriesRouter.delete("/delete/:seriesId", userAuth, deleteSeries);
 seriesRouter.put("/update", userAuth, updateSeries);
 
 export default seriesRouter;  
