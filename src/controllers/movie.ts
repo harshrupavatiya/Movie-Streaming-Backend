@@ -15,7 +15,7 @@ export const createMovie = async (
   res: Response
 ): Promise<any> => {
   try {
-      // Check if the user is an admin
+    // Check if the user is an admin
     const user = req.user;
     if (user?.role !== "admin") {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
@@ -29,9 +29,9 @@ export const createMovie = async (
     const posterFile = req?.files?.poster as UploadedFile;
     const trailerFile = req?.files?.trailer as UploadedFile;
     const movieFile = req?.files?.movieUrl as UploadedFile;
-    
-     // Check if poster, trailer, and movie files are present
-     if (!trailerFile || !posterFile || !movieFile) {
+
+    // Check if poster, trailer, and movie files are present
+    if (!trailerFile || !posterFile || !movieFile) {
       res.status(400).json({
         message: "Poster, trailer, and movie file are all required.",
       });
@@ -63,7 +63,7 @@ export const createMovie = async (
     ]);
 
     // Delete temporary files
-    [posterFile, trailerFile, movieFile].forEach(file => {
+    [posterFile, trailerFile, movieFile].forEach((file) => {
       fs.unlink(file.tempFilePath, (err) => {
         if (err) console.log("Failed to delete temp file:", err);
       });
@@ -87,12 +87,12 @@ export const createMovie = async (
     moviePayload.trailerUrl = trailerUrl;
     moviePayload.movieUrl = movieUrl;
 
-     // Create and save new movie
-     const newMovie = new Movie(moviePayload);
-     await newMovie.save();
-     const movieId = newMovie._id;
+    // Create and save new movie
+    const newMovie = new Movie(moviePayload);
+    await newMovie.save();
+    const movieId = newMovie._id;
 
-      res.status(201).json({
+    res.status(201).json({
       message: "Movie created successfully",
       data: { movie: newMovie },
     });
@@ -343,46 +343,48 @@ export const getMoviesByGenre = async (
   }
 };
 
-//Top Rated Movies---------------------------------------------------------------------------
-export const getTopRatedMovies = async (
-  req: AuthRequest,
-  res: Response
-): Promise<string | any> => {
-  try {
-    const movies = await Movie.find()
-      .sort({ rating: -1 })
-      .limit(20)
-      .populate({
-        path: "cast.castId",
-        select: "name",
-      })
-      .populate({
-        path: "director",
-        select: "name",
-      });
+// //Top Rated Movies---------------------------------------------------------------------------
+// export const getTopRatedMovies = async (
+//   req: AuthRequest,
+//   res: Response
+// ): Promise<string | any> => {
+//   try {
+//     const page = parseInt((req.query.page as string) || "1", 10);
+//     const limit = parseInt((req.query.limit as string) || "10", 10);
+//     const skip = (page - 1) * limit;
 
-    if (movies.length === 0) {
-      return res.status(404).json({ message: "No top-rated movies found." });
-    }
+//     const movies = await Movie.find()
+//       .sort({ rating: -1 })
+//       .select("title description rating poster languages genres releaseDate")
+//       .skip(skip)
+//       .limit(limit)
+//       .populate({
+//         path: "cast",
+//         select: "name",
+//       })
+//       .populate({
+//         path: "director",
+//         select: "name",
+//       });
 
-    const formattedMovies = movies.map((movie) => ({
-      _id: movie._id,
-      title: movie.title,
-      description: movie.description,
-      rating: movie.rating,
-      poster: movie.poster,
-      languages: movie.languages,
-      genres: movie.genres,
-      releaseDate: movie.releaseDate,
-    }));
+//     if (movies.length === 0) {
+//       return res.status(404).json({ message: "No top-rated movies found." });
+//     }
 
-    res.status(200).json({ data: { movies: formattedMovies } });
-  } catch (error) {
-    res.status(500).json({
-      message: (error as Error).message,
-    });
-  }
-};
+//     res.status(200).json({
+//       metadata: {
+//         totalMovies: movies.length,
+//         currentPage: page,
+//         totalPages: Math.ceil(movies.length / limit),
+//       },
+//       data: { movies },
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: (error as Error).message,
+//     });
+//   }
+// };
 
 //Movie view count---------------------------------------------------------------------------
 export const incrementMovieView = async (
@@ -410,11 +412,248 @@ export const incrementMovieView = async (
 
     return res.status(200).json({
       message: "View count updated",
-      data: { viewCount: updatedMovie.viewCount },
+      data: { viewCount: updatedMovie.views },
     });
   } catch (error) {
     return res.status(500).json({
       message: (error as Error).message,
     });
+  }
+};
+
+// // Get Latest Movies ----------------------------------------------------------------------------------------------
+// export const getLatestMovies = async (
+//   req: AuthRequest,
+//   res: Response
+// ): Promise<any> => {
+//   try {
+//     const page = parseInt((req.query.page as string) || "1", 10);
+//     const limit = parseInt((req.query.limit as string) || "10", 10);
+//     const skip = (page - 1) * limit;
+
+//     const movies = await Movie.find()
+//       .sort({ releaseDate: -1 })
+//       .select("title poster description rating cast director releaseDate")
+//       .populate({ path: "cast", select: "name" })
+//       .populate({ path: "director", select: "name" })
+//       .skip(skip)
+//       .limit(limit)
+//       .populate({
+//         path: "cast",
+//         select: "name",
+//       })
+//       .populate({
+//         path: "director",
+//         select: "name",
+//       });
+
+//     if (movies.length === 0) {
+//       return res.status(404).json({ message: "No top-rated movies found." });
+//     }
+
+//     res.status(200).json({
+//       metadata: {
+//         totalMovies: movies.length,
+//         currentPage: page,
+//         totalPages: Math.ceil(movies.length / limit),
+//       },
+//       data: { movies },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: (error as Error).message });
+//   }
+// };
+
+//Search movies by title---------------------------------------------------------------------------
+export const searchMoviesByTitle = async (
+  req: AuthRequest,
+  res: Response
+): Promise<any> => {
+  try {
+    const { query } = req.query;
+
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Only for admin" });
+    }
+
+    const page = parseInt((req.query.page as string) || "1", 10);
+    const limit = parseInt((req.query.limit as string) || "10", 10);
+    const skip = (page - 1) * limit;
+
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({ message: "Query parameter is required" });
+    }
+
+    const movies = await Movie.find({
+      title: { $regex: `${query}`, $options: "i" },
+    })
+      .select("title poster description rating cast director")
+      .populate({ path: "cast", select: "name" })
+      .populate({ path: "director", select: "name" })
+      .skip(skip)
+      .limit(limit);
+
+    return res.status(200).json({
+      metadata: {
+        totalMovies: movies.length,
+        currentPage: page,
+        totalPages: Math.ceil(movies.length / limit),
+      },
+      data: movies,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: (error as Error).message });
+  }
+};
+
+//Top rated movies---------------------------------------------------------------------------
+export const getTopRatedMovies = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Ensure that user exists or not
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+      return;
+    }
+
+    // Get page and limit from query parameters
+    let { page = "1", limit = "10" } = req.query;
+
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    // Validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+
+    // Validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    // Calculate the number for skip docs
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const moviesList = await Movie.aggregate([
+      {
+        $sort: {
+          rating: -1,
+        },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          genres: 1,
+          languages: 1,
+          releaseDate: 1,
+          rating: 1,
+          poster: 1,
+          availableForStreaming: 1,
+          duration: 1,
+        },
+      },
+    ]);
+
+    if (!moviesList || moviesList.length <= 0) {
+      res.status(400).json({ message: "Data not available" });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ message: "Top Rated Movies List", data: { moviesList } });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+//Get Latest Movies---------------------------------------------------------------------------
+export const getLatestReleasedMovies = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+      return;
+    }
+
+    let { page = "1", limit = "10" } = req.query;
+
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const moviesList = await Movie.aggregate([
+      {
+        $sort: {
+          releaseDate: -1,
+        },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          genres: 1,
+          languages: 1,
+          releaseDate: 1,
+          rating: 1,
+          poster: 1,
+          availableForStreaming: 1,
+          duration: 1,
+        },
+      },
+    ]);
+
+    if (!moviesList || moviesList.length <= 0) {
+      res.status(400).json({ message: "Data not available" });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ message: "Latest Released Movies List", data: { moviesList } });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
   }
 };
