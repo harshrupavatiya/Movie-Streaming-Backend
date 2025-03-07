@@ -27,7 +27,7 @@ export const searchCastByName = async (
       name: { $regex: `^${query}`, $options: "i" },
     }).select("name _id");
 
-    if (castList.length === 0) {
+    if (castList.length <= 0) {
       return res
         .status(404)
         .json({ message: "No matching cast members found." });
