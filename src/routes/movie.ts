@@ -1,14 +1,15 @@
 import express from "express";
-import { createMovie, getAllMovies, getMovieById, updateMovieById, deleteMovieById, getMoviesByGenre , getTopRatedMovies} from "./../controllers/movie";
+import { createMovie, getAllMovies, getMovieById, updateMovieById, deleteMovieById, getMoviesByGenre , getTopRatedMovies , getMostViewedMoviesList } from "./../controllers/movie";
 import { userAuth } from "../middlewares/Auth";
 const movieRouter = express.Router();
 
 movieRouter.post("/createMovie", userAuth, createMovie);
 movieRouter.get("/getAllMovie", userAuth, getAllMovies);
-movieRouter.get("/getMovieById/:id", userAuth, getMovieById);
-movieRouter.put("/updateMovieById/:id", userAuth, updateMovieById);
-movieRouter.delete("/deleteMovieById/:id", userAuth, deleteMovieById);
-movieRouter.get("/getMoviesByGenre", userAuth, getMoviesByGenre);
+movieRouter.get("/getMovieById/:movieId", userAuth, getMovieById);
+movieRouter.put("/updateMovieById", userAuth, updateMovieById);
+movieRouter.delete("/deleteMovieById", userAuth, deleteMovieById);
+movieRouter.get("/getMoviesByGenre/:genre", userAuth, getMoviesByGenre);
 movieRouter.get("/getTopRatedMovies", userAuth, getTopRatedMovies);
+movieRouter
 
 export default movieRouter;
