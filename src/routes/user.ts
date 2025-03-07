@@ -1,11 +1,17 @@
 import express from "express";
-import { changePassword, editProfile } from "../controllers/user";
+import { changePassword, createAdmin, editProfile, getUserList, toggleUserIsActive } from "../controllers/user";
 import { userAuth } from "../middlewares/Auth";
 
 const userRouter = express.Router();
 
-userRouter.post("/changePassword", userAuth ,changePassword);
+userRouter.put("/changePassword", userAuth ,changePassword);
 
-userRouter.post("/editProfile", userAuth, editProfile);
+userRouter.put("/editProfile", userAuth, editProfile);
+
+userRouter.get("/getUserList", userAuth, getUserList);
+
+userRouter.put("/createAdmin", userAuth, createAdmin);
+
+userRouter.put("/toggleUserIsActive", userAuth, toggleUserIsActive);
 
 export default userRouter;

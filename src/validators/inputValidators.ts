@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 import validator from "validator";
 
 export const validateName = (name: string): void => {
+  if(!name) {
+    throw new Error("Name is required field");
+  }
   const nameRegex = /^[A-Za-z ]+$/;
   if (!nameRegex.test(name)) {
     throw new Error("Name is not valid");
@@ -9,18 +12,27 @@ export const validateName = (name: string): void => {
 };
 
 export const validateEmail = (email: string): void => {
+  if(!email) {
+    throw new Error("email is required field");
+  }
   if (!validator.isEmail(email)) {
     throw new Error("Email is not valid!");
   }
 };
 
 export const validatePassword = (password: string): void => {
+  if(!password) {
+    throw new Error("password is required field");
+  }
   if (!validator.isStrongPassword(password)) {
     throw new Error("Please enter a strong password!");
   }
 };
 
 export const validateContactNo = (contactNo: string): void => {
+  if(!contactNo) {
+    throw new Error("contactNo is required field");
+  }
   if (!validator.isMobilePhone(contactNo)) {
     throw new Error("Contact number is not valid!");
   }
