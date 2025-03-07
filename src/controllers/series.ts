@@ -310,7 +310,6 @@ export const getSeriesByGenre = async (
           releaseDate: 1,
           rating: 1,
           poster: 1,
-          availableForStreaming: 1,
         },
       },
     ]);
@@ -355,8 +354,14 @@ export const getSeriesById = async (
         path: "reviews",
         options: { sort: { createdAt: -1 }, limit: 5 },
       })
-      .populate("casts")
-      .populate("directors")
+      .populate({
+        path: "casts",
+        select: "name",
+      })
+      .populate({
+        path: "directors",
+        select: "name",
+      })
       .exec();
 
     // if series not present
@@ -515,7 +520,6 @@ export const getMostLikedSeriesList = async (
           releaseDate: 1,
           rating: 1,
           poster: 1,
-          availableForStreaming: 1,
         },
       },
     ]);
@@ -540,6 +544,7 @@ export const getMostViewedSeriesList = async (
   res: Response
 ): Promise<void> => {
   try {
+    console.log("0");
     // Ensure that user is exists or not
     if (!req.user) {
       res.status(400).json({ message: "Access denied, Please login" });
@@ -590,7 +595,6 @@ export const getMostViewedSeriesList = async (
           releaseDate: 1,
           rating: 1,
           poster: 1,
-          availableForStreaming: 1,
         },
       },
     ]);
@@ -665,7 +669,6 @@ export const getTopRatedSeriesList = async (
           releaseDate: 1,
           rating: 1,
           poster: 1,
-          availableForStreaming: 1,
         },
       },
     ]);
@@ -740,7 +743,6 @@ export const getLatestReleasedSeriesList = async (
           releaseDate: 1,
           rating: 1,
           poster: 1,
-          availableForStreaming: 1,
         },
       },
     ]);
@@ -819,7 +821,6 @@ export const getPopularSeriesList = async (
           releaseDate: 1,
           rating: 1,
           poster: 1,
-          availableForStreaming: 1,
         },
       },
     ]);
@@ -922,8 +923,7 @@ export const getSeriesNamesAndIdBySearch = async (
     }
 
     // get page and limit from query parameters
-    const { searchStr = "" } = req.params;
-    let { page = "1", limit = "20" } = req.query;
+    let { searchStr = "", page = "1", limit = "20" } = req.query;
 
     // Convert parameters to numbers
     const pageNumber: number = parseInt(page as string, 10);
@@ -945,7 +945,7 @@ export const getSeriesNamesAndIdBySearch = async (
     // calculate the number for skip docs
     const skipDocNumber = (pageNumber - 1) * limitNumber;
 
-    const searchRegExp = new RegExp(searchStr, "i");
+    const searchRegExp = new RegExp(searchStr as string, "i");
 
     const seriesList = await Series.aggregate([
       {
