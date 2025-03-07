@@ -16,6 +16,8 @@ export const toggleLike = async (
 
     const { contentId, contentType } = req.body;
 
+    console.log(contentId, contentType);
+
     if (contentType !== "Movie" && contentType !== "Series") {
       return res.status(400).json({ message: "Invalid content  Type" });
     }
@@ -23,17 +25,16 @@ export const toggleLike = async (
       return res.status(400).json({ message: "Content ID are required" });
     }
 
+    console.log("1");
     // Check if the content is already liked
-    const likeInfo = await Like.findOne({
+    const likeInfo = await Like.findOneAndDelete({
       userId: user._id,
-      contentId,
-      contentType,
+      contentId: contentId,
+      contentType: contentType,
     });
+    console.log("2");
 
     if (likeInfo) {
-      // Unlike: Remove from like collection
-      await Like.findOneAndDelete({ _id: likeInfo._id });
-
       return res.status(200).json({ message: "Unliked successfully" });
     }
 

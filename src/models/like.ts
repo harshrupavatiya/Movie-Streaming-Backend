@@ -53,9 +53,11 @@ likeSchema.post("save", function () {
   }
 });
 
-likeSchema.post("findOneAndDelete", function (doc) {
-  if (doc.contentType === "Movie") {
-    Movie.findByIdAndUpdate(doc.contentId, { $inc: { likes: -1 } })
+likeSchema.post("findOneAndDelete", function () {
+  if ((this as any)._conditions.contentType === "Movie") {
+    Movie.findByIdAndUpdate((this as any)._conditions.contentId, {
+      $inc: { likes: -1 },
+    })
       .then(() => {
         console.log("like value decreamented successfully");
       })
@@ -66,8 +68,10 @@ likeSchema.post("findOneAndDelete", function (doc) {
         );
       });
   }
-  if (doc.contentType === "Seires") {
-    Series.findByIdAndUpdate(doc.contentId, { $inc: { likes: -1 } })
+  if ((this as any)._conditions.contentType === "Series") {
+    Series.findByIdAndUpdate((this as any)._conditions.contentId, {
+      $inc: { likes: -1 },
+    })
       .then(() => {
         console.log("like value decreamented successfully");
       })
@@ -77,6 +81,7 @@ likeSchema.post("findOneAndDelete", function (doc) {
           err
         );
       });
+    console.log("31");
   }
 });
 
