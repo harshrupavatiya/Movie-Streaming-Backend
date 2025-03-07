@@ -554,7 +554,7 @@ export const incrementMovieView = async (
 
     const updatedMovie = await Movie.findByIdAndUpdate(
       movieId,
-      { $inc: { viewCount: 1 } },
+      { $inc: { views: 1 } },
       { new: true }
     );
 
@@ -564,7 +564,7 @@ export const incrementMovieView = async (
 
     return res.status(200).json({
       message: "View count updated",
-      data: { viewCount: updatedMovie.views },
+      data: { views: updatedMovie.views },
     });
   } catch (error) {
     return res.status(500).json({
@@ -612,7 +612,7 @@ export const getMostViewedMoviesList = async (
     const moviesList = await Movie.aggregate([
       {
         $sort: {
-          viewCount: -1,
+          views: -1,
         },
       },
       {
@@ -718,6 +718,278 @@ export const getMostLikedMoviesList = async (
     }
 
     res.status(200).json({ message: "Most Liked Movies List", data: { moviesList } });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+//Search movies by title---------------------------------------------------------------------------
+export const searchMoviesByTitle = async (
+  req: AuthRequest,
+  res: Response
+): Promise<any> => {
+  try {
+    const { query } = req.query;
+
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Only for admin" });
+    }
+
+    const page = parseInt((req.query.page as string) || "1", 10);
+    const limit = parseInt((req.query.limit as string) || "10", 10);
+    const skip = (page - 1) * limit;
+
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({ message: "Query parameter is required" });
+    }
+
+    const movies = await Movie.find({
+      title: { $regex: `${query}`, $options: "i" },
+    })
+      .select("title poster description rating cast director")
+      .populate({ path: "cast", select: "name" })
+      .populate({ path: "director", select: "name" })
+      .skip(skip)
+      .limit(limit);
+
+    return res.status(200).json({
+      metadata: {
+        totalMovies: movies.length,
+        currentPage: page,
+        totalPages: Math.ceil(movies.length / limit),
+      },
+      data: movies,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: (error as Error).message });
+  }
+};
+
+//Top rated movies---------------------------------------------------------------------------
+export const getTopRatedMovies = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Ensure that user exists or not
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+      return;
+    }
+
+    // Get page and limit from query parameters
+    let { page = "1", limit = "10" } = req.query;
+
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    // Validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+
+    // Validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    // Calculate the number for skip docs
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const moviesList = await Movie.aggregate([
+      {
+        $sort: {
+          rating: -1,
+        },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          genres: 1,
+          languages: 1,
+          releaseDate: 1,
+          rating: 1,
+          poster: 1,
+          availableForStreaming: 1,
+          duration: 1,
+        },
+      },
+    ]);
+
+    if (!moviesList || moviesList.length <= 0) {
+      res.status(400).json({ message: "Data not available" });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ message: "Top Rated Movies List", data: { moviesList } });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+//Get Latest Movies---------------------------------------------------------------------------
+export const getLatestReleasedMovies = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+      return;
+    }
+
+    let { page = "1", limit = "10" } = req.query;
+
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const moviesList = await Movie.aggregate([
+      {
+        $sort: {
+          releaseDate: -1,
+        },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          genres: 1,
+          languages: 1,
+          releaseDate: 1,
+          rating: 1,
+          poster: 1,
+          availableForStreaming: 1,
+          duration: 1,
+        },
+      },
+    ]);
+
+    if (!moviesList || moviesList.length <= 0) {
+      res.status(400).json({ message: "Data not available" });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ message: "Latest Released Movies List", data: { moviesList } });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+//Popular Movies--------------------------------------------------------------------------------
+export const getPopularMoviesList = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+      return;
+    }
+
+    let { page = "1", limit = "10" } = req.query;
+
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (>0)" });
+      return;
+    }
+  
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const moviesList = await Movie.aggregate([
+      {
+        $match: {
+          rating: { $gte: 7.5 },
+          likes: { $gte: 10 },
+        }
+      },
+      {
+        $sort: { rating: -1, likes: -1 },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          genres: 1,
+          languages: 1,
+          releaseDate: 1,
+          rating: 1,
+          likes: 1,
+          poster: 1,
+          duration: 1,
+          availableForStreaming: 1,
+        },
+      },
+    ]);
+
+    if (!moviesList || moviesList.length <= 0) {
+      res.status(400).json({ message: "Data not available" });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ message: "Popular Movies List", data: { moviesList } });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
