@@ -1,12 +1,11 @@
 import express from "express";
-import { memberSubscription } from "../controllers/subscription";
-import { userAuth } from "../middlewares/Auth";
-import { stripeWebhook } from "../webhook/stripeWebhook";
+import { memberSubscription, verifyPayment } from "../controllers/subscription";
 
 const subscriptionRouter = express.Router()
 
+subscriptionRouter.get('/verifypayment', verifyPayment);
 subscriptionRouter.post('/memberSubscription', memberSubscription);
 
-subscriptionRouter.post('/stripeWebhook', stripeWebhook)
+// subscriptionRouter.post('/stripeWebhook', stripeWebhook)
 
 export default subscriptionRouter;
