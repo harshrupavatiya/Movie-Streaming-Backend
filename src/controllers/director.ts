@@ -15,7 +15,7 @@ export const searchDirectorByName = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { name } = req.body;
+    const { name } = req.query;
 
     if (!name || typeof name !== "string") {
       return res

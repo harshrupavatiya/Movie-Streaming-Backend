@@ -83,7 +83,7 @@ export interface IMovie extends Document {
   director?: mongoose.Types.ObjectId[];
   poster?: string;
   trailerUrl?: string;
-  viewCount: number;
+  views: number;
   movieUrl?: string;
   availableForStreaming?: boolean;
 }
