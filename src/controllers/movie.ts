@@ -94,14 +94,13 @@ export const createMovie = async (
     const movieId = newMovie._id;
 
     res.status(201).json({
-      message: "Movie created successfully",
-      data: { movie: newMovie },
+      message: "Movie created successfully"
     });
   } catch (err) {
     res.status(500).json({
       message: (err as Error).message,
     });
-  }
+  } 
 };
 
 //getAll Movie ----------------------------------------------------------------------------------------------
@@ -115,7 +114,7 @@ export const getAllMovies = async (req: AuthRequest, res: Response) => {
     // Fetching movies with important fields
     const movies = await Movie.find({})
       .populate({
-        path: "cast.castId",
+        path: "cast",
         select: "name",
       })
       .populate({
