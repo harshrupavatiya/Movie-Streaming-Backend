@@ -49,3 +49,11 @@
 -- pagination is there ,also takes page and limit(optional)
 
 
+## /cast (Only For Admin)
+
+- AddOrUpdate - /addOrUpdateCast -POST
+-- For Add -- body -> name 1* , gender 1 , prrofilePicture 4(if not added, default will be added) , dateOfBirth (in string, YYYY-MM-DD) , nationality 1
+-- For Update -- body -> castId (ObjectId in string)* , any field you want to update 
+
+- SearchName - /getCastName - POST
+  
