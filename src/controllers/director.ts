@@ -23,8 +23,10 @@ export const searchDirectorByName = async (
         .json({ message: "Name is required in string type" });
     }
 
+    const searchDirector = new RegExp(name.trim(), "i");
+
     const directorList = await Director.find({
-      name: { $regex: `^${name}`, $options: "i" },
+      name: searchDirector,
     }).select("name _id");
 
     if (directorList.length === 0) {
@@ -128,7 +130,6 @@ export const addOrUpdateDirector = async (
 
     return res.status(200).json({
       message: "Director information saved successfully",
-      data: { director: newDirector },
     });
   } catch (error) {
     return res.status(500).json({ message: (error as Error).message });
@@ -170,7 +171,6 @@ export const deleteDirector = async (
     return res.status(200).json({
       success: true,
       message: "Director deleted successfully",
-      data: { deletedDirector },
     });
   } catch (error) {
     return res.status(500).json({
