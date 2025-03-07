@@ -33,12 +33,14 @@ const movieSchema = new Schema<IMovie>(
       required: true,
       min: 0,
       max: 10,
+      index: true,
     },
     likes: {
       type: Number,
       required: true,
       default: 0,
       min: 0,
+      index: true,
     },
     reviews: [
       {
@@ -88,22 +90,6 @@ const movieSchema = new Schema<IMovie>(
   { timestamps: true }
 );
 
-movieSchema.post("save", async function () {
-  const movie = this;
-  if (movie.cast && movie.cast.length > 0) {
-    await Cast.updateMany(
-      { _id: { $in: movie.cast } },
-      { $push: { movies: movie._id } }
-    );
-  }
-  if (movie.director && movie.director.length > 0) {
-    await Director.updateMany(
-      { _id: { $in: movie.director } },
-      { $push: { movies: movie._id } }
-    );
-  }
-});
-
 movieSchema.pre("findOneAndDelete", async function (next) {
   const movie = await this.model.findOne(this.getQuery());
   if (movie) {
@@ -117,6 +103,22 @@ movieSchema.pre("findOneAndDelete", async function (next) {
     );
   }
   next();
+});
+
+movieSchema.post("save", async function () {
+  const movie = this;
+  if (movie.cast && movie.cast.length > 0) {
+    await Cast.updateMany(
+      { _id: { $in: movie.cast } },
+      { $addToSet: { movies: movie._id } }
+    );
+  }
+  if (movie.director && movie.director.length > 0) {
+    await Director.updateMany(
+      { _id: { $in: movie.director } },
+      { $addToSet: { movies: movie._id } }
+    );
+  }
 });
 
 const Movie: Model<IMovie> = mongoose.model<IMovie>("Movie", movieSchema);
