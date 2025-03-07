@@ -9,7 +9,6 @@ import { UploadedFile } from "express-fileupload";
 import fs from "fs";
 import { getValidCastPayload } from "../utils/getPayload";
 
-
 //Get searched Cast by name--------------------------------------------------------------------------------
 export const searchCastByName = async (
   req: AuthRequest,
@@ -22,9 +21,11 @@ export const searchCastByName = async (
       return res.status(400).json({ message: "Query parameter is required." });
     }
 
+    const search = new RegExp(query.trim(), "i");
+
     // Search for cast members whose names start with the given query
     const castList = await Cast.find({
-      name: { $regex: `^${query}`, $options: "i" },
+      name: search,
     }).select("name _id");
 
     if (castList.length <= 0) {
@@ -124,7 +125,6 @@ export const addOrUpdateCast = async (
 
     return res.status(200).json({
       message: "Cast information saved successfully",
-      data: { cast: newCast },
     });
   } catch (error) {
     return res.status(500).json({ message: (error as Error).message });
@@ -165,7 +165,6 @@ export const deleteCast = async (
 
     return res.status(200).json({
       message: "Cast member deleted successfully",
-      data: { deletedCast },
     });
   } catch (error) {
     return res.status(500).json({ message: (error as Error).message });
