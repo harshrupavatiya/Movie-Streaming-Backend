@@ -544,7 +544,6 @@ export const getMostViewedSeriesList = async (
   res: Response
 ): Promise<void> => {
   try {
-    console.log("0");
     // Ensure that user is exists or not
     if (!req.user) {
       res.status(400).json({ message: "Access denied, Please login" });
@@ -845,7 +844,7 @@ export const getSeriesListBySearch = async (
   res: Response
 ): Promise<void> => {
   try {
-    if (!req.user) {
+    if (req.user?.role !== "admin") {
       res.status(400).json({ message: "Access denied, Admins only" });
       return;
     }
