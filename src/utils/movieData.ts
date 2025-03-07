@@ -169,15 +169,18 @@ export const getEditMoviePayload = (reqBody: Partial<IMovieData>): Partial<IMovi
     }
     newPayload.cast = casts.map(cast => new mongoose.Types.ObjectId(cast));
   }
-
-  if (directors && directors.length > 0) {
-    const isDirId = directors.every(dir => isMongoId(dir.toString()));
-    if (!isDirId) {
-      throw new Error("Director object ids are invalid");
+  if (directors) {
+    // Convert to array if it's a single value
+    const directorsArray = Array.isArray(directors) ? directors : [directors];
+    
+    if (directorsArray.length > 0) {
+      const isDirId = directorsArray.every(dir => isMongoId(dir.toString()));
+      if (!isDirId) {
+        throw new Error("Director object ids are invalid");
+      }
+      newPayload.director = directorsArray.map(dir => new mongoose.Types.ObjectId(dir));
     }
-    newPayload.director = directors.map(dir => new mongoose.Types.ObjectId(dir));
   }
-  
   newPayload.availableForStreaming = availableForStreaming || true;
 
   return newPayload;
