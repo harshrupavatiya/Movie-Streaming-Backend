@@ -5,7 +5,6 @@ import { AuthRequest } from "../types/api";
 const seriesRouter = express.Router();
 
 
-seriesRouter.get("/get/:seriesId", userAuth, getSeriesById);
 seriesRouter.get("/genre/:genre", userAuth, getSeriesByGenre);
 
 seriesRouter.get("/mostLiked", userAuth, getMostLikedSeriesList);
@@ -26,5 +25,6 @@ seriesRouter.post("/create", userAuth, createSeries);
 seriesRouter.delete("/delete/:seriesId", userAuth, deleteSeries);
 seriesRouter.put("/update", userAuth, updateSeries);
 
+seriesRouter.get("/get/:seriesId", userAuth, getSeriesById);
 
 export default seriesRouter;  

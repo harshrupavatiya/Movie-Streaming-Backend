@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { ISeries } from "../types/db.model";
 import {
+  isValidISOBirthDate,
   isValidISODate,
   validateContentTitle,
   validateGenres,
@@ -64,7 +65,7 @@ export const getSeriesPayload = (reqBody: ISeriesData): Partial<ISeries> => {
   validateLanguage(languages);
   newPayload.languages = languages;
 
-  isValidISODate(releaseDate);
+  isValidISOBirthDate(releaseDate);
   newPayload.releaseDate = new Date(releaseDate);
 
   if (rating) {
@@ -159,7 +160,7 @@ export const getEditSeriesPayload = (
   }
 
   if (releaseDate) {
-    isValidISODate(releaseDate);
+    isValidISOBirthDate(releaseDate);
     newPayload.releaseDate = new Date(releaseDate);
   }
 
