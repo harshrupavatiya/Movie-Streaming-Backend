@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
 import dotenv from "dotenv";
+import User from "../models/user";
+
 import STRIPE_PRICE_IDS from '../config/stripe';
 
 dotenv.config();
@@ -50,7 +52,11 @@ export const memberSubscription = async (
             // Step 4: Create a new customer 
             customer = await stripe.customers.create({
                 email: user.email,
-                metadata: { userID: user.ID },
+                metadata: {
+                    userId: user.ID,
+                    billingCycle: billingCycle,
+                    tier: tier
+                },
             });
         }
 
@@ -71,7 +77,11 @@ export const memberSubscription = async (
                     quantity: 1,
                 },
             ],
-            metadata: { userId: user.ID },
+            metadata: {
+                userId: user.ID,
+                billingCycle: billingCycle,
+                tier: tier
+            },
             customer: customer.id,
             billing_address_collection: "required", // ✅ Requires user to enter address
             customer_update: { address: "auto" },
@@ -79,6 +89,7 @@ export const memberSubscription = async (
 
         const session = await stripe.checkout.sessions.create(sessionConfig);
         if (session) {
+            console.log(session, "here")
             return res.json({ id: session.id });
         }
     } catch (error: unknown) {
@@ -88,29 +99,57 @@ export const memberSubscription = async (
         });
     }
 };
+export const verifyPayment = async (req: Request, res: Response): Promise<string | any> => {
+    const { session_id } = req.query;
 
+    if (!session_id || typeof session_id !== "string") {
+        return res.status(400).json({ success: false, message: "Valid session ID string is required" });
+        // ✅ Added return to stop further execution
+    }
 
-// export const verifyPayment = async (
-//     req: Request,
-//     res: Response
-// ): Promise<Response | any> => {
-//     const { session_id } = req.query;
+    try {
+        const session = await stripe.checkout.sessions.retrieve(session_id as string);
 
-//     if (!session_id) {
-//         return res.status(400).json({ success: false, message: "Session ID is required" });
-//     }
+        console.log(session, "line 108");
 
-//     try {
-//         const session = await stripe.checkout.sessions.retrieve(session_id);
+        if (session.payment_status === "paid") {
+            console.log("Status is paid");
 
-//         if (session.payment_status === "paid") {
-//             // Update user subscription in the database
-//             return res.json({ success: true, message: "Payment successful!" });
-//         } else {
-//             return res.json({ success: false, message: "Payment not completed." });
-//         }
-//     } catch (error) {
-//         console.error("Error verifying payment:", error);
-//         return res.status(500).json({ success: false, message: "Error verifying payment" });
-//     }
-// };
+            // Extract user ID, tier, and billing cycle from metadata
+            const userId = session.metadata?.userId;
+            const tier = session.metadata?.tier;
+            const billingCycle = session.metadata?.billingCycle;
+
+            if (!userId || !tier || !billingCycle) {
+                console.error("Missing metadata in session");
+                return res.status(400).json({ success: false, message: "Missing subscription data" });
+
+            }
+
+            // Calculate new subscription dates
+            const startDate = new Date();
+            const endDate = billingCycle === "monthly"
+                ? new Date(new Date().setMonth(new Date().getMonth() + 1)) // Add 1 month
+                : new Date(new Date().setFullYear(new Date().getFullYear() + 1)); // Add 1 year
+
+            // Update the user's subscription in the database
+            await User.findByIdAndUpdate(userId, {
+                $set: {
+                    "subscription.plan": tier,
+                    "subscription.billingCycle": billingCycle,
+                    "subscription.startDate": startDate,
+                    "subscription.endDate": endDate,
+                    "subscription.stripeSessionId": session.id,
+                },
+            });
+
+            return res.json({ success: true, message: "Payment successful and subscription updated!" });
+        } else {
+            console.log("Status is not paid");
+            return res.json({ success: false, message: "Payment not completed." });
+        }
+    } catch (error) {
+        console.error("Error verifying payment:", error);
+        return res.status(500).json({ success: false, message: "Error verifying payment" });
+    }
+};

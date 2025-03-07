@@ -63,11 +63,23 @@ const userSchema = new Schema<IUser>(
         enum: ["free", "basic", "premium"],
         default: "free",
       },
+      billingCycle: {
+        type: String,
+        enum: ["monthly", "yearly", ""], // "" for free users
+        default: "",
+      },
+      purchaseDate: {
+        type: Date, // When the subscription was bought
+      },
       startDate: {
-        type: Date,
+        type: Date, // When the subscription starts
       },
       endDate: {
-        type: Date,
+        type: Date, // When the subscription expires
+      },
+      stripeSessionId: {
+        type: String,
+        default: "",
       },
     },
     watchlist: [
