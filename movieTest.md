@@ -52,8 +52,36 @@
 ## /cast (Only For Admin)
 
 - AddOrUpdate - /addOrUpdateCast -POST
--- For Add -- body -> name 1* , gender 1 , prrofilePicture 4(if not added, default will be added) , dateOfBirth (in string, YYYY-MM-DD) , nationality 1
+-- For Add -- body -> name 1* , gender 1 , profilePicture 4(if not added, default will be added) , dateOfBirth (in string, YYYY-MM-DD) , nationality 1
 -- For Update -- body -> castId (ObjectId in string)* , any field you want to update 
 
-- SearchName - /getCastName - POST
+- SearchName - /getCastName - GET
+-- send name of cast by **query** field name in params 
+
+- Delete - /deleteCast/:castId - DELETE
+-- you have to send castId(ObjectId) instead of :castId
+
+
+## /director (Only for admin)
+
+- AddOrUpdate - /addOrUpdate - POST
+-- For Add -- body -> name 1*, gender 1, dateOfBirth (in string, YYYY-MM-DD)  ,nationality 1 , profilePicture 4(if not added, default will be added)
   
+-- For Update -- body -> directorId(ObjectId in string)* , any field you want to update 
+
+- SearchName - /getDirectorNames - GET
+-- send name of director by **name** field name in params 
+
+- Delete - //delete/:directorId - DELETE
+-- you have to send directorId(ObjectId) instead of :directorId
+
+
+## /search (For Users) (Movie/Series/Cast/Director)
+
+- Search - / - GET(Gives List of Movies and Series)
+-- send search query by **search** field name in params 
+
+
+
+
+

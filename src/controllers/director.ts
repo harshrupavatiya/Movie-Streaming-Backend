@@ -13,30 +13,34 @@ import { getValidDirectorPayload } from "../utils/getPayload";
 export const searchDirectorByName = async (
   req: AuthRequest,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
     const { name } = req.query;
 
     if (!name || typeof name !== "string") {
-      return res
-        .status(400)
-        .json({ message: "Name is required in string type" });
+      res.status(400).json({ message: "Name is required in string type" });
+      return;
     }
 
+    const searchDirector = new RegExp(name.trim(), "i");
+
     const directorList = await Director.find({
-      name: { $regex: `^${name}`, $options: "i" },
+      name: searchDirector,
     }).select("name _id");
 
     if (directorList.length === 0) {
-      return res.status(404).json({ message: "No matching Director found." });
+      res.status(404).json({ message: "No matching Director found." });
+      return;
     }
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Director list matching the search query",
       data: { directorList },
     });
+    return;
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    res.status(500).json({ message: (error as Error).message });
+    return;
   }
 };
 
@@ -44,11 +48,12 @@ export const searchDirectorByName = async (
 export const addOrUpdateDirector = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     // Check if the user is an admin
     if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only." });
+      res.status(403).json({ message: "Access denied. Admins only." });
+      return;
     }
 
     const { directorId } = req.body;
@@ -116,22 +121,24 @@ export const addOrUpdateDirector = async (
       Object.assign(existingDirector, directorPayload);
       await existingDirector.save();
 
-      return res.status(200).json({
+      res.status(200).json({
         message: "Director data updated successfully",
         data: { director: existingDirector },
       });
+      return;
     }
 
     // create new director data (because director info not present in DB)
     const newDirector = new Director(directorPayload);
     await newDirector.save();
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Director information saved successfully",
-      data: { director: newDirector },
     });
+    return;
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    res.status(500).json({ message: (error as Error).message });
+    return;
   }
 };
 
@@ -139,11 +146,12 @@ export const addOrUpdateDirector = async (
 export const deleteDirector = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     // Check if the user is an admin
-    if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only." });
+    if (req?.user?.role !== "admin") {
+      res.status(403).json({ message: "Access denied. Admins only." });
+      return;
     }
 
     const { directorId } = req.params;
@@ -152,7 +160,8 @@ export const deleteDirector = async (
     const deletedDirector = await Director.findByIdAndDelete(directorId);
 
     if (!deletedDirector) {
-      return res.status(404).json({ message: "Director not found." });
+      res.status(404).json({ message: "Director not found." });
+      return;
     }
 
     // Remove director reference from any associated movies
@@ -167,15 +176,16 @@ export const deleteDirector = async (
       { $pull: { director: { directorId } } }
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Director deleted successfully",
-      data: { deletedDirector },
     });
+    return;
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: (error as Error).message,
     });
+    return;
   }
 };
