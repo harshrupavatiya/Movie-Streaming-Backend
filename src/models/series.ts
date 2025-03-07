@@ -90,7 +90,6 @@ seriesSchema.pre("findOneAndDelete", async function (next) {
 
 seriesSchema.post("save", async function () {
   const series = this;
-  console.log("series: ", series);
 
   if (series.casts && series.casts.length > 0) {
     Promise.all(

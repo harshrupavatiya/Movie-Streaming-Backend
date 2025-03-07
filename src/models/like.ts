@@ -13,12 +13,12 @@ const likeSchema = new Schema<ILike>(
     contentId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      refPath: "contentType", // Dynamic reference to either Movie or Series
+      refPath: "contentType",
     },
     contentType: {
       type: String,
       required: true,
-      enum: ["Movie", "Series"],
+      enum: ["Movie", "Series", "Episode"],
     },
   },
   { timestamps: true }

@@ -9,6 +9,7 @@ const castSchema = new Schema<ICast>(
       trim: true,
       minLength: 2,
       maxLength: 50,
+      index: true,
     },
     gender: {
       type: String,

@@ -45,13 +45,15 @@ export const toggleLike = async (
     });
     await newLike.save();
 
-    return res.status(201).json({ 
+    return res.status(201).json({
       success: true,
-      message: "Liked successfully" });
+      message: "Liked successfully",
+    });
   } catch (err) {
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
-      message: (err as Error).message });
+      message: (err as Error).message,
+    });
   }
 };
 
