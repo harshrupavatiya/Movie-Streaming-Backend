@@ -9,7 +9,7 @@ export const toggleWatchlist = async (
 ): Promise<string | any> => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized access" });
     }
 
     const { contentId, contentType } = req.body;
