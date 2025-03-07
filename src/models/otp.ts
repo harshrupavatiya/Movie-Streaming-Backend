@@ -22,7 +22,7 @@ const otpSchema = new Schema<IOTP>({
 // a function -->send emails
 async function sendVerificationEmail(email: string, otp: number):Promise<void> {
   try {
-    await mailSender(
+    mailSender(
       email,
       "OTP verification from Filmster",
       otpTemplate(otp)
