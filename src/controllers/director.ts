@@ -142,7 +142,7 @@ export const deleteDirector = async (
 ): Promise<string | any> => {
   try {
     // Check if the user is an admin
-    if (!req.user || req.user.role !== "admin") {
+    if (req?.user?.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 

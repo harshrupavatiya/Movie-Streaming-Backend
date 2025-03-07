@@ -101,39 +101,15 @@ export const searchContent = async (req: Request, res: Response) : Promise<any>=
       },
     ]);
 
-    // Add a type identifier
-    const formattedMovies = movies.map((movie) => ({
-      ...movie,
-      type: "Movie",
-    }));
-
-    const formattedSeries = series.map((series) => ({
-      ...series,
-      type: "Series",
-    }));
-
-    const formattedMoviesByCastOrDirector = moviesByCastOrDirector.map((movie) => ({
-      ...movie,
-      type: "Movie (by Cast/Director)",
-    }));
-
-    const formattedSeriesByCastOrDirector = seriesByCastOrDirector.map((series) => ({
-      ...series,
-      type: "Series (by Cast/Director)",
-    }));
-
-    // Combine all results
-    const results = [
-      ...formattedMovies,
-      ...formattedSeries,
-      ...formattedMoviesByCastOrDirector,
-      ...formattedSeriesByCastOrDirector,
-    ];
-
     return res.status(200).json({
       success: true,
       message: "Search Results",
-      data: results,
+      data: {
+        movieList: movies,
+        seriesList: series,
+        castAndDirectorWiseMovie: moviesByCastOrDirector,
+        castAndDirectorWiseSeries: seriesByCastOrDirector,
+      },
     });
   } catch (err) {
     return res.status(500).json({

@@ -5,7 +5,7 @@ import { addEpisode, deleteEpisode, updateEpisode } from "../controllers/episode
 const episodeRouter = express.Router();
 
 episodeRouter.post("/add", userAuth, addEpisode);
-episodeRouter.delete("/delete", userAuth, deleteEpisode);
+episodeRouter.delete("/delete/:episodeId", userAuth, deleteEpisode);
 episodeRouter.put("/update", userAuth, updateEpisode);
 
 export default episodeRouter;
