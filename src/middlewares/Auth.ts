@@ -15,7 +15,8 @@ export const userAuth = async (
 
     // If token not present in cookies
     if (!token) {
-      return res.status(401).json({ message: "Please Login" });
+      res.status(401).json({ message: "Please Login" });
+      return;
     }
 
     // Decoding token
@@ -31,13 +32,20 @@ export const userAuth = async (
 
     // If user is not present
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      res.status(400).json({ message: "User not found" });
+      return;
+    }
+
+    if (!user.isActive) {
+      res.status(500).json({ message: "Access denied, user is inactive" });
+      return;
     }
 
     // Passing user info to the next controller
     req.user = user;
     next();
-  } catch (err: any) {
-    res.status(400).json({ message: err.message });
+  } catch (err) {
+    res.status(400).json({ message: (err as Error).message });
+    return;
   }
 };

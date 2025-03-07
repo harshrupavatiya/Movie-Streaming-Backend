@@ -15,6 +15,8 @@ import { Frontend_Base_URL } from "../utils/constants";
 import mailSender from "../utils/mailSender";
 import { forgotPassTemplate } from "../utils/mailTemplates";
 import jwt from "jsonwebtoken";
+import ForgotPasswordToken from "../models/forgotPasswordToken";
+import { generateResetToken } from "../utils/generateToken";
 
 // LOGIN--------------------------------------------------------------------------------------------------
 // add validators
@@ -47,60 +49,18 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    const { _id, name, contactNo } = user;
-
     return res.status(200).json({
       message: "Login Successfully",
       data: {
         userData: {
-          _id,
-          name,
-          email,
-          contactNo,
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          contactNo: user.contactNo,
+          role: user.role,
         },
       },
     });
-  } catch (err: any) {
-    return res.status(500).json({ message: err.message });
-  }
-};
-
-// SIGNUP-------------------------------------------------------------------------------------------------
-export const signUp = async (
-  req: Request,
-  res: Response
-): Promise<Response | any> => {
-  try {
-    // Validate signup data
-    validateSignUpData(req.body);
-
-    // Extract user details
-    const { name, email, contactNo, password, otp } = req.body;
-
-    // validate otp
-    const otpInfo: IOTP | null = await OTP.findOne({ otp: otp });
-
-    if (!otpInfo) {
-      return res.status(500).json({ message: "Invalid OTP" });
-    }
-
-    // validating Email
-    if (otpInfo.email !== email) {
-      return res.status(500).json({ message: "Incorrect Email" });
-    }
-
-    // Password encryption
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    await User.create({
-      name,
-      email,
-      contactNo,
-      password: hashedPassword,
-    });
-
-    return res.status(200).json({ message: "SignUp successfully" });
   } catch (err: any) {
     return res.status(500).json({ message: err.message });
   }
@@ -145,8 +105,6 @@ export const generateOTP = async (
       otpInfo = await OTP.findOne({ otp: numericOtp });
     }
 
-    console.log("Generated OTP:", numericOtp);
-
     await OTP.create({
       email,
       otp: numericOtp,
@@ -155,6 +113,47 @@ export const generateOTP = async (
     res.status(200).json({ message: "OTP generated successfully" });
   } catch (err) {
     return res.status(500).json({ message: (err as Error).message });
+  }
+};
+
+// SIGNUP-------------------------------------------------------------------------------------------------
+export const signUp = async (
+  req: Request,
+  res: Response
+): Promise<Response | any> => {
+  try {
+    // Validate signup data
+    validateSignUpData(req.body);
+
+    // Extract user details
+    const { name, email, contactNo, password, otp } = req.body;
+
+    // validate otp
+    const otpInfo: IOTP | null = await OTP.findOne({ otp: otp });
+
+    if (!otpInfo) {
+      return res.status(500).json({ message: "Invalid OTP" });
+    }
+
+    // validating Email
+    if (otpInfo.email !== email) {
+      return res.status(500).json({ message: "Incorrect Email" });
+    }
+
+    // Password encryption
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    await User.create({
+      name,
+      email,
+      contactNo,
+      password: hashedPassword,
+    });
+
+    return res.status(200).json({ message: "SignUp successfully" });
+  } catch (err: any) {
+    return res.status(500).json({ message: err.message });
   }
 };
 
@@ -184,22 +183,26 @@ export const sendMailResetPassword = async (
       return res.status(400).json({ message: "User not found" });
     }
 
-    // get JWT token for reset password
-    const resetPassToken = await user.getJWT(
-      JWT_RESET_PASS_SECRET as string,
-      "1h"
-    );
+    let resetPassToken = generateResetToken();
 
-    // create frontend link for reset password
-    const resetPassLink =
-      Frontend_Base_URL + `/reset-password?token=${resetPassToken}`;
+    let isTokenExists = await ForgotPasswordToken.findOne({
+      token: resetPassToken,
+    });
 
-    // send mail with Reset Password Link
-    mailSender(
+    while (isTokenExists) {
+      resetPassToken = generateResetToken();
+
+      isTokenExists = await ForgotPasswordToken.findOne({
+        token: resetPassToken,
+      });
+    }
+
+    const forgotPassToken = new ForgotPasswordToken({
+      token: resetPassToken,
+      userId: user._id,
       email,
-      "Reset password of your Filmster account",
-      forgotPassTemplate(resetPassLink as string)
-    );
+    });
+    await forgotPassToken.save();
 
     return res
       .status(200)
@@ -224,16 +227,18 @@ export const resetPassword = async (
       return res.status(400).json({ message: "Token invalid" });
     }
 
-    // Decoding token
-    const decodedObj = jwt.verify(token, JWT_RESET_PASS_SECRET as string) as {
-      _id: string;
-    };
+    const forgotPassToken = await ForgotPasswordToken.findOne({
+      token,
+    });
 
-    // Extract UserID from decoded token
-    const { _id } = decodedObj;
+    if (!forgotPassToken) {
+      res.status(400).json({ message: "Invalid Public token" });
+      return;
+    }
+    const { userId } = forgotPassToken;
 
     // Finding user in collection
-    const user = await User.findById(_id);
+    const user = await User.findById(userId.toString());
 
     // If user is not present
     if (!user) {

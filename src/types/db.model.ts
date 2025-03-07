@@ -49,6 +49,7 @@ export interface IUser extends Document {
   likedContent: ILikedContent[];
   continueWatching: IContinueWatching[]; // Added this field
   role: "user" | "admin";
+  isActive: boolean;
   getJWT(secret: string, duration: StringValue): Promise<string>;
   validatePassword(passwordInputByUser: string): Promise<boolean>;
 }
@@ -57,6 +58,13 @@ export interface IUser extends Document {
 export interface IOTP extends Document {
   email: string;
   otp: number;
+  createdAt: Date;
+}
+
+export interface IForgotPasswordToken extends Document {
+  userId: mongoose.Types.ObjectId;
+  token: string;
+  email: string;
   createdAt: Date;
 }
 
@@ -108,6 +116,7 @@ export interface ISeries extends Document {
   poster?: string;
   trailerUrl?: string;
   availableForStreaming?: boolean;
+  isLiked?: boolean;
 }
 
 // upcomingContent
