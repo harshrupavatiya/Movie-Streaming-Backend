@@ -8,25 +8,20 @@ export const updateWatchProgress = async (
   res: Response
 ): Promise<string | any> => {
   try {
-    const user = req.user;
+    const existingUser = req.user;
 
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+    if (!existingUser) return res.status(404).json({ message: "User not found" });
 
     //Progress will be stored in seconds(easier to calculate)
     const { contentId, contentType, progress } = req.body;
 
-    if (!contentId || !contentType || progress === undefined) {
+    if (!contentId || progress === undefined) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (contentType !== "Movie" && contentType !== "Series" && contentType !== "Episode") {
+    if (contentType !== "Movie" && contentType !== "Episode") {
       return res.status(400).json({ message: "Invalid content type" });
     }
-
-    const existingUser = await User.findById(user._id);
-    if (!existingUser) return res.status(404).json({ message: "User not found" });
 
     const index = existingUser.continueWatching.findIndex(
       (item) => item.contentId.toString() === contentId
@@ -48,7 +43,6 @@ export const updateWatchProgress = async (
   }
 };
 
-//TODO: Test for episode after Series API is completed
 // Get Continue Watching List
 export const getContinueWatching = async (
     req: AuthRequest,
