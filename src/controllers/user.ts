@@ -138,8 +138,13 @@ export const getUserList = async (
   res: Response
 ): Promise<void> => {
   try {
+    // check user is admin
+    if (req.user?.role !== "admin") {
+      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      return;
+    }    
+
     // get page and limit from query parameters
-    // let { search = "" } = req.params;
     let { search = "", page = "1", limit = "20" } = req.query;
 
     // Convert parameters to numbers
@@ -276,6 +281,11 @@ export const toggleUserIsActive = async (
       return;
     }
 
+    if(user.role === "admin") {
+      res.status(400).json({ message: "Access Denied, Admin can suspend only users"});
+      return;
+    }
+
     if (user.isActive === isActive) {
       res.status(400).json({
         message: `User is already ${isActive ? "active" : "inActive"}`,
@@ -329,5 +339,3 @@ export const getUserInfo = async (
     return;
   }
 };
-
-// TODO: watchlist & liked content get API
