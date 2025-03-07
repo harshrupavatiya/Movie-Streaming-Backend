@@ -8,6 +8,7 @@ import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
 import { isNumeric } from "validator";
 import Episode from "../models/episode";
+import Like from "../models/like";
 
 // // Get All series---------------------------------------------------------------------------------------
 // export const getAllSeries = async (
@@ -80,7 +81,6 @@ import Episode from "../models/episode";
 //   }
 // };
 
-
 // // Search Series By Title---------------------------------------------------------------------------------------
 // export const searchSeriesByTitle = async (
 //   req: Request,
@@ -114,7 +114,6 @@ import Episode from "../models/episode";
 //     });
 //   }
 // };
-
 
 export const addSeries = async (
   req: AuthRequest,
@@ -485,6 +484,10 @@ export const getSeriesById = async (
       },
     ]);
 
+    const isLiked= await Like.findOne({ userId: req.user?._id.toString(), contentId: seriesId, contentType: "Series"});
+
+    series.isLiked = isLiked ? true : false;
+
     res.status(200).json({
       message: `Series ${series?.title} is here`,
       data: {
@@ -650,8 +653,8 @@ export const getTopRatedSeriesList = async (
   res: Response
 ): Promise<void> => {
   try {
-     // Ensure that user is exists or not
-     if (!req.user) {
+    // Ensure that user is exists or not
+    if (!req.user) {
       res.status(400).json({ message: "Access denied, Please login" });
     }
 
@@ -723,8 +726,8 @@ export const getLatestReleasedSeriesList = async (
   res: Response
 ): Promise<void> => {
   try {
-     // Ensure that user is exists or not
-     if (!req.user) {
+    // Ensure that user is exists or not
+    if (!req.user) {
       res.status(400).json({ message: "Access denied, Please login" });
     }
 
@@ -754,7 +757,7 @@ export const getLatestReleasedSeriesList = async (
     const seriesList = await Series.aggregate([
       {
         $sort: {
-          createdAt: -1,
+          releaseDate: -1,
         },
       },
       {
@@ -829,7 +832,7 @@ export const getPopularSeriesList = async (
         $match: {
           rating: { $gte: 7.5 },
           likes: { $gte: 10 },
-        }
+        },
       },
       {
         $sort: { rating: -1, likes: -1 },
@@ -868,18 +871,144 @@ export const getPopularSeriesList = async (
   }
 };
 
-export const getSeriesListBySearch = async(req: AuthRequest, res: Response): Promise<void> => {
+export const getSeriesListBySearch = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
-
-    if(req.user?.role !== "admin") {
-      res.status(400).json({ message: "Access denied, Admins only"});
+    if (req.user?.role !== "admin") {
+      res.status(400).json({ message: "Access denied, Admins only" });
       return;
     }
 
-    
+    // get page and limit from query parameters
+    const { searchStr = "" } = req.params;
+    let { page = "1", limit = "20" } = req.query;
 
-  } catch(err) {
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    // validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+    // validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    // calculate the number for skip docs
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const searchRegExp = new RegExp(searchStr, "i");
+
+    const seriesList = await Series.aggregate([
+      {
+        $match: {
+          title: searchRegExp,
+        },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          rating: 1,
+          poster: 1,
+          casts: 1,
+          directors: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      message: "searched series List for admin",
+      data: {
+        seriesList,
+      },
+    });
+    return;
+  } catch (err) {
     res.status(500).json({ message: (err as Error).message });
     return;
   }
-}
+};
+
+export const getSeriesNamesAndIdBySearch = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (req.user?.role !== "admin") {
+      res.status(400).json({ message: "Access denied, Admins only" });
+      return;
+    }
+
+    // get page and limit from query parameters
+    const { searchStr = "" } = req.params;
+    let { page = "1", limit = "20" } = req.query;
+
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    // validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+    // validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    // calculate the number for skip docs
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const searchRegExp = new RegExp(searchStr, "i");
+
+    const seriesList = await Series.aggregate([
+      {
+        $match: {
+          title: searchRegExp,
+        },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          _id: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      message: "searched series Name and ID for admin",
+      data: {
+        seriesList,
+      },
+    });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};

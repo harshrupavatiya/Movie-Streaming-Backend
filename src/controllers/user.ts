@@ -1,12 +1,13 @@
 import { Response } from "express";
 import { AuthRequest } from "../types/api";
-import { validatePassword } from "../validators/inputValidators";
+import { validateName, validatePassword } from "../validators/inputValidators";
 import bcrypt from "bcrypt";
 import { getValidUserUpdatePayload } from "../utils/getPayload";
 import { UploadedFile } from "express-fileupload";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
 import { validateFileContent } from "../validators/mediaFile";
+import User from "../models/user";
 
 export const changePassword = async (
   req: AuthRequest,
@@ -23,7 +24,7 @@ export const changePassword = async (
     // user from middleware
     const user = req.user;
 
-    if(!user) {
+    if (!user) {
       throw new Error("User not found in middleware");
     }
 
@@ -61,13 +62,15 @@ export const editProfile = async (
     const file = req?.files?.image as UploadedFile;
 
     // if file is not present and editData also empty
-    if(!file && Object.keys(editData).length === 0 ) {
-      throw new Error("Atleast one field required to update the data");
+    if (!file && Object.keys(editData).length === 0) {
+      res
+        .status(400)
+        .json({ message: "Atleast one field required to update the data" });
     }
 
     // Upload the image to Cloudinary
     let result = null;
-    if(file) {
+    if (file) {
       // validating file type
       validateFileContent(file.mimetype, "image");
 
@@ -87,23 +90,31 @@ export const editProfile = async (
     const profilePicture = result?.secure_url || null;
 
     // if url not generated
-    if(file && !profilePicture) {
-      throw new Error("Something went wrong while uploading Image");
+    if (file && !profilePicture) {
+      res
+        .status(400)
+        .json({ message: "Something went wrong while uploading Image" });
+      return;
     }
 
     // add profilePicture field in editData(if profilePicture is notNull)
-    if(profilePicture) {
+    if (profilePicture) {
       editData.profilePicture = profilePicture;
     }
-    if(Object.keys(editData).length === 0 ) {
-      throw new Error("It seems like we are getting an error while updating profile Image");
+    if (Object.keys(editData).length === 0) {
+      res.status(400).json({
+        message:
+          "It seems like we are getting an error while updating profile Image",
+      });
+      return;
     }
 
     // get user from request(via middleware - userAuth)
     const user = req.user;
 
-    if(!user) {
-      throw new Error("It seems like User not found");
+    if (!user) {
+      res.status(400).json({ message: "It seems like User not found" });
+      return;
     }
 
     // assign updatedField to user model
@@ -111,20 +122,212 @@ export const editProfile = async (
     // saving updated user model
     await user.save();
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "User details updated successfully",
       data: { user },
     });
-
+    return;
   } catch (err) {
-    return res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
+    return;
   }
 };
 
-export const createAdmin = async (req: AuthRequest, res: Response) => {
+export const getUserList = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
-    // TODO: all
+    // get page and limit from query parameters
+    // let { search = "" } = req.params;
+    let { search = "", page = "1", limit = "20" } = req.query;
+
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    // validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+    // validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+    if (search !== "") {
+      validateName(search as string);
+    }
+
+    // calculate the number for skip docs
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    // If search params is notEmpty
+    if (search !== "") {
+      const searchRegExp = new RegExp(search as string, "i");
+      const userList = await User.find({ name: searchRegExp })
+        .select("name email contactNo subscription.plan role isActive")
+        .skip(skipDocNumber)
+        .limit(limitNumber);
+
+      if (!userList || userList.length <= 0) {
+        res.status(400).json({ message: "No data found" });
+        return;
+      }
+
+      res.status(200).json({
+        message: `User List of page: ${pageNumber}, pageSize: ${limitNumber}`,
+        data: { userList },
+      });
+      return;
+    }
+
+    // If search params is Empty
+    const userList = await User.find({})
+      .select("name email contactNo subscription.plan role isActive")
+      .skip(skipDocNumber)
+      .limit(limitNumber);
+
+    if (!userList || userList.length <= 0) {
+      res.status(400).json({ message: "No data found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: `User List of page: ${pageNumber}, pageSize: ${limitNumber}`,
+      data: { userList },
+    });
+    return;
   } catch (err) {
-    return res.status(500).json({ message: (err as Error).message });
+    res.status(500).json({ message: (err as Error).message });
+    return;
   }
 };
+
+export const createAdmin = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // check user is admin
+    if (req.user?.role !== "admin") {
+      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      return;
+    }
+
+    // get user ID
+    const { userId } = req.body;
+
+    // update user details and get updated userInfo
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { role: "admin" },
+      { new: true }
+    );
+
+    // if userInfo is null so userId is not valid
+    if (!updatedUser) {
+      res.status(400).json({ message: "Invalid UserId" });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ message: `User ${updatedUser.name} became Admin successfully.` });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+export const toggleUserIsActive = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // check user is admin
+    if (req.user?.role !== "admin") {
+      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      return;
+    }
+
+    // get userId and active status
+    const { userId, isActive } = req.body;
+
+    // validate input types
+    if (typeof isActive !== "boolean" || typeof userId !== "string") {
+      res.status(400).json({
+        message:
+          "Invalid data, isActive shold be boolean and userId should be string",
+      });
+      return;
+    }
+
+    // update user and get updated userInfo
+    const user = await User.findById(userId);
+
+    // if userInfo is null means userId is invalid
+    if (!user) {
+      res.status(500).json({ message: "user not exist with given userId" });
+      return;
+    }
+
+    if (user.isActive === isActive) {
+      res.status(400).json({
+        message: `User is already ${isActive ? "active" : "inActive"}`,
+      });
+      return;
+    }
+
+    user.isActive = isActive;
+    await user.save();
+
+    res
+      .status(200)
+      .json({ message: `User is now ${isActive ? "active" : "inActive"}` });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+export const getUserInfo = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const user = req.user;
+    if (!user) {
+      res.status(400).json({ message: "user not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "User Information",
+      data: {
+        user: {
+          _id: user._id,
+          email: user.email,
+          contactNo: user.contactNo,
+          profilePicture: user.profilePicture,
+          dateOfBirth: user.dateOfBirth,
+          gender: user.gender,
+          subscriptionPlan: user.subscription?.plan,
+          role: user.role,
+          isActive: user.isActive,
+        },
+      },
+    });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+// TODO: watchlist & liked content get API

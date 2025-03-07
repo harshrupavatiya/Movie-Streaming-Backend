@@ -10,6 +10,7 @@ const movieSchema = new Schema<IMovie>(
       required: true,
       trim: true,
       maxLength: 254,
+      index: true,
     },
     description: {
       type: String,
@@ -58,6 +59,7 @@ const movieSchema = new Schema<IMovie>(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Director",
+        required: true,
       },
     ],
     languages: [
@@ -71,6 +73,10 @@ const movieSchema = new Schema<IMovie>(
     trailerUrl: {
       type: String,
     },
+    views: {
+      type: Number,
+      default: 0,
+    },
     movieUrl: {
       type: String,
     },
@@ -82,21 +88,37 @@ const movieSchema = new Schema<IMovie>(
   { timestamps: true }
 );
 
-  movieSchema.post("save", async function () {
-    const movie = this;
-    if (movie.cast){ 
-      await Cast.updateMany(
+movieSchema.post("save", async function () {
+  const movie = this;
+  if (movie.cast && movie.cast.length > 0) {
+    await Cast.updateMany(
       { _id: { $in: movie.cast } },
       { $push: { movies: movie._id } }
-    ); 
+    );
   }
-    if (movie.director) {
-      await Director.updateMany(
+  if (movie.director && movie.director.length > 0) {
+    await Director.updateMany(
       { _id: { $in: movie.director } },
       { $push: { movies: movie._id } }
-    ); }
-    });
+    );
+  }
+});
 
-  const Movie: Model<IMovie> = mongoose.model<IMovie>("Movie", movieSchema);
+movieSchema.pre("findOneAndDelete", async function (next) {
+  const movie = await this.model.findOne(this.getQuery());
+  if (movie) {
+    await Cast.updateMany(
+      { _id: { $in: movie.cast } },
+      { $pull: { movies: movie._id } }
+    );
+    await Director.updateMany(
+      { _id: { $in: movie.director } },
+      { $pull: { movies: movie._id } }
+    );
+  }
+  next();
+});
+
+const Movie: Model<IMovie> = mongoose.model<IMovie>("Movie", movieSchema);
 
 export default Movie;

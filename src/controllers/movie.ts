@@ -3,19 +3,20 @@ import { AuthRequest } from "../types/api";
 import Movie from "../models/movie";
 import Director from "../models/director";
 import Cast from "../models/cast";
-import { getMoviePayload } from "../utils/movieData"; // New validator
+import { getMoviePayload , getEditMoviePayload } from "../utils/movieData"; // New validator
 import { UploadedFile } from "express-fileupload";
 import { validateFileContent } from "../validators/mediaFile";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
+import Like from "../models/like";
 
-// Create a new movie (Admin only)---------------------------------------------------------------------------
+// Create a new movie (Admin only)done---------------------------------------------------------------------------
 export const createMovie = async (
   req: AuthRequest,
   res: Response
 ): Promise<any> => {
   try {
-      // Check if the user is an admin
+    // Check if the user is an admin
     const user = req.user;
     if (user?.role !== "admin") {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
@@ -28,7 +29,7 @@ export const createMovie = async (
     // Get poster, trailer, and movie files from request
     const posterFile = req?.files?.poster as UploadedFile;
     const trailerFile = req?.files?.trailer as UploadedFile;
-    const movieFile = req?.files?.movieUrl as UploadedFile;
+    const movieFile = req?.files?.movie as UploadedFile;
     
      // Check if poster, trailer, and movie files are present
      if (!trailerFile || !posterFile || !movieFile) {
@@ -63,7 +64,7 @@ export const createMovie = async (
     ]);
 
     // Delete temporary files
-    [posterFile, trailerFile, movieFile].forEach(file => {
+    [posterFile, trailerFile, movieFile].forEach((file) => {
       fs.unlink(file.tempFilePath, (err) => {
         if (err) console.log("Failed to delete temp file:", err);
       });
@@ -87,12 +88,12 @@ export const createMovie = async (
     moviePayload.trailerUrl = trailerUrl;
     moviePayload.movieUrl = movieUrl;
 
-     // Create and save new movie
-     const newMovie = new Movie(moviePayload);
-     await newMovie.save();
-     const movieId = newMovie._id;
+    // Create and save new movie
+    const newMovie = new Movie(moviePayload);
+    await newMovie.save();
+    const movieId = newMovie._id;
 
-      res.status(201).json({
+    res.status(201).json({
       message: "Movie created successfully",
       data: { movie: newMovie },
     });
@@ -172,18 +173,23 @@ export const getAllMovies = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Get a Movie by Id ----------------------------------------------------------------------------------------
+// Get a Movie by Iddone ----------------------------------------------------------------------------------------
 export const getMovieById = async (
   req: AuthRequest,
   res: Response
 ): Promise<string | any> => {
   try {
-    const { id } = req.params;
+    // Ensure that user is exists or not
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+    }
+
+    const { movieId } = req.params;
 
     // Find movie by ID and populate related fields
-    const movie = await Movie.findById(id)
+    const movie = await Movie.findById(movieId)
       .populate({
-        path: "cast.castId",
+        path: "cast",
         select: "name",
       })
       .populate({
@@ -199,7 +205,11 @@ export const getMovieById = async (
       return res.status(404).json({ message: "Movie not found" });
     }
 
-    return res.status(200).json({ data: { movie } });
+    const isLiked= await Like.findOne({ userId: req.user?._id.toString(), contentId: movieId, contentType: "Movie"});
+
+    movie.isLiked = isLiked ? true : false;
+
+    return res.status(200).json({ message: `${movie.title} data`,data: { movie } });
   } catch (error) {
     return res.status(500).json({
       message: (error as Error).message,
@@ -207,40 +217,157 @@ export const getMovieById = async (
   }
 };
 
-//Update Movie by Id (Admin only)----------------------------------------------------------------------------
+//Update Movie by Id (Admin only)done----------------------------------------------------------------------------
 export const updateMovieById = async (
   req: AuthRequest,
   res: Response
 ): Promise<string | any> => {
   try {
-    const { id } = req.params;
+    const user = req.user;
+    const { movieId } = req.body
 
     // Check if user is admin
-    if (!req.user || req.user.role !== "admin") {
+    if (user?.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
+    // Find the movie by id
+    const movie = await Movie.findById(movieId);
 
-    // Find and update the movie
-    const updatedMovie = await Movie.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    })
-      .populate({
-        path: "cast.castId",
-        select: "name",
-      })
-      .populate({
-        path: "director",
-        select: "name",
-      });
-
-    if (!updatedMovie) {
+     // Ensure that movie exists
+     if (!movie) {
       return res.status(404).json({ message: "Movie not found" });
     }
 
+     // Validate reqData and get editMoviePayload
+     const editMoviePayload = getEditMoviePayload(req.body);
+
+      // Get poster & trailer file from req
+    const posterFile = req?.files?.poster as UploadedFile;
+    const trailerFile = req?.files?.trailer as UploadedFile;
+    const movieFile = req?.files?.movie as UploadedFile;
+    
+     // Upload poster to cloudinary
+     if (posterFile) {
+      // Validating file type
+      validateFileContent(posterFile.mimetype, "image");
+
+      // Uploading image to cloudinary
+      const result = await uploadImageToCloudinary(posterFile.tempFilePath, {
+        folder: "posters",
+        height: 800,
+        quality: 500,
+      });
+
+      // Delete the temporary file
+      fs.unlink(posterFile.tempFilePath, (err) => {
+        if (err) console.log("Failed to delete temp file:", err);
+      });
+
+      // Get secureURL after uploading successfully
+      const poster = result?.secure_url ?? null;
+
+      // If poster URL not present then send Error
+      if (!poster) {
+        return res.status(500).json({
+          message: "Something went wrong while generating URL of poster",
+        });
+      }
+
+      // Adding URL to moviePayload
+      editMoviePayload.poster = poster;
+    }
+
+    // Upload trailer to cloudinary
+    if (trailerFile) {
+      // Validating file type
+      validateFileContent(trailerFile.mimetype, "video");
+
+      // Uploading video to cloudinary
+      const result = await uploadImageToCloudinary(trailerFile.tempFilePath, {
+        folder: "trailers",
+        height: 800,
+        quality: 500,
+      });
+
+      // Delete the temporary file
+      fs.unlink(trailerFile.tempFilePath, (err) => {
+        if (err) console.log("Failed to delete temp file:", err);
+      });
+
+      // Get secureURL after uploading successfully
+      const trailerUrl = result?.secure_url ?? null;
+
+      // If trailer URL not present then send Error
+      if (!trailerUrl) {
+        return res.status(500).json({
+          message: "Something went wrong while generating URL of trailer",
+        });
+      }
+
+      // Adding URL to moviePayload
+      editMoviePayload.trailerUrl = trailerUrl;
+    }
+
+     // Upload Movie to cloudinary
+     if (movieFile) {
+      // Validating file type
+      validateFileContent(movieFile.mimetype, "video");
+
+      // Uploading video to cloudinary
+      const result = await uploadImageToCloudinary(movieFile.tempFilePath, {
+        folder: "movies",
+        height: 800,
+        quality: 500,
+      });
+
+      // Delete the temporary file
+      fs.unlink(movieFile.tempFilePath, (err) => {
+        if (err) console.log("Failed to delete temp file:", err);
+      });
+
+      // Get secureURL after uploading successfully
+      const movieUrl = result?.secure_url ?? null;
+
+      // If movie URL not present then send Error
+      if (!movieUrl) {
+        return res.status(500).json({
+          message: "Something went wrong while generating URL of movie",
+        });
+      }
+
+      // Adding URL to moviePayload
+      editMoviePayload.movieUrl = movieUrl;
+    }
+
+    // If editMoviePayload is empty then send error
+    if (Object.keys(editMoviePayload).length <= 0) {
+      return res.status(400).json({
+        message: "At least one field is required to update movie info.",
+      });
+    }
+
+    // Update existing movie document
+    Object.assign(movie, editMoviePayload);
+
+    // Save updated document
+    await movie.save();
+
+    // Populate the fields for the response
+    await movie.populate([
+      {
+        path: "cast",
+        select: "name",
+      },
+      {
+        path: "director",
+        select: "name",
+      }
+    ]);
+
+
     return res.status(200).json({
       message: "Movie updated successfully",
-      data: { movie: updatedMovie },
+      data: { movie },
     });
   } catch (error) {
     return res.status(500).json({
@@ -249,39 +376,26 @@ export const updateMovieById = async (
   }
 };
 
-// Delete movie by Id (Admin only)---------------------------------------------------------------------------
+// Delete movie by Id (Admin only)done---------------------------------------------------------------------------
 export const deleteMovieById = async (
   req: AuthRequest,
   res: Response
 ): Promise<string | any> => {
   try {
-    const { id } = req.params;
+    const user = req.user;
+    const { movieId } = req.query;
 
     // Check if user is admin
-    if (!req.user || req.user.role !== "admin") {
+    if (user?.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
-    // Find the movie before deleting to get associated cast and directors
-    const movie = await Movie.findById(id);
-    if (!movie) {
-      return res.status(404).json({ message: "Movie not found" });
-    }
-
     // Delete the movie
-    await Movie.findByIdAndDelete(id);
+    const deletedMovie = await Movie.findOneAndDelete({ _id: movieId });
 
-    // Remove the movie ID from the casts' movie lists
-    await Cast.updateMany(
-      { _id: { $in: (movie.cast || []).map((member) => member) } },
-      { $pull: { movies: id } }
-    );
-
-    // Remove the movie ID from the directors' movie lists
-    await Director.updateMany(
-      { _id: { $in: movie.director } },
-      { $pull: { movies: id } }
-    );
+    if(!deletedMovie){
+      return res.status(404).json({ message: "Movie not found or invalid MovieId" });
+    }
 
     return res.status(200).json({ message: "Movie deleted successfully" });
   } catch (error) {
@@ -291,51 +405,89 @@ export const deleteMovieById = async (
   }
 };
 
-// Filter Movies by Genre---------------------------------------------------------------------------
+// Filter Movies by Genredone---------------------------------------------------------------------------
 export const getMoviesByGenre = async (
   req: AuthRequest,
   res: Response
 ): Promise<String | any> => {
   try {
-    const { genre } = req.query;
+
+    // Ensure that user is exists or not
+    if (!req.user) {
+        res.status(400).json({ message: "Access denied, Please login" });
+     }
+
+    // get genre from parameters
+    const { genre } = req.params;
+    // get page and limit from query parameters
+    let { page = "1", limit = "20" } = req.query; 
 
     if (!genre) {
       return res.status(400).json({ message: "Genre parameter is required." });
     }
 
-    const genreNumber = Number(genre);
-    if (isNaN(genreNumber)) {
-      return res.status(400).json({ message: "Genre must be a valid number." });
+  // Convert parameters to numbers
+    const genreNumber: number = parseInt(genre as string, 10);
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+     // Validatiing genreNumber
+    if (isNaN(genreNumber) || genreNumber < 1) {
+      res
+        .status(400)
+        .json({ message: "Genre ID must be a positive integer (≥1)" });
+      return;
+    }
+    // validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+      return;
+    }
+    // validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
     }
 
-    const movies = await Movie.find({ genres: genreNumber })
-      .populate({
-        path: "cast.castId",
-        select: "name",
-      })
-      .populate({
-        path: "director",
-        select: "name",
-      });
+   // calculate the number for skip docs
+   const skipDocNumber = (pageNumber - 1) * limitNumber;
 
-    if (movies.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No movies found for this genre." });
-    }
+  // applying aggregation on movie collection
+  const movieData = await Movie.aggregate([
+    {
+      $match: {
+        genres: genreNumber,
+      },
+    },
+    {
+      $skip: skipDocNumber,
+    },
+    {
+      $limit: limitNumber,
+    },
+    {
+      $project: {
+        title: 1,
+        description: 1,
+        genres: 1,
+        languages: 1,
+        releaseDate: 1,
+        rating: 1,
+        poster: 1,
+        availableForStreaming: 1,
+      },
+    },
+  ]);
 
-    const formattedMovies = movies.map((movie) => ({
-      _id: movie._id,
-      title: movie.title,
-      description: movie.description,
-      rating: movie.rating,
-      poster: movie.poster,
-      languages: movie.languages,
-      genres: movie.genres,
-      releaseDate: movie.releaseDate,
-    }));
+   // if moviweData is empty then send error of invalid genreId
+   if (!movieData || movieData.length <= 0) {
+    return res.status(400).json({ message: "no Movies available with given genreId" });
+    
+  }
 
-    res.status(200).json({ data: { movies: formattedMovies } });
+  return res.status(200).json({ message: "list of Movies",data: { moviesList: movieData } });
   } catch (error) {
     res.status(500).json({
       message: (error as Error).message,
@@ -343,46 +495,48 @@ export const getMoviesByGenre = async (
   }
 };
 
-//Top Rated Movies---------------------------------------------------------------------------
-export const getTopRatedMovies = async (
-  req: AuthRequest,
-  res: Response
-): Promise<string | any> => {
-  try {
-    const movies = await Movie.find()
-      .sort({ rating: -1 })
-      .limit(20)
-      .populate({
-        path: "cast.castId",
-        select: "name",
-      })
-      .populate({
-        path: "director",
-        select: "name",
-      });
+// //Top Rated Movies---------------------------------------------------------------------------
+// export const getTopRatedMovies = async (
+//   req: AuthRequest,
+//   res: Response
+// ): Promise<string | any> => {
+//   try {
+//     const page = parseInt((req.query.page as string) || "1", 10);
+//     const limit = parseInt((req.query.limit as string) || "10", 10);
+//     const skip = (page - 1) * limit;
 
-    if (movies.length === 0) {
-      return res.status(404).json({ message: "No top-rated movies found." });
-    }
+//     const movies = await Movie.find()
+//       .sort({ rating: -1 })
+//       .select("title description rating poster languages genres releaseDate")
+//       .skip(skip)
+//       .limit(limit)
+//       .populate({
+//         path: "cast",
+//         select: "name",
+//       })
+//       .populate({
+//         path: "director",
+//         select: "name",
+//       });
 
-    const formattedMovies = movies.map((movie) => ({
-      _id: movie._id,
-      title: movie.title,
-      description: movie.description,
-      rating: movie.rating,
-      poster: movie.poster,
-      languages: movie.languages,
-      genres: movie.genres,
-      releaseDate: movie.releaseDate,
-    }));
+//     if (movies.length === 0) {
+//       return res.status(404).json({ message: "No top-rated movies found." });
+//     }
 
-    res.status(200).json({ data: { movies: formattedMovies } });
-  } catch (error) {
-    res.status(500).json({
-      message: (error as Error).message,
-    });
-  }
-};
+//     res.status(200).json({
+//       metadata: {
+//         totalMovies: movies.length,
+//         currentPage: page,
+//         totalPages: Math.ceil(movies.length / limit),
+//       },
+//       data: { movies },
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: (error as Error).message,
+//     });
+//   }
+// };
 
 //Movie view count---------------------------------------------------------------------------
 export const incrementMovieView = async (
@@ -410,11 +564,163 @@ export const incrementMovieView = async (
 
     return res.status(200).json({
       message: "View count updated",
-      data: { viewCount: updatedMovie.viewCount },
+      data: { viewCount: updatedMovie.views },
     });
   } catch (error) {
     return res.status(500).json({
       message: (error as Error).message,
     });
+  }
+};
+
+// Get Most Viewed Movies List----------------------------------------------------------------------
+export const getMostViewedMoviesList = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Ensure that user exists or not
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+      return;
+    }
+
+    // Get page and limit from query parameters
+    let { page = "1", limit = "10" } = req.query;
+
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    // Validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (>0)" });
+      return;
+    }
+    
+    // Validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    // Calculate the number for skip docs
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const moviesList = await Movie.aggregate([
+      {
+        $sort: {
+          viewCount: -1,
+        },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          genres: 1,
+          languages: 1,
+          releaseDate: 1,
+          rating: 1,
+          poster: 1,
+          availableForStreaming: 1,
+          duration: 1, 
+        },
+      },
+    ]);
+
+    if (!moviesList || moviesList.length <= 0) {
+      res.status(400).json({ message: "Data not available" });
+      return;
+    }
+
+    res.status(200).json({ message: "Most Viewed Movies List", data: { moviesList } });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+// Get Most Liked Movies List------------------------------------------------------------
+export const getMostLikedMoviesList = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Ensure that user exists or not
+    if (!req.user) {
+      res.status(400).json({ message: "Access denied, Please login" });
+      return;
+    }
+
+    // Get page and limit from query parameters
+    let { page = "1", limit = "10" } = req.query;
+
+    // Convert parameters to numbers
+    const pageNumber: number = parseInt(page as string, 10);
+    const limitNumber: number = parseInt(limit as string, 10);
+
+    // Validating pageNumber
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      res.status(400).json({ message: "Page must be a positive integer (>0)" });
+      return;
+    }
+    
+    // Validating limitNumber
+    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+      res
+        .status(400)
+        .json({ message: "Limit must be a positive integer (1-100)" });
+      return;
+    }
+
+    // Calculate the number for skip docs
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
+
+    const moviesList = await Movie.aggregate([
+      {
+        $sort: {
+          likes: -1,
+        },
+      },
+      {
+        $skip: skipDocNumber,
+      },
+      {
+        $limit: limitNumber,
+      },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          genres: 1,
+          languages: 1,
+          releaseDate: 1,
+          rating: 1,
+          poster: 1,
+          availableForStreaming: 1,
+          duration: 1, 
+        },
+      },
+    ]);
+
+    if (!moviesList || moviesList.length <= 0) {
+      res.status(400).json({ message: "Data not available" });
+      return;
+    }
+
+    res.status(200).json({ message: "Most Liked Movies List", data: { moviesList } });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
   }
 };
