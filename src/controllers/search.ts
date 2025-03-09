@@ -2,9 +2,10 @@ import { Request, Response } from "express";
 import Movie from "../models/movie";
 import Series from "../models/series";
 
-export const searchContent = async (req: Request, res: Response) : Promise<any>=> {
+export const searchContent = async (req: Request, res: Response): Promise<any> => {
   try {
     let { search } = req.query;
+    console.log(search, "search at line 8 search controller")
 
     if (!search || typeof search !== "string") {
       return res.status(400).json({ message: "Search Body is required" });

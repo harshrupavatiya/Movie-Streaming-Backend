@@ -45,6 +45,11 @@ app.use(cors(corsOptions));
 // Handle preflight requests (OPTIONS)
 app.options("*", cors(corsOptions));
 
+// The reason i wrote this here because stripe does not accept .json format so i am using this route before intializing app.use(express.json) so that it will not give error stripe expects raw format 
+app.use('/webhook', express.raw({ type: "application/json" }), subscriptionRouter);
+
+
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -69,7 +74,6 @@ app.use("/series", seriesRouter);
 app.use("/review", reviewRouter);
 app.use("/liked", likedRouter);
 app.use("/stripe", subscriptionRouter);
-app.use('/webhook', subscriptionRouter);
 
 
 app.use("/watchlist", watchlistRouter);

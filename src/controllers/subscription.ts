@@ -33,6 +33,7 @@ export const memberSubscription = async (
 
         if (existingCustomers.data.length > 0) {
             customer = existingCustomers.data[0];
+
             // Step 2: Check if the customer has an active subscription
             const activeSubscriptions = await stripe.subscriptions.list({
                 customer: customer.id,
@@ -40,8 +41,8 @@ export const memberSubscription = async (
                 limit: 1,
             });
 
+            // Step 3: Redirect existing customer to billing portal
             if (activeSubscriptions.data.length > 0) {
-                // Step 3: Redirect existing customer to billing portal
                 const stripeSession = await stripe.billingPortal.sessions.create({
                     customer: customer.id,
                     return_url: "http://localhost:3012/",
@@ -89,7 +90,6 @@ export const memberSubscription = async (
 
         const session = await stripe.checkout.sessions.create(sessionConfig);
         if (session) {
-            console.log(session, "here")
             return res.json({ id: session.id });
         }
     } catch (error: unknown) {
@@ -104,16 +104,13 @@ export const verifyPayment = async (req: Request, res: Response): Promise<string
 
     if (!session_id || typeof session_id !== "string") {
         return res.status(400).json({ success: false, message: "Valid session ID string is required" });
-        // ✅ Added return to stop further execution
     }
 
     try {
         const session = await stripe.checkout.sessions.retrieve(session_id as string);
 
-        console.log(session, "line 108");
 
         if (session.payment_status === "paid") {
-            console.log("Status is paid");
 
             // Extract user ID, tier, and billing cycle from metadata
             const userId = session.metadata?.userId;
@@ -121,7 +118,6 @@ export const verifyPayment = async (req: Request, res: Response): Promise<string
             const billingCycle = session.metadata?.billingCycle;
 
             if (!userId || !tier || !billingCycle) {
-                console.error("Missing metadata in session");
                 return res.status(400).json({ success: false, message: "Missing subscription data" });
 
             }
@@ -139,17 +135,15 @@ export const verifyPayment = async (req: Request, res: Response): Promise<string
                     "subscription.billingCycle": billingCycle,
                     "subscription.startDate": startDate,
                     "subscription.endDate": endDate,
-                    "subscription.stripeSessionId": session.id,
+                    // "subscription.stripeSessionId": session.id,
                 },
             });
 
             return res.json({ success: true, message: "Payment successful and subscription updated!" });
         } else {
-            console.log("Status is not paid");
             return res.json({ success: false, message: "Payment not completed." });
         }
     } catch (error) {
-        console.error("Error verifying payment:", error);
         return res.status(500).json({ success: false, message: "Error verifying payment" });
     }
 };
