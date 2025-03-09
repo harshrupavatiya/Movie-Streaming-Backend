@@ -1,8 +1,6 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { AuthRequest } from "../types/api";
 import Movie from "../models/movie";
-import Director from "../models/director";
-import Cast from "../models/cast";
 import { getMoviePayload, getEditMoviePayload } from "../utils/movieData"; // New validator
 import { UploadedFile } from "express-fileupload";
 import { validateFileContent } from "../validators/mediaFile";
