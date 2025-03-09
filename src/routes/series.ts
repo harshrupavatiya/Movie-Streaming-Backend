@@ -1,9 +1,23 @@
-import express, { Response } from "express";
+import express from "express";
 import { userAuth } from "../middlewares/Auth";
-import { createSeries, deleteSeries, getLatestReleasedSeriesList, getMostLikedSeriesList, getMostViewedSeriesList, getPopularSeriesList, getSeriesByGenre, getSeriesById, getSeriesListBySearch, getSeriesNamesAndIdBySearch, getTopRatedSeriesList, updateSeries } from "../controllers/series";
-import { AuthRequest } from "../types/api";
+import {
+  createSeries,
+  deleteSeries,
+  getLatestReleasedSeriesList,
+  getMostLikedSeriesList,
+  getMostViewedSeriesList,
+  getPopularSeriesList,
+  getSeriesByGenre,
+  getSeriesById,
+  getSeriesListBySearch,
+  getSeriesNamesAndIdBySearch,
+  getTopRatedSeriesList,
+  incrementSeriesView,
+  updateSeries,
+} from "../controllers/series";
 const seriesRouter = express.Router();
 
+seriesRouter.get("/get/:seriesId", userAuth, getSeriesById);
 
 seriesRouter.get("/genre/:genre", userAuth, getSeriesByGenre);
 
@@ -17,14 +31,17 @@ seriesRouter.get("/latestReleased", userAuth, getLatestReleasedSeriesList);
 
 seriesRouter.get("/popular", userAuth, getPopularSeriesList);
 
+seriesRouter.post("/viewIncrement/:movieId", userAuth, incrementSeriesView);
+
+// for admins only
+seriesRouter.post("/create", userAuth, createSeries);
+
+seriesRouter.delete("/delete/:seriesId", userAuth, deleteSeries);
+
+seriesRouter.put("/update", userAuth, updateSeries);
+
 seriesRouter.get("/list", userAuth, getSeriesListBySearch);
 
 seriesRouter.get("/searchByAdmin", userAuth, getSeriesNamesAndIdBySearch);
 
-seriesRouter.post("/create", userAuth, createSeries);
-seriesRouter.delete("/delete/:seriesId", userAuth, deleteSeries);
-seriesRouter.put("/update", userAuth, updateSeries);
-
-seriesRouter.get("/get/:seriesId", userAuth, getSeriesById);
-
-export default seriesRouter;  
+export default seriesRouter;
