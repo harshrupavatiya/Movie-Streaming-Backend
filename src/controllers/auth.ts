@@ -13,9 +13,13 @@ import otpGenerator from "otp-generator";
 import { JWT_SIGNUP_SECRET } from "../utils/envProvider";
 import ForgotPasswordToken from "../models/forgotPasswordToken";
 import { generateResetToken } from "../utils/generateToken";
+import mailSender from "../utils/mailSender";
+import {
+  resetPasswordSuccessTemplate,
+  signUpSuccessTemplate,
+} from "../utils/mailTemplates";
 
 // LOGIN--------------------------------------------------------------------------------------------------
-// add validators
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     // Get data from req body
@@ -153,6 +157,8 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
       password: hashedPassword,
     });
 
+    mailSender(email, "Welcome to Our Filmster", signUpSuccessTemplate());
+
     res.status(200).json({ message: "SignUp successfully" });
     return;
   } catch (err: any) {
@@ -264,6 +270,12 @@ export const resetPassword = async (
 
     // save user data
     await user.save();
+
+    mailSender(
+      user.email,
+      "Password Reset Successful",
+      resetPasswordSuccessTemplate()
+    );
 
     res.status(200).json({ message: "Password has been updated" });
     return;

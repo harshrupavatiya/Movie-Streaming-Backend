@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { AuthRequest } from "../types/api";
 import Series from "../models/series";
 import { getEditSeriesPayload, getSeriesPayload } from "../utils/seriesData";
@@ -8,7 +8,7 @@ import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
 import Episode from "../models/episode";
 import Like from "../models/like";
-import mongoose, { Document } from "mongoose";
+import mongoose from "mongoose";
 
 export const createSeries = async (
   req: AuthRequest,
@@ -82,9 +82,10 @@ export const createSeries = async (
 
     // everything seems fine, so creating series model
     const newSeries = new Series(seriesPayload);
+    console.log("5")
     // saving series model in DB
     await newSeries.save();
-
+    console.log("6")
     res.status(200).json({ message: "Series added successfully." });
     return;
   } catch (err) {
@@ -975,6 +976,42 @@ export const getSeriesNamesAndIdBySearch = async (
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};
+
+export const incrementSeriesView = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user || req.user.role == "admin") {
+      res.status(403).json({ message: "Only view incremented for users" });
+      return;
+    }
+
+    const { seriesId } = req.params;
+
+    const updatedSeries = await Series.findByIdAndUpdate(
+      seriesId,
+      { $inc: { viewCount: 1 } },
+      { new: true }
+    );
+
+    if (!updatedSeries) {
+      res.status(404).json({ message: "Series not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "View count updated",
+      data: { views: updatedSeries.viewCount },
+    });
+    return;
+  } catch (error) {
+    res.status(500).json({
+      message: (error as Error).message,
+    });
     return;
   }
 };
