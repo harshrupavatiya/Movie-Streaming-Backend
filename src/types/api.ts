@@ -1,8 +1,10 @@
 import { Request } from "express";
-import { IUser } from "./db.model";
+import { IEpisode, ISeries, IUser } from "./db.model";
 
 export interface AuthRequest extends Request {
   user?: IUser;
+  seriesPayload?: Partial<ISeries>;
+  episodePayload?: Partial<IEpisode>;
 }
 
 export interface IEditDetails {

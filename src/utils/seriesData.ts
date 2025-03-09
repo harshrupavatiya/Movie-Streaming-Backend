@@ -59,9 +59,15 @@ export const getSeriesPayload = (reqBody: ISeriesData): Partial<ISeries> => {
     newPayload.description = description;
   }
 
+  if(!genres || genres.length <= 0) {
+    throw new Error("Genres are required field");
+  }
   validateGenres(genres);
   newPayload.genres = genres.map((genre) => parseInt(genre));
 
+  if(!languages || languages.length <= 0){
+    throw new Error("Languages are required field");
+  }
   validateLanguage(languages);
   newPayload.languages = languages;
 
