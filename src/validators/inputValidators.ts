@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import validator from "validator";
 
 export const validateName = (name: string): void => {
