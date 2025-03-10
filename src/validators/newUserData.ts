@@ -16,9 +16,9 @@ export const validateUserData = (reqBody: IUserRequiredField): void => {
   validateName(name);
 
   validateContactNo(contactNo);
-  
+
   validateEmail(email);
-  
+
   validatePassword(password);
 };
 
