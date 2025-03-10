@@ -73,7 +73,7 @@ export const getMoviePayload = (reqBody: IMovieData): Partial<IMovie> => {
     if (!isNumeric(rating) || parseFloat(rating) > 10 || parseFloat(rating) < 0) {
       throw new Error("Rating should be a number between 0 and 10");
     }
-    newPayload.rating = parseInt(rating);
+    newPayload.rating = parseFloat(rating);
   }
 
   if (casts && casts.length > 0) {
@@ -159,7 +159,7 @@ export const getEditMoviePayload = (reqBody: Partial<IMovieData>): Partial<IMovi
     if (!isNumeric(rating) || parseFloat(rating) > 10 || parseFloat(rating) < 0) {
       throw new Error("Rating should be a number between 0 and 10");
     }
-    newPayload.rating = parseInt(rating);
+    newPayload.rating = parseFloat(rating);
   }
 
   if (casts && casts.length > 0) {
