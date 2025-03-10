@@ -2,24 +2,32 @@ import { Request, Response } from "express";
 import Movie from "../models/movie";
 import Series from "../models/series";
 
-export const searchContent = async (req: Request, res: Response): Promise<any> => {
+export const searchContent = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     let { search } = req.query;
     console.log(search, "search at line 8 search controller")
 
     if (!search || typeof search !== "string") {
-      return res.status(400).json({ message: "Search Body is required" });
+      res.status(400).json({ message: "Search Body is required" });
+      return;
     }
 
     const searchRegex = new RegExp(search.trim(), "i"); // Case-insensitive search
 
     // Search movies & series by title
     const movies = await Movie.find({ title: searchRegex })
-      .select("_id title description rating poster languages genres releaseDate")
+      .select(
+        "_id title description rating poster languages genres releaseDate"
+      )
       .lean();
 
     const series = await Series.find({ title: searchRegex })
-      .select("_id title description rating poster languages genres releaseDate")
+      .select(
+        "_id title description rating poster languages genres releaseDate"
+      )
       .lean();
 
     // Aggregate movies by Cast & Director
@@ -102,44 +110,22 @@ export const searchContent = async (req: Request, res: Response): Promise<any> =
       },
     ]);
 
-    // Add a type identifier
-    const formattedMovies = movies.map((movie) => ({
-      ...movie,
-      type: "Movie",
-    }));
-
-    const formattedSeries = series.map((series) => ({
-      ...series,
-      type: "Series",
-    }));
-
-    const formattedMoviesByCastOrDirector = moviesByCastOrDirector.map((movie) => ({
-      ...movie,
-      type: "Movie (by Cast/Director)",
-    }));
-
-    const formattedSeriesByCastOrDirector = seriesByCastOrDirector.map((series) => ({
-      ...series,
-      type: "Series (by Cast/Director)",
-    }));
-
-    // Combine all results
-    const results = [
-      ...formattedMovies,
-      ...formattedSeries,
-      ...formattedMoviesByCastOrDirector,
-      ...formattedSeriesByCastOrDirector,
-    ];
-
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Search Results",
-      data: results,
+      data: {
+        movieList: movies,
+        seriesList: series,
+        castAndDirectorWiseMovie: moviesByCastOrDirector,
+        castAndDirectorWiseSeries: seriesByCastOrDirector,
+      },
     });
+    return;
   } catch (err) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: (err as Error).message,
     });
+    return;
   }
 };

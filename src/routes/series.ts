@@ -1,30 +1,82 @@
-import express, { Response } from "express";
+import express from "express";
 import { userAuth } from "../middlewares/Auth";
-import { createSeries, deleteSeries, getLatestReleasedSeriesList, getMostLikedSeriesList, getMostViewedSeriesList, getPopularSeriesList, getSeriesByGenre, getSeriesById, getSeriesListBySearch, getSeriesNamesAndIdBySearch, getTopRatedSeriesList, updateSeries } from "../controllers/series";
-import { AuthRequest } from "../types/api";
+import {
+  createSeries,
+  deleteSeries,
+  getLatestReleasedSeriesList,
+  getMostLikedSeriesList,
+  getMostViewedSeriesList,
+  getPopularSeriesList,
+  getSeriesByGenre,
+  getSeriesById,
+  getSeriesListBySearch,
+  getSeriesNamesAndIdBySearch,
+  getTopRatedSeriesList,
+  incrementSeriesView,
+  updateSeries,
+} from "../controllers/series";
+import {
+  getEditSeriesPayload,
+  getNewSeriesPayload,
+} from "../middlewares/getSeriesPayload";
+import { getPaginationInfo } from "../middlewares/getPaginationPayload";
 const seriesRouter = express.Router();
 
-
 seriesRouter.get("/get/:seriesId", userAuth, getSeriesById);
-seriesRouter.get("/genre/:genre", userAuth, getSeriesByGenre);
 
-seriesRouter.get("/mostLiked", userAuth, getMostLikedSeriesList);
+seriesRouter.get(
+  "/genre/:genre",
+  userAuth,
+  getPaginationInfo,
+  getSeriesByGenre
+);
 
-seriesRouter.get("/mostViewed", userAuth, getMostViewedSeriesList);
+seriesRouter.get(
+  "/mostLiked",
+  userAuth,
+  getPaginationInfo,
+  getMostLikedSeriesList
+);
 
-seriesRouter.get("/topRated", userAuth, getTopRatedSeriesList);
+seriesRouter.get(
+  "/mostViewed",
+  userAuth,
+  getPaginationInfo,
+  getMostViewedSeriesList
+);
 
-seriesRouter.get("/latestReleased", userAuth, getLatestReleasedSeriesList);
+seriesRouter.get(
+  "/topRated",
+  userAuth,
+  getPaginationInfo,
+  getTopRatedSeriesList
+);
 
-seriesRouter.get("/popular", userAuth, getPopularSeriesList);
+seriesRouter.get(
+  "/latestReleased",
+  userAuth,
+  getPaginationInfo,
+  getLatestReleasedSeriesList
+);
 
-seriesRouter.get("/list", userAuth, getSeriesListBySearch);
+seriesRouter.get("/popular", userAuth, getPaginationInfo, getPopularSeriesList);
 
-seriesRouter.get("/searchByAdmin", userAuth, getSeriesNamesAndIdBySearch);
+seriesRouter.post("/viewIncrement/:movieId", userAuth, incrementSeriesView);
 
-seriesRouter.post("/create", userAuth, createSeries);
+// for admins only
+seriesRouter.post("/create", userAuth, getNewSeriesPayload, createSeries);
+
 seriesRouter.delete("/delete/:seriesId", userAuth, deleteSeries);
-seriesRouter.put("/update", userAuth, updateSeries);
 
+seriesRouter.put("/update", userAuth, getEditSeriesPayload, updateSeries);
 
-export default seriesRouter;  
+seriesRouter.get("/list", userAuth, getPaginationInfo, getSeriesListBySearch);
+
+seriesRouter.get(
+  "/searchByAdmin",
+  userAuth,
+  getPaginationInfo,
+  getSeriesNamesAndIdBySearch
+);
+
+export default seriesRouter;

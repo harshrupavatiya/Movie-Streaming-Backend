@@ -5,6 +5,7 @@ interface ICloudinaryOptions {
   folder?: string;
   quality?: number;
   resource_type?: "auto" | "image" | "video" | "raw" | undefined;
+  timeout?: number; 
 }
 
 export const uploadImageToCloudinary = async (
@@ -24,6 +25,7 @@ export const uploadImageToCloudinary = async (
     const result = await cloudinary.uploader.upload(filePath, uploadOptions);
     return result;
   } catch (error) {
+    console.log("error : ", error);
     throw error;
   }
 };

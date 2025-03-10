@@ -10,17 +10,17 @@ import { AuthRequest } from "../types/api";
 import OTP from "../models/otp";
 import { IOTP, IUser } from "../types/db.model";
 import otpGenerator from "otp-generator";
-import { JWT_RESET_PASS_SECRET, JWT_SIGNUP_SECRET } from "../utils/envProvider";
-import { Frontend_Base_URL } from "../utils/constants";
-import mailSender from "../utils/mailSender";
-import { forgotPassTemplate } from "../utils/mailTemplates";
-import jwt from "jsonwebtoken";
+import { JWT_SIGNUP_SECRET } from "../utils/envProvider";
 import ForgotPasswordToken from "../models/forgotPasswordToken";
 import { generateResetToken } from "../utils/generateToken";
+import mailSender from "../utils/mailSender";
+import {
+  resetPasswordSuccessTemplate,
+  signUpSuccessTemplate,
+} from "../utils/mailTemplates";
 
 // LOGIN--------------------------------------------------------------------------------------------------
-// add validators
-export const login = async (req: Request, res: Response): Promise<any> => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     // Get data from req body
     const { email, password } = req.body;
@@ -31,7 +31,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     // If user does not exist with the given email
     if (!user) {
-      return res.status(500).json({ message: "Incorrect Email or Password" });
+      res.status(500).json({ message: "Incorrect Email or Password" });
+      return;
     }
 
     // Validate password
@@ -39,7 +40,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     // If password is invalid
     if (!isPasswordValid) {
-      return res.status(500).json({ message: "Incorrect Email or Password" });
+      res.status(500).json({ message: "Incorrect Email or Password" });
+      return;
     }
 
     // generate user token
@@ -50,7 +52,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Login Successfully",
       data: {
         userData: {
@@ -62,8 +64,10 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         },
       },
     });
+    return;
   } catch (err: any) {
-    return res.status(500).json({ message: err.message });
+    res.status(500).json({ message: err.message });
+    return;
   }
 };
 
@@ -71,7 +75,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 export const generateOTP = async (
   req: Request,
   res: Response
-): Promise<Response | any> => {
+): Promise<void> => {
   try {
     // Validate signup data
     validateUserData(req.body);
@@ -84,7 +88,8 @@ export const generateOTP = async (
 
     // If user already exists with entered email
     if (user) {
-      return res.status(500).json({ message: "Email already used" });
+      res.status(500).json({ message: "Email already used" });
+      return;
     }
 
     // generate OTP
@@ -112,16 +117,15 @@ export const generateOTP = async (
     });
 
     res.status(200).json({ message: "OTP generated successfully" });
+    return;
   } catch (err) {
-    return res.status(500).json({ message: (err as Error).message });
+    res.status(500).json({ message: (err as Error).message });
+    return;
   }
 };
 
 // SIGNUP-------------------------------------------------------------------------------------------------
-export const signUp = async (
-  req: Request,
-  res: Response
-): Promise<Response | any> => {
+export const signUp = async (req: Request, res: Response): Promise<void> => {
   try {
     // Validate signup data
     validateSignUpData(req.body);
@@ -133,12 +137,14 @@ export const signUp = async (
     const otpInfo: IOTP | null = await OTP.findOne({ otp: otp });
 
     if (!otpInfo) {
-      return res.status(500).json({ message: "Invalid OTP" });
+      res.status(500).json({ message: "Invalid OTP" });
+      return;
     }
 
     // validating Email
     if (otpInfo.email !== email) {
-      return res.status(500).json({ message: "Incorrect Email" });
+      res.status(500).json({ message: "Incorrect Email" });
+      return;
     }
 
     // Password encryption
@@ -152,25 +158,33 @@ export const signUp = async (
       password: hashedPassword,
     });
 
-    return res.status(200).json({ message: "SignUp successfully" });
+    mailSender(email, "Welcome to Our Filmster", signUpSuccessTemplate());
+
+    res.status(200).json({ message: "SignUp successfully" });
+    return;
   } catch (err: any) {
-    return res.status(500).json({ message: err.message });
+    res.status(500).json({ message: err.message });
+    return;
   }
 };
 
 // Logout-------------------------------------------------------------------------------------------------
-export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
+export const logout = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   // set token as null in cookie
   res.cookie("token", null, { expires: new Date(Date.now()) });
 
   res.status(200).json({ message: "User logout successfully" });
+  return;
 };
 
 // Send mail for reset Password-------------------------------------------------------------------------------------------------
 export const sendMailResetPassword = async (
   req: Request,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
     const { email } = req.body;
 
@@ -181,7 +195,8 @@ export const sendMailResetPassword = async (
 
     // if user not exist
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      res.status(400).json({ message: "User not found" });
+      return;
     }
 
     let resetPassToken = generateResetToken();
@@ -205,11 +220,11 @@ export const sendMailResetPassword = async (
     });
     await forgotPassToken.save();
 
-    return res
-      .status(200)
-      .json({ message: "Link sent at given email address" });
+    res.status(200).json({ message: "Link sent at given email address" });
+    return;
   } catch (err) {
-    return res.status(500).json({ message: "Something went wrong" });
+    res.status(500).json({ message: "Something went wrong" });
+    return;
   }
 };
 
@@ -217,7 +232,7 @@ export const sendMailResetPassword = async (
 export const resetPassword = async (
   req: Request,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
     const { token, password } = req.body;
 
@@ -225,7 +240,8 @@ export const resetPassword = async (
 
     // if token not exist
     if (!token) {
-      return res.status(400).json({ message: "Token invalid" });
+      res.status(400).json({ message: "Token invalid" });
+      return;
     }
 
     const forgotPassToken = await ForgotPasswordToken.findOne({
@@ -243,7 +259,8 @@ export const resetPassword = async (
 
     // If user is not present
     if (!user) {
-      return res.status(400).json({ message: "Invalid user token" });
+      res.status(400).json({ message: "Invalid user token" });
+      return;
     }
 
     // password encryption
@@ -255,8 +272,16 @@ export const resetPassword = async (
     // save user data
     await user.save();
 
-    return res.status(200).json({ message: "Password has been updated" });
+    mailSender(
+      user.email,
+      "Password Reset Successful",
+      resetPasswordSuccessTemplate()
+    );
+
+    res.status(200).json({ message: "Password has been updated" });
+    return;
   } catch (err) {
-    return res.status(500).json({ message: (err as Error).message });
+    res.status(500).json({ message: (err as Error).message });
+    return;
   }
 };

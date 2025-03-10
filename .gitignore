@@ -3,3 +3,4 @@ node_modules
 .vscode
 imp.txt
 tmp
+dummyDataInput.ts

@@ -6,27 +6,27 @@ import { AuthRequest } from "../types/api";
 export const updateWatchProgress = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
-    const user = req.user;
+    const existingUser = req.user;
 
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
+    if (!existingUser) {
+      res.status(404).json({ message: "User not found" });
+      return;
     }
 
     //Progress will be stored in seconds(easier to calculate)
     const { contentId, contentType, progress } = req.body;
 
-    if (!contentId || !contentType || progress === undefined) {
-      return res.status(400).json({ message: "Missing required fields" });
+    if (!contentId || progress === undefined) {
+      res.status(400).json({ message: "Missing required fields" });
+      return;
     }
 
-    if (contentType !== "Movie" && contentType !== "Series" && contentType !== "Episode") {
-      return res.status(400).json({ message: "Invalid content type" });
+    if (contentType !== "Movie" && contentType !== "Episode") {
+      res.status(400).json({ message: "Invalid content type" });
+      return;
     }
-
-    const existingUser = await User.findById(user._id);
-    if (!existingUser) return res.status(404).json({ message: "User not found" });
 
     const index = existingUser.continueWatching.findIndex(
       (item) => item.contentId.toString() === contentId
@@ -38,44 +38,55 @@ export const updateWatchProgress = async (
       existingUser.continueWatching[index].lastWatched = new Date();
     } else {
       // Add new entry if content is not already in continue watching
-      existingUser.continueWatching.push({ contentId, contentType, progress, lastWatched: new Date() });
+      existingUser.continueWatching.push({
+        contentId,
+        contentType,
+        progress,
+        lastWatched: new Date(),
+      });
     }
 
     await existingUser.save();
-    return res.status(200).json({ message: "Progress updated successfully" });
+    res.status(200).json({ message: "Progress updated successfully" });
+    return;
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    res.status(500).json({ message: (error as Error).message });
+    return;
   }
 };
 
-//TODO: Test for episode after Series API is completed
 // Get Continue Watching List
 export const getContinueWatching = async (
-    req: AuthRequest,
-    res: Response
-  ): Promise<string | any> => {
-    try {
-      const user = req.user;
-  
-      if (!user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-  
-      const existingUser = await User.findById(user._id)
-        .populate({
-          path: "continueWatching.contentId",
-          select: "title poster duration",
-        })
-        .sort({ "continueWatching.lastWatched": -1 });
-  
-      if (!existingUser) return res.status(404).json({ message: "User not found" });
-  
-      return res.status(200).json({
-        message: "Continue Watching list",
-        data: existingUser.continueWatching,
-      });
-    } catch (error) {
-      return res.status(500).json({ message: (error as Error).message });
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
     }
-  };
-  
+
+    const existingUser = await User.findById(user._id)
+      .populate({
+        path: "continueWatching.contentId",
+        select: "title poster duration",
+      })
+      .sort({ "continueWatching.lastWatched": -1 });
+
+    if (!existingUser) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Continue Watching list",
+      data: existingUser.continueWatching,
+    });
+    return;
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+    return;
+  }
+};
