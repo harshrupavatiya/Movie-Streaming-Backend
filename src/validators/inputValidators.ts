@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import validator from "validator";
 
 export const validateName = (name: string): void => {
@@ -44,6 +43,14 @@ export function isValidISOBirthDate(dateString: string): void {
 
   if (!(date instanceof Date) || isNaN(date.getTime()) || date > today) {
     throw new Error("Birthdate Is not valid");
+  }
+}
+export function isValidISOReleaseDate(dateString: string): void {
+  const date = new Date(dateString);
+  const today = new Date();
+
+  if (!(date instanceof Date) || isNaN(date.getTime()) || date > today) {
+    throw new Error("Releasedate Is not valid");
   }
 }
 

@@ -9,36 +9,40 @@ import { UploadedFile } from "express-fileupload";
 import fs from "fs";
 import { getValidCastPayload } from "../utils/getPayload";
 
-
 //Get searched Cast by name--------------------------------------------------------------------------------
 export const searchCastByName = async (
   req: AuthRequest,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
     const { query } = req.query;
 
     if (!query || typeof query !== "string") {
-      return res.status(400).json({ message: "Query parameter is required." });
+      res.status(400).json({ message: "Query parameter is required." });
+      return;
     }
+
+    const search = new RegExp(query.trim(), "i");
 
     // Search for cast members whose names start with the given query
     const castList = await Cast.find({
-      name: { $regex: `^${query}`, $options: "i" },
+      name: search,
     }).select("name _id");
 
-    if (castList.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No matching cast members found." });
+    if (castList.length <= 0) {
+      res.status(404).json({ message: "No matching cast members found." });
+
+      return;
     }
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Cast list matching the search query",
       data: { castList },
     });
+    return;
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    res.status(500).json({ message: (error as Error).message });
+    return;
   }
 };
 
@@ -46,11 +50,12 @@ export const searchCastByName = async (
 export const addOrUpdateCast = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     // Check if the user is an admin
     if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only." });
+      res.status(403).json({ message: "Access denied. Admins only." });
+      return;
     }
 
     const { castId } = req.body;
@@ -67,13 +72,20 @@ export const addOrUpdateCast = async (
 
     // corner-cases error handling
     if (!existingCast && castId) {
-      throw new Error("Cast not found in DB");
+      res.status(403).json({ message: "Cast not found in DB" });
+      return;
     }
     if (existingCast && Object.keys(castPayload).length === 0 && !file) {
-      throw new Error("Atleast one field required to update Cast information");
+      res
+        .status(403)
+        .json({
+          message: "Atleast one field required to update Cast information",
+        });
+      return;
     }
     if (!existingCast && !Object.keys(castPayload).includes("name")) {
-      throw new Error("Name is required field");
+      res.status(403).json({ message: "Name is required field" });
+      return;
     }
 
     // image uploading process begins from here,
@@ -112,22 +124,24 @@ export const addOrUpdateCast = async (
       Object.assign(existingCast, castPayload);
       await existingCast.save();
 
-      return res.status(200).json({
+      res.status(200).json({
         message: "Cast data updated successfully",
         data: { cast: existingCast },
       });
+      return;
     }
 
     // create new cast data (because cast info not present in DB)
     const newCast = new Cast(castPayload);
     await newCast.save();
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Cast information saved successfully",
-      data: { cast: newCast },
     });
+    return;
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    res.status(500).json({ message: (error as Error).message });
+    return;
   }
 };
 
@@ -135,11 +149,12 @@ export const addOrUpdateCast = async (
 export const deleteCast = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     // Check if the user is an admin
     if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only." });
+      res.status(403).json({ message: "Access denied. Admins only." });
+      return;
     }
 
     const { castId } = req.params; // Get cast ID from URL params
@@ -148,7 +163,8 @@ export const deleteCast = async (
     const deletedCast = await Cast.findByIdAndDelete(castId);
 
     if (!deletedCast) {
-      return res.status(404).json({ message: "Cast member not found." });
+      res.status(404).json({ message: "Cast member not found." });
+      return;
     }
 
     // Remove cast reference from any associated movies
@@ -163,11 +179,12 @@ export const deleteCast = async (
       { $pull: { cast: { castId } } }
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Cast member deleted successfully",
-      data: { deletedCast },
     });
+    return;
   } catch (error) {
-    return res.status(500).json({ message: (error as Error).message });
+    res.status(500).json({ message: (error as Error).message });
+    return;
   }
 };

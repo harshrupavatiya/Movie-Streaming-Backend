@@ -9,27 +9,28 @@ import mongoose from "mongoose";
 export const createOrUpdateReview = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     const { contentId, contentType, rating, comment } = req.body;
 
     // Check if user is authenticated
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized. Please log in." });
+      res.status(401).json({ message: "Unauthorized. Please log in." });
+      return;
     }
 
     // Validate contentType
     if (!["Movie", "Series"].includes(contentType)) {
-      return res.status(400).json({
+      res.status(400).json({
         message: "Invalid content type. Must be 'Movie' or 'Series'.",
       });
+      return;
     }
 
     // Validate rating (0 to 10)
     if (rating < 0 || rating > 10) {
-      return res
-        .status(400)
-        .json({ message: "Rating must be between 0 and 10." });
+      res.status(400).json({ message: "Rating must be between 0 and 10." });
+      return;
     }
 
     // Check if Movie or Series exists
@@ -39,7 +40,8 @@ export const createOrUpdateReview = async (
         : await Series.findById(contentId);
 
     if (!content) {
-      return res.status(404).json({ message: `${contentType} not found` });
+      res.status(404).json({ message: `${contentType} not found` });
+      return;
     }
 
     // Check if the user has already reviewed this content
@@ -55,10 +57,11 @@ export const createOrUpdateReview = async (
       existingReview.comment = comment;
       await existingReview.save();
 
-      return res.status(200).json({
+      res.status(200).json({
         message: "Review updated successfully",
         data: { review: existingReview },
       });
+      return;
     } else {
       // Create a new review
       const newReview = await Review.create({
@@ -80,15 +83,17 @@ export const createOrUpdateReview = async (
         });
       }
 
-      return res.status(201).json({
+      res.status(201).json({
         message: "Review added successfully",
         data: { review: newReview },
       });
+      return;
     }
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       message: (error as Error).message,
     });
+    return;
   }
 };
 
@@ -96,13 +101,14 @@ export const createOrUpdateReview = async (
 export const getLatestReviews = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     const { contentId } = req.params;
 
     // Validate if contentId is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(contentId)) {
-      return res.status(400).json({ message: "Invalid content ID" });
+      res.status(400).json({ message: "Invalid content ID" });
+      return;
     }
 
     // Check if contentId exists in Movies or Series
@@ -111,7 +117,8 @@ export const getLatestReviews = async (
 
     // If neither Movie nor Series found, return error
     if (!movie && !series) {
-      return res.status(404).json({ message: "Content not found" });
+      res.status(404).json({ message: "Content not found" });
+      return;
     }
 
     // Fetch latest 5 reviews
@@ -130,17 +137,19 @@ export const getLatestReviews = async (
       comment: review.comment,
     }));
 
-    return res.status(200).json({
+    res.status(200).json({
       data: {
         contentId,
         contentType: movie ? "Movie" : "Series",
         reviews: filteredReviews,
       },
     });
+    return;
   } catch (err) {
-    return res.status(500).json({
+    res.status(500).json({
       message: (err as Error).message,
     });
+    return;
   }
 };
 
@@ -148,11 +157,12 @@ export const getLatestReviews = async (
 export const getMovieWiseReview = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     // Check if user is admin
     if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only." });
+      res.status(403).json({ message: "Access denied. Admins only." });
+      return;
     }
 
     const { id } = req.params;
@@ -163,7 +173,8 @@ export const getMovieWiseReview = async (
 
     // If neither Movie nor Series found, return error
     if (!movie && !series) {
-      return res.status(404).json({ message: "Content not found" });
+      res.status(404).json({ message: "Content not found" });
+      return;
     }
 
     // Fetch all reviews for the given movie
@@ -174,7 +185,7 @@ export const getMovieWiseReview = async (
         select: "name profilePicture",
       });
 
-    return res.status(200).json({
+    res.status(200).json({
       data: {
         id,
         movieTitle: movie ? movie.title : series?.title,
@@ -182,10 +193,12 @@ export const getMovieWiseReview = async (
         reviews,
       },
     });
+    return;
   } catch (err) {
-    return res.status(500).json({
+    res.status(500).json({
       message: (err as Error).message,
     });
+    return;
   }
 };
 
@@ -193,14 +206,15 @@ export const getMovieWiseReview = async (
 export const deleteReview = async (
   req: AuthRequest,
   res: Response
-): Promise<string | any> => {
+): Promise<void> => {
   try {
     const { reviewId } = req.params;
 
     // Check if review exists
     const review = await Review.findById(reviewId);
     if (!review) {
-      return res.status(404).json({ message: "Review not found" });
+      res.status(404).json({ message: "Review not found" });
+      return;
     }
 
     // Delete the review
@@ -212,10 +226,12 @@ export const deleteReview = async (
       { $pull: { reviews: { reviewId: reviewId } } }
     );
 
-    return res.status(200).json({ message: "Review deleted successfully" });
+    res.status(200).json({ message: "Review deleted successfully" });
+    return;
   } catch (err) {
-    return res.status(500).json({
+    res.status(500).json({
       message: (err as Error).message,
     });
+    return;
   }
 };

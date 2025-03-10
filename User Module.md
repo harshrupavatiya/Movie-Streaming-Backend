@@ -34,11 +34,11 @@
 - Edit Profile - PUT 
 -- body -> name1 contactNo1 dateOfBirth1 gender1 image3
 
-- Get UserList - http://localhost:7777/user/getUserList - GET
+- Get UserList - http://localhost:7777/user/list - GET
 -- queryParams -> search1 page2 limit 2
 
-- Create Admin - http://localhost:7777/user/createAdmin - PUT
+- Create Admin - http://localhost:7777/user/updateAdmin - PUT
 -- body -> userId1*
 
-- Toggle User isActive - http://localhost:7777/user/toggleUserIsActive - PUT
+- Toggle User isActive - http://localhost:7777/user/updateActiveStatus - PUT
 -- body -> userId1* isActive5*
