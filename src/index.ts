@@ -18,9 +18,6 @@ import seriesRouter from "./routes/series";
 import fileUpload from "express-fileupload";
 import episodeRouter from "./routes/episode";
 import continueWatchingRouter from "./routes/continueWatching";
-import { userAuth } from "./middlewares/Auth";
-import { getMostViewedSeriesList } from "./controllers/series";
-import { addDummmyData } from "./utils/dummyDataInput";
 
 // Create Express server
 const app = express();
