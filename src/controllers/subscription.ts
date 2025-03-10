@@ -84,7 +84,7 @@ export const memberSubscription = async (
                 tier: tier
             },
             customer: customer.id,
-            billing_address_collection: "required", // ✅ Requires user to enter address
+            billing_address_collection: "required", 
             customer_update: { address: "auto" },
         };
 
