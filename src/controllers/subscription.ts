@@ -84,7 +84,7 @@ export const memberSubscription = async (
                 tier: tier
             },
             customer: customer.id,
-            billing_address_collection: "required", 
+            billing_address_collection: "required",
             customer_update: { address: "auto" },
         };
 
@@ -97,53 +97,5 @@ export const memberSubscription = async (
             status: "error",
             message: error instanceof Error ? error.message : "Unknown error occurred",
         });
-    }
-};
-export const verifyPayment = async (req: Request, res: Response): Promise<string | any> => {
-    const { session_id } = req.query;
-
-    if (!session_id || typeof session_id !== "string") {
-        return res.status(400).json({ success: false, message: "Valid session ID string is required" });
-    }
-
-    try {
-        const session = await stripe.checkout.sessions.retrieve(session_id as string);
-
-
-        if (session.payment_status === "paid") {
-
-            // Extract user ID, tier, and billing cycle from metadata
-            const userId = session.metadata?.userId;
-            const tier = session.metadata?.tier;
-            const billingCycle = session.metadata?.billingCycle;
-
-            if (!userId || !tier || !billingCycle) {
-                return res.status(400).json({ success: false, message: "Missing subscription data" });
-
-            }
-
-            // Calculate new subscription dates
-            const startDate = new Date();
-            const endDate = billingCycle === "monthly"
-                ? new Date(new Date().setMonth(new Date().getMonth() + 1)) // Add 1 month
-                : new Date(new Date().setFullYear(new Date().getFullYear() + 1)); // Add 1 year
-
-            // Update the user's subscription in the database
-            await User.findByIdAndUpdate(userId, {
-                $set: {
-                    "subscription.plan": tier,
-                    "subscription.billingCycle": billingCycle,
-                    "subscription.startDate": startDate,
-                    "subscription.endDate": endDate,
-                    // "subscription.stripeSessionId": session.id,
-                },
-            });
-
-            return res.json({ success: true, message: "Payment successful and subscription updated!" });
-        } else {
-            return res.json({ success: false, message: "Payment not completed." });
-        }
-    } catch (error) {
-        return res.status(500).json({ success: false, message: "Error verifying payment" });
     }
 };
