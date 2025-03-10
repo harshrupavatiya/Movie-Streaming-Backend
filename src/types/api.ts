@@ -1,11 +1,18 @@
 import { Request } from "express";
 import { IEpisode, ISeries, IUser } from "./db.model";
 
+interface IPagination {
+  skipDocNumber: number;
+  limitNumber: number;
+}
 export interface AuthRequest extends Request {
   user?: IUser;
   seriesPayload?: Partial<ISeries>;
   episodePayload?: Partial<IEpisode>;
+  pagination?: IPagination;
 }
+
+
 
 export interface IEditDetails {
   name?: string;

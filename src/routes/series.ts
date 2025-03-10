@@ -15,33 +15,68 @@ import {
   incrementSeriesView,
   updateSeries,
 } from "../controllers/series";
+import {
+  getEditSeriesPayload,
+  getNewSeriesPayload,
+} from "../middlewares/getSeriesPayload";
+import { getPaginationInfo } from "../middlewares/getPaginationPayload";
 const seriesRouter = express.Router();
 
 seriesRouter.get("/get/:seriesId", userAuth, getSeriesById);
 
-seriesRouter.get("/genre/:genre", userAuth, getSeriesByGenre);
+seriesRouter.get(
+  "/genre/:genre",
+  userAuth,
+  getPaginationInfo,
+  getSeriesByGenre
+);
 
-seriesRouter.get("/mostLiked", userAuth, getMostLikedSeriesList);
+seriesRouter.get(
+  "/mostLiked",
+  userAuth,
+  getPaginationInfo,
+  getMostLikedSeriesList
+);
 
-seriesRouter.get("/mostViewed", userAuth, getMostViewedSeriesList);
+seriesRouter.get(
+  "/mostViewed",
+  userAuth,
+  getPaginationInfo,
+  getMostViewedSeriesList
+);
 
-seriesRouter.get("/topRated", userAuth, getTopRatedSeriesList);
+seriesRouter.get(
+  "/topRated",
+  userAuth,
+  getPaginationInfo,
+  getTopRatedSeriesList
+);
 
-seriesRouter.get("/latestReleased", userAuth, getLatestReleasedSeriesList);
+seriesRouter.get(
+  "/latestReleased",
+  userAuth,
+  getPaginationInfo,
+  getLatestReleasedSeriesList
+);
 
-seriesRouter.get("/popular", userAuth, getPopularSeriesList);
+seriesRouter.get("/popular", userAuth, getPaginationInfo, getPopularSeriesList);
 
 seriesRouter.post("/viewIncrement/:movieId", userAuth, incrementSeriesView);
 
 // for admins only
-seriesRouter.post("/create", userAuth, createSeries);
+seriesRouter.post("/create", userAuth, getNewSeriesPayload, createSeries);
 
 seriesRouter.delete("/delete/:seriesId", userAuth, deleteSeries);
 
-seriesRouter.put("/update", userAuth, updateSeries);
+seriesRouter.put("/update", userAuth, getEditSeriesPayload, updateSeries);
 
-seriesRouter.get("/list", userAuth, getSeriesListBySearch);
+seriesRouter.get("/list", userAuth, getPaginationInfo, getSeriesListBySearch);
 
-seriesRouter.get("/searchByAdmin", userAuth, getSeriesNamesAndIdBySearch);
+seriesRouter.get(
+  "/searchByAdmin",
+  userAuth,
+  getPaginationInfo,
+  getSeriesNamesAndIdBySearch
+);
 
 export default seriesRouter;

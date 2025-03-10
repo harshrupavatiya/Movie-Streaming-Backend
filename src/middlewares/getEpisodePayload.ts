@@ -11,6 +11,7 @@ import { validateFileContent } from "../validators/mediaFile";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import { UploadedFile } from "express-fileupload";
 import fs from "fs";
+import Episode from "../models/episode";
 
 interface IEpisodeReqBody {
   title?: string;
@@ -89,6 +90,17 @@ export const getNewEpisodePayload = async (
       res
         .status(400)
         .json({ message: "Episode number must be a numeric string." });
+      return;
+    }
+    const isDuplicateEpisodeNumber = await Episode.find({
+      seriesId,
+      seasonNumber,
+      episodeNumber,
+    });
+    if (isDuplicateEpisodeNumber && isDuplicateEpisodeNumber.length > 0) {
+      res.status(500).json({
+        message: `Episode number: ${episodeNumber} is already exists.`,
+      });
       return;
     }
     newPayload.episodeNumber = parseInt(episodeNumber);
