@@ -49,12 +49,10 @@ export const memberSubscription = async (
           customer: customer.id,
           return_url: "http://localhost:3012/",
         });
-        return res
-          .status(200)
-          .json({
-            status: "existing_subscription",
-            redirectUrl: stripeSession.url,
-          });
+        return res.status(200).json({
+          status: "existing_subscription",
+          redirectUrl: stripeSession.url,
+        });
       }
     } else {
       // Step 4: Create a new customer
@@ -76,7 +74,7 @@ export const memberSubscription = async (
     // Step 5: Create Stripe Checkout session
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       success_url:
-        "http://localhost:3012/payment-success?session_id={CHECKOUT_SESSION_ID}",
+        "http://localhost:3012/payment-success",
       cancel_url: "http://localhost:3012/payment-cancel",
       payment_method_types: ["card"],
       mode: "subscription",
@@ -106,41 +104,5 @@ export const memberSubscription = async (
       message:
         error instanceof Error ? error.message : "Unknown error occurred",
     });
-  }
-};
-
-export const varifyPayment = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
-  try {
-    const { sessionId } = req.query;
-
-    if (!sessionId) {
-      res.status(400).json({ message: "sessionId is required" });
-      return;
-    }
-
-    const session = await stripe.checkout.sessions.retrieve(sessionId as string);
-
-    if (!session) {
-      res.status(404).json({ message: "Session not found" });
-      return;
-    }
-
-    res.status(200).json({
-      message: "Payment done successfully",
-      data: {
-        sessionId: session.id,
-        payment_status: session.payment_status,
-        customer_email: session.customer_details?.email,
-        amount_total: session.amount_total,
-        currency: session.currency,
-      },
-    });
-    return;
-  } catch (err) {
-    res.status(500).json({ message: (err as Error).message });
-    return;
   }
 };
