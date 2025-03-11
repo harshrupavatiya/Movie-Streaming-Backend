@@ -24,7 +24,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     // Get data from req body
     const { email, password } = req.body;
-    console.log(email, password)
 
     // Check if user email exists
     const user = await User.findOne({ email });

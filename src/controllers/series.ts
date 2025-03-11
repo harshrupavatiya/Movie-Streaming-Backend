@@ -644,7 +644,9 @@ export const getSeriesListBySearch = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if (!skipDocNumber || !limitNumber) {
+    console.log(skipDocNumber, limitNumber);
+
+    if ( skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
