@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "dev": "nodemon src/index.ts",
+    "start": "node dist/index.js",
     "build": "tsc"
   },
   "keywords": [],
@@ -19,8 +20,9 @@
     "@types/otp-generator": "^4.0.2",
     "@types/stripe": "^8.0.416",
     "express": "^4.21.2",
+    "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.2",

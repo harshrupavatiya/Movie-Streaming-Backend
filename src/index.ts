@@ -72,8 +72,6 @@ app.use("/series", seriesRouter);
 app.use("/review", reviewRouter);
 app.use("/liked", likedRouter);
 app.use("/stripe", subscriptionRouter);
-
-
 app.use("/watchlist", watchlistRouter);
 app.use("/search", searchRouter);
 app.use("/cast", castRouter);
