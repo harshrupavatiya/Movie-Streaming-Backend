@@ -24,40 +24,15 @@ const seriesRouter = express.Router();
 
 seriesRouter.get("/get/:seriesId", userAuth, getSeriesById);
 
-seriesRouter.get(
-  "/genre/:genre",
-  userAuth,
-  getPaginationInfo,
-  getSeriesByGenre
-);
+seriesRouter.get("/genre/:genre", userAuth, getPaginationInfo, getSeriesByGenre);
 
-seriesRouter.get(
-  "/mostLiked",
-  userAuth,
-  getPaginationInfo,
-  getMostLikedSeriesList
-);
+seriesRouter.get("/mostLiked", userAuth, getPaginationInfo, getMostLikedSeriesList);
 
-seriesRouter.get(
-  "/mostViewed",
-  userAuth,
-  getPaginationInfo,
-  getMostViewedSeriesList
-);
+seriesRouter.get("/mostViewed", userAuth, getPaginationInfo, getMostViewedSeriesList);
 
-seriesRouter.get(
-  "/topRated",
-  userAuth,
-  getPaginationInfo,
-  getTopRatedSeriesList
-);
+seriesRouter.get("/topRated", userAuth, getPaginationInfo, getTopRatedSeriesList);
 
-seriesRouter.get(
-  "/latestReleased",
-  userAuth,
-  getPaginationInfo,
-  getLatestReleasedSeriesList
-);
+seriesRouter.get("/latestReleased", userAuth, getPaginationInfo, getLatestReleasedSeriesList);
 
 seriesRouter.get("/popular", userAuth, getPaginationInfo, getPopularSeriesList);
 
@@ -72,11 +47,6 @@ seriesRouter.put("/update", userAuth, getEditSeriesPayload, updateSeries);
 
 seriesRouter.get("/list", userAuth, getPaginationInfo, getSeriesListBySearch);
 
-seriesRouter.get(
-  "/searchByAdmin",
-  userAuth,
-  getPaginationInfo,
-  getSeriesNamesAndIdBySearch
-);
+seriesRouter.get("/searchByAdmin", userAuth, getPaginationInfo, getSeriesNamesAndIdBySearch);
 
 export default seriesRouter;
