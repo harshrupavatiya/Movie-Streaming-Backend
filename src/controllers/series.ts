@@ -133,7 +133,7 @@ export const getSeriesByGenre = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -338,7 +338,7 @@ export const getMostLikedSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -398,7 +398,7 @@ export const getMostViewedSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -458,7 +458,7 @@ export const getTopRatedSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -518,7 +518,7 @@ export const getLatestReleasedSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -578,7 +578,7 @@ export const getPopularSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -644,38 +644,27 @@ export const getSeriesListBySearch = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    console.log(skipDocNumber, limitNumber);
-
-    if ( skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
 
     const searchRegExp = new RegExp(search as string, "i");
 
-    const seriesList = await Series.aggregate([
-      {
-        $match: {
-          title: searchRegExp,
-        },
-      },
-      {
-        $skip: skipDocNumber,
-      },
-      {
-        $limit: limitNumber,
-      },
-      {
-        $project: {
-          title: 1,
-          description: 1,
-          rating: 1,
-          poster: 1,
-          casts: 1,
-          directors: 1,
-        },
-      },
-    ]);
+    const seriesList = await Series.find({
+      title: searchRegExp,
+    })
+      .populate({
+        path: "casts",
+        select: "name",
+      })
+      .populate({
+        path: "directors",
+        select: "name",
+      })
+      .skip(skipDocNumber)
+      .limit(limitNumber)
+      .sort({ releaseDate: -1 });
 
     res.status(200).json({
       message: "searched series List for admin",
@@ -707,7 +696,7 @@ export const getSeriesNamesAndIdBySearch = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
