@@ -175,7 +175,7 @@ export const getSeriesByGenre = async (
     // if seriesData is empty then send error of invalid genreId
     if (!seriesData || seriesData.length <= 0) {
       res
-        .status(400)
+        .status(200)
         .json({ message: "no series available with given genreId" });
       return;
     }
@@ -369,7 +369,7 @@ export const getMostLikedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
@@ -429,7 +429,7 @@ export const getMostViewedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
@@ -489,7 +489,7 @@ export const getTopRatedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
@@ -549,7 +549,7 @@ export const getLatestReleasedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
@@ -587,7 +587,7 @@ export const getPopularSeriesList = async (
       {
         $match: {
           rating: { $gte: 7.5 },
-          likes: { $gte: 10 },
+          likes: { $gte: 0 },
         },
       },
       {
@@ -613,7 +613,7 @@ export const getPopularSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 

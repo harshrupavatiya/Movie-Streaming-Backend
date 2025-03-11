@@ -501,7 +501,7 @@ export const getMoviesByGenre = async (
     // if moviweData is empty then send error of invalid genreId
     if (!movieData || movieData.length <= 0) {
       res
-        .status(400)
+        .status(200)
         .json({ message: "no Movies available with given genreId" });
       return;
     }
@@ -618,7 +618,7 @@ export const getMostViewedMoviesList = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 
@@ -696,7 +696,7 @@ export const getMostLikedMoviesList = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 
@@ -820,7 +820,7 @@ export const getTopRatedMovies = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 
@@ -893,7 +893,7 @@ export const getLatestReleasedMovies = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 
@@ -941,7 +941,7 @@ export const getPopularMoviesList = async (
       {
         $match: {
           rating: { $gte: 7.5 },
-          likes: { $gte: 10 },
+          likes: { $gte: 0 },
         },
       },
       {
@@ -970,7 +970,7 @@ export const getPopularMoviesList = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 
