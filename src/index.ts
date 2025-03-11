@@ -9,6 +9,7 @@ import userRouter from "./routes/user";
 import movieRouter from "./routes/movie";
 import reviewRouter from "./routes/review";
 import likedRouter from "./routes/like";
+import subscriptionRouter from './routes/subscription'
 import watchlistRouter from "./routes/watchlist";
 import searchRouter from "./routes/search";
 import castRouter from "./routes/cast";
@@ -42,6 +43,11 @@ app.use(cors(corsOptions));
 // Handle preflight requests (OPTIONS)
 app.options("*", cors(corsOptions));
 
+// The reason i wrote this here because stripe does not accept .json format so i am using this route before intializing app.use(express.json) so that it will not give error stripe expects raw format 
+app.use('/webhook', express.raw({ type: "application/json" }), subscriptionRouter);
+
+
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -65,12 +71,15 @@ app.use("/user", userRouter);
 app.use("/series", seriesRouter);
 app.use("/review", reviewRouter);
 app.use("/liked", likedRouter);
+app.use("/stripe", subscriptionRouter);
 app.use("/watchlist", watchlistRouter);
 app.use("/search", searchRouter);
 app.use("/cast", castRouter);
 app.use("/director", directorRouter);
 app.use("/episode", episodeRouter);
 app.use("/continue-watching", continueWatchingRouter);
+
+
 const port = PORT || 3000;
 
 Promise.all([connectDB(), connectCloudinary()])

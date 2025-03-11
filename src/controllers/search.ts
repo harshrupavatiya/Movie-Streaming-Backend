@@ -8,6 +8,7 @@ export const searchContent = async (
 ): Promise<void> => {
   try {
     let { search } = req.query;
+    console.log(search, "search at line 8 search controller")
 
     if (!search || typeof search !== "string") {
       res.status(400).json({ message: "Search Body is required" });
