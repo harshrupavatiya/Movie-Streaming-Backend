@@ -63,11 +63,27 @@ const userSchema = new Schema<IUser>(
         enum: ["free", "basic", "premium"],
         default: "free",
       },
+      status: {
+        type: String,
+        default: "inactive"
+      },
+      billingCycle: {
+        type: String,
+        enum: ["monthly", "yearly", ""], 
+        default: "",
+      },
+      purchaseDate: {
+        type: Date, 
+      },
       startDate: {
-        type: Date,
+        type: Date, 
       },
       endDate: {
+        type: Date, 
+      },
+      cancelAt: {
         type: Date,
+        default: null
       },
     },
     watchlist: [

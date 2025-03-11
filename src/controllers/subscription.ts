@@ -1,0 +1,146 @@
+import { Request, Response } from "express";
+import Stripe from "stripe";
+import dotenv from "dotenv";
+import STRIPE_PRICE_IDS from "../config/stripe";
+import { AuthRequest } from "../types/api";
+
+dotenv.config();
+
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+if (!STRIPE_SECRET_KEY) {
+  console.error("STRIPE_SECRET_KEY is not set in environment variables.");
+  process.exit(1);
+}
+
+const stripe = new Stripe(STRIPE_SECRET_KEY);
+
+export const memberSubscription = async (
+  req: AuthRequest,
+  res: Response
+): Promise<Response | any> => {
+  try {
+    const { selectedPlan } = req.body;
+    const user = req.user;
+    if (!user) return;
+
+    const billingCycle = selectedPlan.type === "monthly" ? "monthly" : "yearly";
+    const tier = selectedPlan.tier as "basic" | "premium";
+    let customer: Stripe.Customer;
+
+    // Step 1: Check if the customer already exists
+    const existingCustomers = await stripe.customers.list({
+      email: user.email,
+      limit: 1,
+    });
+
+    if (existingCustomers.data.length > 0) {
+      customer = existingCustomers.data[0];
+
+      // Step 2: Check if the customer has an active subscription
+      const activeSubscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: "active",
+        limit: 1,
+      });
+
+      // Step 3: Redirect existing customer to billing portal
+      if (activeSubscriptions.data.length > 0) {
+        const stripeSession = await stripe.billingPortal.sessions.create({
+          customer: customer.id,
+          return_url: "http://localhost:3012/",
+        });
+        return res
+          .status(200)
+          .json({
+            status: "existing_subscription",
+            redirectUrl: stripeSession.url,
+          });
+      }
+    } else {
+      // Step 4: Create a new customer
+      customer = await stripe.customers.create({
+        email: user.email,
+        metadata: {
+          userId: user?._id.toString(),
+          billingCycle: billingCycle,
+          tier: tier,
+        },
+      });
+    }
+
+    const priceId = STRIPE_PRICE_IDS[tier]?.[billingCycle];
+    if (!priceId) {
+      throw new Error(`Price ID not found for ${tier} ${billingCycle}`);
+    }
+
+    // Step 5: Create Stripe Checkout session
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
+      success_url:
+        "http://localhost:3012/payment-success?session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: "http://localhost:3012/payment-cancel",
+      payment_method_types: ["card"],
+      mode: "subscription",
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        userId: user._id.toString(),
+        billingCycle: billingCycle,
+        tier: tier,
+      },
+      customer: customer.id,
+      billing_address_collection: "required",
+      customer_update: { address: "auto" },
+    };
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+    if (session) {
+      return res.json({ id: session.id });
+    }
+  } catch (error: unknown) {
+    return res.status(400).json({
+      status: "error",
+      message:
+        error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+};
+
+export const varifyPayment = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { sessionId } = req.query;
+
+    if (!sessionId) {
+      res.status(400).json({ message: "sessionId is required" });
+      return;
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId as string);
+
+    if (!session) {
+      res.status(404).json({ message: "Session not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Payment done successfully",
+      data: {
+        sessionId: session.id,
+        payment_status: session.payment_status,
+        customer_email: session.customer_details?.email,
+        amount_total: session.amount_total,
+        currency: session.currency,
+      },
+    });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
+};

@@ -3,16 +3,12 @@ import { StringValue } from "ms";
 
 type ContentType = "Movie" | "Series" | "Episode";
 
-interface ISubscription {
+export interface ISubscription {
   plan: "free" | "basic" | "premium";
   startDate?: Date;
   endDate?: Date;
 }
 
-export interface ICastMember {
-  castId: mongoose.Types.ObjectId;
-  roleName?: string;
-}
 
 // Define Liked Content Interface
 export interface ILikedContent {
@@ -169,3 +165,5 @@ export interface IReview extends Document {
   rating: number;
   comment?: string;
 }
+
+
