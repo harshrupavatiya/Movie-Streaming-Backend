@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Stripe from "stripe";
 import dotenv from "dotenv";
 import User from "../models/user";
+import { MONTHLY, YEARLY } from "../utils/constants";
 
 dotenv.config();
 
@@ -129,7 +130,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
             }
             try {
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-                const billingCycle = subscription.items.data[0]?.plan.interval === "month" ? "monthly" : "yearly";
+                const billingCycle = subscription.items.data[0]?.plan.interval === "month" ? MONTHLY : YEARLY;
                 const startDate = new Date(subscription.current_period_start * 1000);
                 const endDate = new Date(subscription.current_period_end * 1000);
 
