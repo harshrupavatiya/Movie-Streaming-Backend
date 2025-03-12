@@ -107,7 +107,6 @@ export const getAllMovies = async (
   res: Response
 ): Promise<void> => {
   try {
-    // Default values for pagination
     const page = parseInt((req.query.page as string) || "1", 10);
     const limit = parseInt((req.query.limit as string) || "10", 10);
     const skip = (page - 1) * limit;
@@ -125,8 +124,6 @@ export const getAllMovies = async (
       .skip(skip)
       .limit(limit)
       .sort({ releaseDate: -1 });
-
-    const totalMovies = await Movie.countDocuments();
 
     // Check user role (if authenticated)
     const isAdmin = req.user && req.user.role === "admin";
@@ -160,9 +157,9 @@ export const getAllMovies = async (
 
     res.status(200).json({
       metadata: {
-        totalMovies,
+        totalMovies: movies.length,
         currentPage: page,
-        totalPages: Math.ceil(totalMovies / limit),
+        totalPages: Math.ceil(movies.length / limit),
       },
       data: { movies: formattedMovies },
     });
@@ -422,7 +419,7 @@ export const deleteMovieById = async (
   }
 };
 
-// Filter Movies by Genredone---------------------------------------------------------------------------
+// Filter Movies by Genre done---------------------------------------------------------------------------
 export const getMoviesByGenre = async (
   req: AuthRequest,
   res: Response
@@ -433,10 +430,7 @@ export const getMoviesByGenre = async (
       res.status(400).json({ message: "Access denied, Please login" });
     }
 
-    // get genre from parameters
     const { genre } = req.params;
-    // get page and limit from query parameters
-    let { page = "1", limit = "20" } = req.query;
 
     if (!genre) {
       res.status(400).json({ message: "Genre parameter is required." });
@@ -445,8 +439,9 @@ export const getMoviesByGenre = async (
 
     // Convert parameters to numbers
     const genreNumber: number = parseInt(genre as string, 10);
-    const pageNumber: number = parseInt(page as string, 10);
-    const limitNumber: number = parseInt(limit as string, 10);
+    const pageNumber: number = parseInt(req.query.page as string || "1", 10);
+    const limitNumber: number = parseInt(req.query.limit as string || "10", 10);
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     // Validatiing genreNumber
     if (isNaN(genreNumber) || genreNumber < 1) {
@@ -467,9 +462,6 @@ export const getMoviesByGenre = async (
         .json({ message: "Limit must be a positive integer (1-100)" });
       return;
     }
-
-    // calculate the number for skip docs
-    const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     // applying aggregation on movie collection
     const movieData = await Movie.aggregate([
@@ -506,9 +498,15 @@ export const getMoviesByGenre = async (
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "list of Movies", data: { moviesList: movieData } });
+    res.status(200).json({
+      metadata: {
+        totalMovies: movieData.length,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(movieData.length / limitNumber),
+      },
+      message: "list of Movies",
+      data: { moviesList: movieData },
+    });
     return;
   } catch (error) {
     res.status(500).json({
@@ -566,12 +564,9 @@ export const getMostViewedMoviesList = async (
       return;
     }
 
-    // Get page and limit from query parameters
-    let { page = "1", limit = "10" } = req.query;
-
-    // Convert parameters to numbers
-    const pageNumber: number = parseInt(page as string, 10);
-    const limitNumber: number = parseInt(limit as string, 10);
+    const pageNumber: number = parseInt(req.query.page as string || "1", 10);
+    const limitNumber:number =parseInt(req.query.limit as string || "10", 10);
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     // Validating pageNumber
     if (isNaN(pageNumber) || pageNumber < 1) {
@@ -586,9 +581,6 @@ export const getMostViewedMoviesList = async (
         .json({ message: "Limit must be a positive integer (1-100)" });
       return;
     }
-
-    // Calculate the number for skip docs
-    const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     const moviesList = await Movie.aggregate([
       {
@@ -622,9 +614,15 @@ export const getMostViewedMoviesList = async (
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Most Viewed Movies List", data: { moviesList } });
+    res.status(200).json({
+      metadata: {
+        totalMovies: moviesList.length,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(moviesList.length / limitNumber),
+      },
+      message: "Most Viewed Movies List",
+      data: { moviesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -644,12 +642,9 @@ export const getMostLikedMoviesList = async (
       return;
     }
 
-    // Get page and limit from query parameters
-    let { page = "1", limit = "10" } = req.query;
-
-    // Convert parameters to numbers
-    const pageNumber: number = parseInt(page as string, 10);
-    const limitNumber: number = parseInt(limit as string, 10);
+    const pageNumber: number = parseInt((req.query.page as string) || "1", 10);
+    const limitNumber:number =parseInt((req.query.limit as string) || "10",10);
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     // Validating pageNumber
     if (isNaN(pageNumber) || pageNumber < 1) {
@@ -664,9 +659,6 @@ export const getMostLikedMoviesList = async (
         .json({ message: "Limit must be a positive integer (1-100)" });
       return;
     }
-
-    // Calculate the number for skip docs
-    const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     const moviesList = await Movie.aggregate([
       {
@@ -700,9 +692,15 @@ export const getMostLikedMoviesList = async (
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Most Liked Movies List", data: { moviesList } });
+    res.status(200).json({
+      metadata: {
+        totalMovies: moviesList.length,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(moviesList.length / limitNumber),
+      },
+      message: "Most Liked Movies List",
+      data: { moviesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -768,12 +766,9 @@ export const getTopRatedMovies = async (
       return;
     }
 
-    // Get page and limit from query parameters
-    let { page = "1", limit = "10" } = req.query;
-
-    // Convert parameters to numbers
-    const pageNumber: number = parseInt(page as string, 10);
-    const limitNumber: number = parseInt(limit as string, 10);
+    const pageNumber: number = parseInt((req.query.page as string) || "1", 10);
+    const limitNumber:number =parseInt((req.query.limit as string) || "10",10);
+    const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     // Validating pageNumber
     if (isNaN(pageNumber) || pageNumber < 1) {
@@ -788,9 +783,6 @@ export const getTopRatedMovies = async (
         .json({ message: "Limit must be a positive integer (1-100)" });
       return;
     }
-
-    // Calculate the number for skip docs
-    const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     const moviesList = await Movie.aggregate([
       {
@@ -824,9 +816,15 @@ export const getTopRatedMovies = async (
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Top Rated Movies List", data: { moviesList } });
+    res.status(200).json({
+      metadata: {
+        totalMovies: moviesList.length,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(moviesList.length / limitNumber),
+      },
+      message: "Top Rated Movies List",
+      data: { moviesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -845,11 +843,11 @@ export const getLatestReleasedMovies = async (
       return;
     }
 
-    let { page = "1", limit = "10" } = req.query;
-
-    // Convert parameters to numbers
-    const pageNumber: number = parseInt(page as string, 10);
-    const limitNumber: number = parseInt(limit as string, 10);
+    const pageNumber: number = parseInt((req.query.page as string) || "1", 10);
+    const limitNumber: number = parseInt(
+      (req.query.limit as string) || "10",
+      10
+    );
 
     if (isNaN(pageNumber) || pageNumber < 1) {
       res.status(400).json({ message: "Page must be a positive integer (≥1)" });
@@ -897,9 +895,15 @@ export const getLatestReleasedMovies = async (
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Latest Released Movies List", data: { moviesList } });
+    res.status(200).json({
+      metadata: {
+        totalMovies: moviesList.length,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(moviesList.length / limitNumber),
+      },
+      message: "Latest Released Movies List",
+      data: { moviesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -918,10 +922,8 @@ export const getPopularMoviesList = async (
       return;
     }
 
-    let { page = "1", limit = "10" } = req.query;
-
-    const pageNumber: number = parseInt(page as string, 10);
-    const limitNumber: number = parseInt(limit as string, 10);
+    const pageNumber: number = parseInt((req.query.page as string) || "1", 10);
+    const limitNumber: number = parseInt((req.query.limit as string) || "10",10);
 
     if (isNaN(pageNumber) || pageNumber < 1) {
       res.status(400).json({ message: "Page must be a positive integer (>0)" });
@@ -974,9 +976,15 @@ export const getPopularMoviesList = async (
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Popular Movies List", data: { moviesList } });
+    res.status(200).json({
+      metadata: {
+        totalMovies: moviesList.length,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(moviesList.length / limitNumber),
+      },
+      message: "Popular Movies List",
+      data: { moviesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
