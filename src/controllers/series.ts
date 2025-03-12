@@ -5,6 +5,7 @@ import Episode from "../models/episode";
 import Like from "../models/like";
 import mongoose from "mongoose";
 
+// Add series---------------------------------------------------------------------------
 export const createSeries = async (
   req: AuthRequest,
   res: Response
@@ -36,6 +37,7 @@ export const createSeries = async (
   }
 };
 
+// Delete series------------------------------------------------------------------------
 export const deleteSeries = async (
   req: AuthRequest,
   res: Response
@@ -70,6 +72,7 @@ export const deleteSeries = async (
   }
 };
 
+// Update series info-------------------------------------------------------------------
 export const updateSeries = async (
   req: AuthRequest,
   res: Response
@@ -112,6 +115,7 @@ export const updateSeries = async (
   }
 };
 
+// Get series by genre------------------------------------------------------------------
 export const getSeriesByGenre = async (
   req: AuthRequest,
   res: Response
@@ -133,7 +137,7 @@ export const getSeriesByGenre = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -175,14 +179,20 @@ export const getSeriesByGenre = async (
     // if seriesData is empty then send error of invalid genreId
     if (!seriesData || seriesData.length <= 0) {
       res
-        .status(400)
+        .status(200)
         .json({ message: "no series available with given genreId" });
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "list of series", data: { seriesList: seriesData } });
+    res.status(200).json({
+      metadata: {
+        totalSeries: seriesData.length,
+        currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
+        totalPages: Math.ceil(seriesData.length / limitNumber),
+      },
+      message: "list of series",
+      data: { seriesList: seriesData },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -190,6 +200,7 @@ export const getSeriesByGenre = async (
   }
 };
 
+// Get series by Id---------------------------------------------------------------------
 export const getSeriesById = async (
   req: AuthRequest,
   res: Response
@@ -323,6 +334,7 @@ export const getSeriesById = async (
   }
 };
 
+// Get most liked series list-----------------------------------------------------------
 export const getMostLikedSeriesList = async (
   req: AuthRequest,
   res: Response
@@ -338,7 +350,7 @@ export const getMostLikedSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -369,13 +381,19 @@ export const getMostLikedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Most Liked Series List", data: { seriesList } });
+    res.status(200).json({
+      metadata: {
+        totalSeries: seriesList.length,
+        currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
+        totalPages: Math.ceil(seriesList.length / limitNumber),
+      },
+      message: "Most Liked Series List",
+      data: { seriesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -383,6 +401,7 @@ export const getMostLikedSeriesList = async (
   }
 };
 
+// Get most viewed series list----------------------------------------------------------
 export const getMostViewedSeriesList = async (
   req: AuthRequest,
   res: Response
@@ -398,7 +417,7 @@ export const getMostViewedSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -429,13 +448,19 @@ export const getMostViewedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Most Viewed Series List", data: { seriesList } });
+    res.status(200).json({
+      metadata: {
+        totalSeries: seriesList.length,
+        currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
+        totalPages: Math.ceil(seriesList.length / limitNumber),
+      },
+      message: "Most Viewed Series List",
+      data: { seriesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -443,6 +468,7 @@ export const getMostViewedSeriesList = async (
   }
 };
 
+// Get top rated series list------------------------------------------------------------
 export const getTopRatedSeriesList = async (
   req: AuthRequest,
   res: Response
@@ -458,7 +484,7 @@ export const getTopRatedSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -489,13 +515,19 @@ export const getTopRatedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Top Rated Series List", data: { seriesList } });
+    res.status(200).json({
+      metadata: {
+        totalSeries: seriesList.length,
+        currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
+        totalPages: Math.ceil(seriesList.length / limitNumber),
+      },
+      message: "Top Rated Series List",
+      data: { seriesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -503,6 +535,7 @@ export const getTopRatedSeriesList = async (
   }
 };
 
+// Get latest released series list------------------------------------------------------
 export const getLatestReleasedSeriesList = async (
   req: AuthRequest,
   res: Response
@@ -518,7 +551,7 @@ export const getLatestReleasedSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -549,13 +582,19 @@ export const getLatestReleasedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Latest Released Series List", data: { seriesList } });
+    res.status(200).json({
+      metadata: {
+        totalSeries: seriesList.length,
+        currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
+        totalPages: Math.ceil(seriesList.length / limitNumber),
+      },
+      message: "Latest Released Series List",
+      data: { seriesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -563,6 +602,7 @@ export const getLatestReleasedSeriesList = async (
   }
 };
 
+// Get popular series list--------------------------------------------------------------
 export const getPopularSeriesList = async (
   req: AuthRequest,
   res: Response
@@ -578,7 +618,7 @@ export const getPopularSeriesList = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -587,7 +627,7 @@ export const getPopularSeriesList = async (
       {
         $match: {
           rating: { $gte: 7.5 },
-          likes: { $gte: 10 },
+          likes: { $gte: 0 },
         },
       },
       {
@@ -613,13 +653,19 @@ export const getPopularSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Popular Series List", data: { seriesList } });
+    res.status(200).json({
+      metadata: {
+        totalSeries: seriesList.length,
+        currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
+        totalPages: Math.ceil(seriesList.length / limitNumber),
+      },
+      message: "Popular Series List",
+      data: { seriesList },
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -627,6 +673,7 @@ export const getPopularSeriesList = async (
   }
 };
 
+// Get series list by search------------------------------------------------------------
 export const getSeriesListBySearch = async (
   req: AuthRequest,
   res: Response
@@ -644,40 +691,34 @@ export const getSeriesListBySearch = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    console.log(skipDocNumber, limitNumber);
-
-    if ( skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
 
     const searchRegExp = new RegExp(search as string, "i");
 
-    const seriesList = await Series.aggregate([
-      {
-        $match: {
-          title: searchRegExp,
-        },
-      },
-      {
-        $skip: skipDocNumber,
-      },
-      {
-        $limit: limitNumber,
-      },
-      {
-        $project: {
-          title: 1,
-          description: 1,
-          rating: 1,
-          poster: 1,
-          casts: 1,
-          directors: 1,
-        },
-      },
-    ]);
+    const seriesList = await Series.find({
+      title: searchRegExp,
+    })
+      .populate({
+        path: "casts",
+        select: "name",
+      })
+      .populate({
+        path: "directors",
+        select: "name",
+      })
+      .skip(skipDocNumber)
+      .limit(limitNumber)
+      .sort({ releaseDate: -1 });
 
     res.status(200).json({
+      metadata: {
+        totalSeries: seriesList.length,
+        currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
+        totalPages: Math.ceil(seriesList.length / limitNumber),
+      },
       message: "searched series List for admin",
       data: {
         seriesList,
@@ -690,6 +731,7 @@ export const getSeriesListBySearch = async (
   }
 };
 
+// Get series names and id by search----------------------------------------------------
 export const getSeriesNamesAndIdBySearch = async (
   req: AuthRequest,
   res: Response
@@ -707,7 +749,7 @@ export const getSeriesNamesAndIdBySearch = async (
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
-    if ( skipDocNumber === undefined || skipDocNumber < 0  || !limitNumber) {
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });
       return;
     }
@@ -735,6 +777,11 @@ export const getSeriesNamesAndIdBySearch = async (
     ]);
 
     res.status(200).json({
+      metadata: {
+        totalSeries: seriesList.length,
+        currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
+        totalPages: Math.ceil(seriesList.length / limitNumber),
+      },
       message: "searched series Name and ID for admin",
       data: {
         seriesList,
@@ -747,6 +794,7 @@ export const getSeriesNamesAndIdBySearch = async (
   }
 };
 
+// Series view count--------------------------------------------------------------------
 export const incrementSeriesView = async (
   req: AuthRequest,
   res: Response
