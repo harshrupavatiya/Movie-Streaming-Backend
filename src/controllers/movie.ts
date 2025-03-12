@@ -7,6 +7,8 @@ import { validateFileContent } from "../validators/mediaFile";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
 import Like from "../models/like";
+import Cast from "../models/cast";
+import Director from "../models/director";
 
 // Create a new movie (Admin only)done---------------------------------------------------------------------------
 export const createMovie = async (
@@ -124,6 +126,9 @@ export const getAllMovies = async (
       .limit(limit)
       .sort({ releaseDate: -1 });
 
+      const totalMovie = await Movie.countDocuments();
+      console.log("Total ", totalMovie);
+
     // Check user role (if authenticated)
     const isAdmin = req.user && req.user.role === "admin";
 
@@ -159,7 +164,7 @@ export const getAllMovies = async (
       metadata: {
         totalMovies: totalMovies,
         currentPage: page,
-        totalPages: Math.ceil(totalMovies / limit),
+        totalPages: Math.ceil(totalMovie / limit),
       },
       data: { movies: formattedMovies },
     });
@@ -357,6 +362,19 @@ export const updateMovieById = async (
       return;
     }
 
+    if(editMoviePayload.cast) {
+      await Cast.updateMany(
+        { _id: { $in: movie.cast } },
+        { $pull: { movies: movie._id } }
+      );
+    }
+    if(editMoviePayload.director) {
+      await Director.updateMany(
+        { _id: { $in: movie.director } },
+        { $pull: { movies: movie._id } }
+      );
+    }
+
     // Update existing movie document
     Object.assign(movie, editMoviePayload);
 
@@ -496,7 +514,7 @@ export const getMoviesByGenre = async (
     // if moviweData is empty then send error of invalid genreId
     if (!movieData || movieData.length <= 0) {
       res
-        .status(400)
+        .status(200)
         .json({ message: "no Movies available with given genreId" });
       return;
     }
@@ -617,7 +635,7 @@ export const getMostViewedMoviesList = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 
@@ -699,7 +717,7 @@ export const getMostLikedMoviesList = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 
@@ -830,7 +848,7 @@ export const getTopRatedMovies = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 
@@ -910,7 +928,7 @@ export const getLatestReleasedMovies = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 
@@ -966,7 +984,7 @@ export const getPopularMoviesList = async (
       {
         $match: {
           rating: { $gte: 7.5 },
-          likes: { $gte: 10 },
+          likes: { $gte: 0 },
         },
       },
       {
@@ -995,7 +1013,7 @@ export const getPopularMoviesList = async (
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
-      res.status(400).json({ message: "Data not available" });
+      res.status(200).json({ message: "Data not available" });
       return;
     }
 

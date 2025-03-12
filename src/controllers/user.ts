@@ -8,6 +8,7 @@ import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
 import { validateFileContent } from "../validators/mediaFile";
 import User from "../models/user";
+import { Admin } from "../utils/constants";
 
 export const changePassword = async (
   req: AuthRequest,
@@ -61,6 +62,7 @@ export const editProfile = async (
     // get object of updating field
     const editData = getValidUserUpdatePayload(req.body);
 
+    console.log(editData)
     // get profile image from req.files
     const file = req?.files?.image as UploadedFile;
 
@@ -120,11 +122,15 @@ export const editProfile = async (
       res.status(400).json({ message: "It seems like User not found" });
       return;
     }
+    console.log(editData,"line125")
+
 
     // assign updatedField to user model
     Object.assign(user, editData);
     // saving updated user model
     await user.save();
+    console.log(user, "346287423")
+
 
     res.status(200).json({
       message: "User details updated successfully",
@@ -143,7 +149,7 @@ export const getUserList = async (
 ): Promise<void> => {
   try {
     // check user is admin
-    if (req.user?.role !== "admin") {
+    if (req.user?.role !== Admin) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -202,12 +208,15 @@ export const getUserList = async (
       });
       return;
     }
+    const userDocLength = await User.countDocuments();
 
     // If search params is Empty
     const userList = await User.find({})
       .select("name email contactNo subscription.plan role isActive")
       .skip(skipDocNumber)
       .limit(limitNumber);
+
+      console.log(userDocLength);
 
     if (!userList || userList.length <= 0) {
       res.status(400).json({ message: "No data found" });

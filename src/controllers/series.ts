@@ -4,6 +4,8 @@ import Series from "../models/series";
 import Episode from "../models/episode";
 import Like from "../models/like";
 import mongoose from "mongoose";
+import Cast from "../models/cast";
+import Director from "../models/director";
 
 // Add series---------------------------------------------------------------------------
 export const createSeries = async (
@@ -101,6 +103,19 @@ export const updateSeries = async (
     // validate reqData and get editSeriesPayload
     const editSeriesPayload = req.seriesPayload;
 
+    if(editSeriesPayload?.casts) {
+      await Cast.updateMany(
+        { _id: { $in: series.casts } },
+        { $pull: { series: series._id } }
+      );
+    }
+    if(editSeriesPayload?.directors) {
+      await Director.updateMany(
+        { _id: { $in: series.directors } },
+        { $pull: { series: series._id } }
+      );
+    }
+
     // update existing series document
     Object.assign(series, editSeriesPayload);
 
@@ -179,7 +194,7 @@ export const getSeriesByGenre = async (
     // if seriesData is empty then send error of invalid genreId
     if (!seriesData || seriesData.length <= 0) {
       res
-        .status(400)
+        .status(200)
         .json({ message: "no series available with given genreId" });
       return;
     }
@@ -384,7 +399,7 @@ export const getMostLikedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
@@ -452,7 +467,7 @@ export const getMostViewedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
@@ -520,7 +535,7 @@ export const getTopRatedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
@@ -588,7 +603,7 @@ export const getLatestReleasedSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
@@ -634,7 +649,7 @@ export const getPopularSeriesList = async (
       {
         $match: {
           rating: { $gte: 7.5 },
-          likes: { $gte: 10 },
+          likes: { $gte: 0 },
         },
       },
       {
@@ -660,7 +675,7 @@ export const getPopularSeriesList = async (
     ]);
 
     if (!seriesList || seriesList.length <= 0) {
-      res.status(400).json({ message: "data not available" });
+      res.status(200).json({ message: "data not available" });
       return;
     }
 
@@ -706,29 +721,20 @@ export const getSeriesListBySearch = async (
 
     const searchRegExp = new RegExp(search as string, "i");
 
-    const seriesList = await Series.aggregate([
-      {
-        $match: {
-          title: searchRegExp,
-        },
-      },
-      {
-        $skip: skipDocNumber,
-      },
-      {
-        $limit: limitNumber,
-      },
-      {
-        $project: {
-          title: 1,
-          description: 1,
-          rating: 1,
-          poster: 1,
-          casts: 1,
-          directors: 1,
-        },
-      },
-    ]);
+    const seriesList = await Series.find({
+      title: searchRegExp,
+    })
+      .populate({
+        path: "casts",
+        select: "name",
+      })
+      .populate({
+        path: "directors",
+        select: "name",
+      })
+      .skip(skipDocNumber)
+      .limit(limitNumber)
+      .sort({ releaseDate: -1 });
 
     const SeriesCount = await Series.countDocuments({
       title: searchRegExp,
