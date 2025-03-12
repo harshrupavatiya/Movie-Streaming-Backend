@@ -84,7 +84,12 @@ const seriesSchema = new Schema<ISeries>(
 
 seriesSchema.pre("findOneAndDelete", async function (next) {
   // delete all episodes which has given seriesId
-  Episode.deleteMany({ seriesId: this.getQuery()._id });
+  Episode.deleteMany({ seriesId: this.getQuery()._id })
+    .then((val) => console.log("All Episode deleted successfully. ", val))
+    .catch((err) =>
+      console.log("something qwent wrong while deleting episodes. ", err)
+    );
+
   next();
 });
 
@@ -94,7 +99,9 @@ seriesSchema.post("save", async function () {
   if (series.casts && series.casts.length > 0) {
     Promise.all(
       series.casts.map((castId) =>
-        Cast.findByIdAndUpdate(castId.toString(), { $addToSet: { series: series._id } })
+        Cast.findByIdAndUpdate(castId.toString(), {
+          $addToSet: { series: series._id },
+        })
       )
     );
   }
@@ -102,7 +109,9 @@ seriesSchema.post("save", async function () {
   if (series.directors && series.directors.length > 0) {
     Promise.all(
       series.directors.map((directorId) =>
-        Director.findByIdAndUpdate(directorId, { $addToSet: { series: series._id } })
+        Director.findByIdAndUpdate(directorId, {
+          $addToSet: { series: series._id },
+        })
       )
     );
   }

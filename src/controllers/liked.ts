@@ -4,6 +4,7 @@ import { AuthRequest } from "../types/api";
 import { isMongoId } from "validator";
 import Movie from "../models/movie";
 import Series from "../models/series";
+import { MOVIE, SERIES } from "../utils/constants";
 
 // Toggle Like (Add/Remove)--------------------------------------------------------------------------------
 export const toggleLike = async (
@@ -20,9 +21,7 @@ export const toggleLike = async (
 
     const { contentId, contentType } = req.body;
 
-    console.log(contentId, contentType);
-
-    if (contentType !== "Movie" && contentType !== "Series") {
+    if (contentType !== MOVIE && contentType !== SERIES) {
       res.status(400).json({ message: "Invalid content  Type" });
       return;
     }
@@ -31,17 +30,15 @@ export const toggleLike = async (
       return;
     }
 
-    console.log("1");
     // Check if the content is already liked
     const likeInfo = await Like.findOneAndDelete({
       userId: user._id,
       contentId: contentId,
       contentType: contentType,
     });
-    console.log("2");
 
     if (likeInfo) {
-      if(contentType === "Movie") {
+      if(contentType === MOVIE) {
         Movie.findByIdAndUpdate(contentId, {
           $inc: { likes: -1 },
         })
@@ -55,7 +52,7 @@ export const toggleLike = async (
             );
           });
       }
-      if(contentType === "Series") {
+      if(contentType === SERIES) {
         Series.findByIdAndUpdate(contentId, {
           $inc: { likes: -1 },
         })
@@ -81,7 +78,7 @@ export const toggleLike = async (
     });
     await newLike.save();
 
-    if(contentType === "Movie") {
+    if(contentType === MOVIE) {
       Movie.findByIdAndUpdate(contentId, {
         $inc: { likes: 1 },
       })
@@ -95,7 +92,7 @@ export const toggleLike = async (
           );
         });
     }
-    if(contentType === "Series") {
+    if(contentType === SERIES) {
       Series.findByIdAndUpdate(contentId, {
         $inc: { likes: 1 },
       })
