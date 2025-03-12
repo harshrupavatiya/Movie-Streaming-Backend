@@ -89,7 +89,6 @@ export const createMovie = async (
     // Create and save new movie
     const newMovie = new Movie(moviePayload);
     await newMovie.save();
-    const movieId = newMovie._id;
 
     res.status(201).json({
       message: "Movie created successfully",
@@ -155,11 +154,12 @@ export const getAllMovies = async (
       }
     });
 
+    const totalMovies = await Movie.countDocuments();
     res.status(200).json({
       metadata: {
-        totalMovies: movies.length,
+        totalMovies: totalMovies,
         currentPage: page,
-        totalPages: Math.ceil(movies.length / limit),
+        totalPages: Math.ceil(totalMovies / limit),
       },
       data: { movies: formattedMovies },
     });
@@ -439,8 +439,11 @@ export const getMoviesByGenre = async (
 
     // Convert parameters to numbers
     const genreNumber: number = parseInt(genre as string, 10);
-    const pageNumber: number = parseInt(req.query.page as string || "1", 10);
-    const limitNumber: number = parseInt(req.query.limit as string || "10", 10);
+    const pageNumber: number = parseInt((req.query.page as string) || "1", 10);
+    const limitNumber: number = parseInt(
+      (req.query.limit as string) || "10",
+      10
+    );
     const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     // Validatiing genreNumber
@@ -498,11 +501,12 @@ export const getMoviesByGenre = async (
       return;
     }
 
+    const totalMovies = await Movie.countDocuments({ genres: genreNumber });
     res.status(200).json({
       metadata: {
-        totalMovies: movieData.length,
+        totalMovies: totalMovies,
         currentPage: pageNumber,
-        totalPages: Math.ceil(movieData.length / limitNumber),
+        totalPages: Math.ceil(totalMovies / limitNumber),
       },
       message: "list of Movies",
       data: { moviesList: movieData },
@@ -564,8 +568,11 @@ export const getMostViewedMoviesList = async (
       return;
     }
 
-    const pageNumber: number = parseInt(req.query.page as string || "1", 10);
-    const limitNumber:number =parseInt(req.query.limit as string || "10", 10);
+    const pageNumber: number = parseInt((req.query.page as string) || "1", 10);
+    const limitNumber: number = parseInt(
+      (req.query.limit as string) || "10",
+      10
+    );
     const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     // Validating pageNumber
@@ -614,11 +621,12 @@ export const getMostViewedMoviesList = async (
       return;
     }
 
+    const totalMovies = await Movie.countDocuments();
     res.status(200).json({
       metadata: {
-        totalMovies: moviesList.length,
+        totalMovies: totalMovies,
         currentPage: pageNumber,
-        totalPages: Math.ceil(moviesList.length / limitNumber),
+        totalPages: Math.ceil(totalMovies / limitNumber),
       },
       message: "Most Viewed Movies List",
       data: { moviesList },
@@ -643,7 +651,10 @@ export const getMostLikedMoviesList = async (
     }
 
     const pageNumber: number = parseInt((req.query.page as string) || "1", 10);
-    const limitNumber:number =parseInt((req.query.limit as string) || "10",10);
+    const limitNumber: number = parseInt(
+      (req.query.limit as string) || "10",
+      10
+    );
     const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     // Validating pageNumber
@@ -692,11 +703,12 @@ export const getMostLikedMoviesList = async (
       return;
     }
 
+    const totalMovies = await Movie.countDocuments();
     res.status(200).json({
       metadata: {
-        totalMovies: moviesList.length,
+        totalMovies: totalMovies,
         currentPage: pageNumber,
-        totalPages: Math.ceil(moviesList.length / limitNumber),
+        totalPages: Math.ceil(totalMovies / limitNumber),
       },
       message: "Most Liked Movies List",
       data: { moviesList },
@@ -739,11 +751,14 @@ export const searchMoviesByTitle = async (
       .skip(skip)
       .limit(limit);
 
+    const totalMovies = await Movie.countDocuments({
+      title: { $regex: `${query}`, $options: "i" },
+    });
     res.status(200).json({
       metadata: {
-        totalMovies: movies.length,
+        totalMovies: totalMovies,
         currentPage: page,
-        totalPages: Math.ceil(movies.length / limit),
+        totalPages: Math.ceil(totalMovies / limit),
       },
       data: movies,
     });
@@ -767,7 +782,10 @@ export const getTopRatedMovies = async (
     }
 
     const pageNumber: number = parseInt((req.query.page as string) || "1", 10);
-    const limitNumber:number =parseInt((req.query.limit as string) || "10",10);
+    const limitNumber: number = parseInt(
+      (req.query.limit as string) || "10",
+      10
+    );
     const skipDocNumber = (pageNumber - 1) * limitNumber;
 
     // Validating pageNumber
@@ -816,11 +834,12 @@ export const getTopRatedMovies = async (
       return;
     }
 
+    const totalMovies = await Movie.countDocuments();
     res.status(200).json({
       metadata: {
-        totalMovies: moviesList.length,
+        totalMovies: totalMovies,
         currentPage: pageNumber,
-        totalPages: Math.ceil(moviesList.length / limitNumber),
+        totalPages: Math.ceil(totalMovies / limitNumber),
       },
       message: "Top Rated Movies List",
       data: { moviesList },
@@ -895,11 +914,12 @@ export const getLatestReleasedMovies = async (
       return;
     }
 
+    const totalMovies = await Movie.countDocuments();
     res.status(200).json({
       metadata: {
-        totalMovies: moviesList.length,
+        totalMovies: totalMovies,
         currentPage: pageNumber,
-        totalPages: Math.ceil(moviesList.length / limitNumber),
+        totalPages: Math.ceil(totalMovies / limitNumber),
       },
       message: "Latest Released Movies List",
       data: { moviesList },
@@ -923,7 +943,10 @@ export const getPopularMoviesList = async (
     }
 
     const pageNumber: number = parseInt((req.query.page as string) || "1", 10);
-    const limitNumber: number = parseInt((req.query.limit as string) || "10",10);
+    const limitNumber: number = parseInt(
+      (req.query.limit as string) || "10",
+      10
+    );
 
     if (isNaN(pageNumber) || pageNumber < 1) {
       res.status(400).json({ message: "Page must be a positive integer (>0)" });
@@ -976,11 +999,12 @@ export const getPopularMoviesList = async (
       return;
     }
 
+    const totalMovies = await Movie.countDocuments();
     res.status(200).json({
       metadata: {
-        totalMovies: moviesList.length,
+        totalMovies: totalMovies,
         currentPage: pageNumber,
-        totalPages: Math.ceil(moviesList.length / limitNumber),
+        totalPages: Math.ceil(totalMovies / limitNumber),
       },
       message: "Popular Movies List",
       data: { moviesList },

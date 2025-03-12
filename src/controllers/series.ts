@@ -184,11 +184,14 @@ export const getSeriesByGenre = async (
       return;
     }
 
+    const SeriesCount = await Series.countDocuments({
+      genres: genreNumber,
+    });
     res.status(200).json({
       metadata: {
-        totalSeries: seriesData.length,
+        totalSeries: SeriesCount,
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
-        totalPages: Math.ceil(seriesData.length / limitNumber),
+        totalPages: Math.ceil(SeriesCount / limitNumber),
       },
       message: "list of series",
       data: { seriesList: seriesData },
@@ -385,11 +388,12 @@ export const getMostLikedSeriesList = async (
       return;
     }
 
+    const SeriesCount = await Series.countDocuments();
     res.status(200).json({
       metadata: {
-        totalSeries: seriesList.length,
+        totalSeries: SeriesCount,
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
-        totalPages: Math.ceil(seriesList.length / limitNumber),
+        totalPages: Math.ceil(SeriesCount / limitNumber),
       },
       message: "Most Liked Series List",
       data: { seriesList },
@@ -452,11 +456,12 @@ export const getMostViewedSeriesList = async (
       return;
     }
 
+    const SeriesCount = await Series.countDocuments();
     res.status(200).json({
       metadata: {
-        totalSeries: seriesList.length,
+        totalSeries: SeriesCount,
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
-        totalPages: Math.ceil(seriesList.length / limitNumber),
+        totalPages: Math.ceil(SeriesCount / limitNumber),
       },
       message: "Most Viewed Series List",
       data: { seriesList },
@@ -519,11 +524,12 @@ export const getTopRatedSeriesList = async (
       return;
     }
 
+    const SeriesCount = await Series.countDocuments();
     res.status(200).json({
       metadata: {
-        totalSeries: seriesList.length,
+        totalSeries: SeriesCount,
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
-        totalPages: Math.ceil(seriesList.length / limitNumber),
+        totalPages: Math.ceil(SeriesCount / limitNumber),
       },
       message: "Top Rated Series List",
       data: { seriesList },
@@ -586,11 +592,12 @@ export const getLatestReleasedSeriesList = async (
       return;
     }
 
+    const SeriesCount = await Series.countDocuments();
     res.status(200).json({
       metadata: {
-        totalSeries: seriesList.length,
+        totalSeries: SeriesCount,
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
-        totalPages: Math.ceil(seriesList.length / limitNumber),
+        totalPages: Math.ceil(SeriesCount / limitNumber),
       },
       message: "Latest Released Series List",
       data: { seriesList },
@@ -657,11 +664,12 @@ export const getPopularSeriesList = async (
       return;
     }
 
+    const SeriesCount = await Series.countDocuments();
     res.status(200).json({
       metadata: {
-        totalSeries: seriesList.length,
+        totalSeries: SeriesCount,
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
-        totalPages: Math.ceil(seriesList.length / limitNumber),
+        totalPages: Math.ceil(SeriesCount / limitNumber),
       },
       message: "Popular Series List",
       data: { seriesList },
@@ -722,11 +730,14 @@ export const getSeriesListBySearch = async (
       },
     ]);
 
+    const SeriesCount = await Series.countDocuments({
+      title: searchRegExp,
+    });
     res.status(200).json({
       metadata: {
-        totalSeries: seriesList.length,
+        totalSeries: SeriesCount,
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
-        totalPages: Math.ceil(seriesList.length / limitNumber),
+        totalPages: Math.ceil(SeriesCount / limitNumber),
       },
       message: "searched series List for admin",
       data: {
@@ -785,11 +796,14 @@ export const getSeriesNamesAndIdBySearch = async (
       },
     ]);
 
+    const SeriesCount = await Series.countDocuments({
+      title: searchRegExp,
+    });
     res.status(200).json({
       metadata: {
-        totalSeries: seriesList.length,
+        totalSeries: SeriesCount,
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
-        totalPages: Math.ceil(seriesList.length / limitNumber),
+        totalPages: Math.ceil(SeriesCount / limitNumber),
       },
       message: "searched series Name and ID for admin",
       data: {

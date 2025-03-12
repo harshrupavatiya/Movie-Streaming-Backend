@@ -187,7 +187,16 @@ export const getUserList = async (
         return;
       }
 
+      const userCount = await User.find({
+        name: searchRegExp,
+      }).countDocuments();
+
       res.status(200).json({
+        metadata: {
+          totalUsers: userCount,
+          currentPage: pageNumber,
+          totalPage: Math.ceil(userCount / limitNumber),
+        },
         message: `User List of page: ${pageNumber}, pageSize: ${limitNumber}`,
         data: { userList },
       });
@@ -205,7 +214,13 @@ export const getUserList = async (
       return;
     }
 
+    const userCount = await User.find({}).countDocuments();
     res.status(200).json({
+      metadata: {
+        totalUsers: userCount,
+        currentPage: pageNumber,
+        totalPage: Math.ceil(userCount / limitNumber),
+      },
       message: `User List of page: ${pageNumber}, pageSize: ${limitNumber}`,
       data: { userList },
     });
