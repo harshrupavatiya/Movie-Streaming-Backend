@@ -7,6 +7,8 @@ import { validateFileContent } from "../validators/mediaFile";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
 import Like from "../models/like";
+import Cast from "../models/cast";
+import Director from "../models/director";
 
 // Create a new movie (Admin only)done---------------------------------------------------------------------------
 export const createMovie = async (
@@ -125,6 +127,9 @@ export const getAllMovies = async (
       .limit(limit)
       .sort({ releaseDate: -1 });
 
+      const totalMovie = await Movie.countDocuments();
+      console.log("Total ", totalMovie);
+
     // Check user role (if authenticated)
     const isAdmin = req.user && req.user.role === "admin";
 
@@ -159,7 +164,7 @@ export const getAllMovies = async (
       metadata: {
         totalMovies: movies.length,
         currentPage: page,
-        totalPages: Math.ceil(movies.length / limit),
+        totalPages: Math.ceil(totalMovie / limit),
       },
       data: { movies: formattedMovies },
     });
@@ -355,6 +360,19 @@ export const updateMovieById = async (
         message: "At least one field is required to update movie info.",
       });
       return;
+    }
+
+    if(editMoviePayload.cast) {
+      await Cast.updateMany(
+        { _id: { $in: movie.cast } },
+        { $pull: { movies: movie._id } }
+      );
+    }
+    if(editMoviePayload.director) {
+      await Director.updateMany(
+        { _id: { $in: movie.director } },
+        { $pull: { movies: movie._id } }
+      );
     }
 
     // Update existing movie document
