@@ -79,7 +79,7 @@ app.use("/cast", castRouter);
 app.use("/director", directorRouter);
 app.use("/episode", episodeRouter);
 app.use("/continue-watching", continueWatchingRouter);
-app.use("/tranding", homeRouter);
+app.use("/trending", homeRouter);
 
 
 const port = PORT || 3000;

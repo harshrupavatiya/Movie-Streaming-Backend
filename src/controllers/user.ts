@@ -62,7 +62,7 @@ export const editProfile = async (
     // get object of updating field
     const editData = getValidUserUpdatePayload(req.body);
 
-    console.log(editData)
+    console.log(editData);
     // get profile image from req.files
     const file = req?.files?.image as UploadedFile;
 
@@ -122,15 +122,13 @@ export const editProfile = async (
       res.status(400).json({ message: "It seems like User not found" });
       return;
     }
-    console.log(editData,"line125")
-
+    console.log(editData, "line125");
 
     // assign updatedField to user model
     Object.assign(user, editData);
     // saving updated user model
     await user.save();
-    console.log(user, "346287423")
-
+    console.log(user, "346287423");
 
     res.status(200).json({
       message: "User details updated successfully",
@@ -155,82 +153,40 @@ export const getUserList = async (
     }
 
     // get page and limit from query parameters
-    let { search = "", page = "1", limit = "20" } = req.query;
+    let { search = "" } = req.query;
 
-    // Convert parameters to numbers
-    const pageNumber: number = parseInt(page as string, 10);
-    const limitNumber: number = parseInt(limit as string, 10);
+    // get pagination info from pagination payload
+    const skipDocNumber = req.pagination?.skipDocNumber;
+    const limitNumber = req.pagination?.limitNumber;
 
-    // validating pageNumber
-    if (isNaN(pageNumber) || pageNumber < 1) {
-      res.status(400).json({ message: "Page must be a positive integer (≥1)" });
+    if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
+      res.status(400).json({ message: "pagination values missing" });
       return;
     }
-    // validating limitNumber
-    if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
-      res
-        .status(400)
-        .json({ message: "Limit must be a positive integer (1-100)" });
-      return;
-    }
-    if (search !== "") {
-      validateName(search as string);
-    }
 
-    // calculate the number for skip docs
-    const skipDocNumber = (pageNumber - 1) * limitNumber;
+    const searchRegExp = new RegExp(search as string, "i");
 
-    // If search params is notEmpty
-    if (search !== "") {
-      const searchRegExp = new RegExp(search as string, "i");
-      const userList = await User.find({ name: searchRegExp })
-        .select("name email contactNo subscription.plan role isActive")
-        .skip(skipDocNumber)
-        .limit(limitNumber);
-
-      if (!userList || userList.length <= 0) {
-        res.status(400).json({ message: "No data found" });
-        return;
-      }
-
-      const userCount = await User.find({
-        name: searchRegExp,
-      }).countDocuments();
-
-      res.status(200).json({
-        metadata: {
-          totalUsers: userCount,
-          currentPage: pageNumber,
-          totalPage: Math.ceil(userCount / limitNumber),
-        },
-        message: `User List of page: ${pageNumber}, pageSize: ${limitNumber}`,
-        data: { userList },
-      });
-      return;
-    }
-    const userDocLength = await User.countDocuments();
-
-    // If search params is Empty
-    const userList = await User.find({})
+    const userList = await User.find({ name: searchRegExp })
       .select("name email contactNo subscription.plan role isActive")
       .skip(skipDocNumber)
       .limit(limitNumber);
-
-      console.log(userDocLength);
 
     if (!userList || userList.length <= 0) {
       res.status(400).json({ message: "No data found" });
       return;
     }
 
-    const userCount = await User.find({}).countDocuments();
+    const userCount = await User.find({
+      name: searchRegExp,
+    }).countDocuments();
+
     res.status(200).json({
       metadata: {
         totalUsers: userCount,
-        currentPage: pageNumber,
+        currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
         totalPage: Math.ceil(userCount / limitNumber),
       },
-      message: `User List of page: ${pageNumber}, pageSize: ${limitNumber}`,
+      message: `User List`,
       data: { userList },
     });
     return;
@@ -257,7 +213,7 @@ export const createAdmin = async (
     // update user details and get updated userInfo
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { role: ADMIN},
+      { role: ADMIN },
       { new: true }
     );
 
@@ -352,6 +308,7 @@ export const getUserInfo = async (
       data: {
         user: {
           _id: user._id,
+          name: user.name,
           email: user.email,
           contactNo: user.contactNo,
           profilePicture: user.profilePicture,
