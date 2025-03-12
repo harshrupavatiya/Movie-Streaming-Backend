@@ -2,6 +2,7 @@ import { Response } from "express";
 import { AuthRequest } from "../types/api";
 import Series from "../models/series";
 import Episode from "../models/episode";
+import { ADMIN } from "../utils/constants";
 
 export const deleteSeason = async (
   req: AuthRequest,
@@ -9,7 +10,7 @@ export const deleteSeason = async (
 ): Promise<void> => {
   try {
     // ensure user is admin
-    if (req?.user?.role !== "admin") {
+    if (req?.user?.role !== ADMIN) {
       res.status(400).json({ message: " Access denied, Admins only" });
     }
 

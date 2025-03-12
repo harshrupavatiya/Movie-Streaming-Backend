@@ -4,6 +4,7 @@ import Movie from "../models/movie";
 import Series from "../models/series";
 import { AuthRequest } from "./../types/api";
 import mongoose from "mongoose";
+import { ADMIN, MOVIE, SERIES } from "../utils/constants";
 
 // Create or Update Review --------------------------------------------------------------------------------
 export const createOrUpdateReview = async (
@@ -20,7 +21,7 @@ export const createOrUpdateReview = async (
     }
 
     // Validate contentType
-    if (!["Movie", "Series"].includes(contentType)) {
+    if (![MOVIE, SERIES].includes(contentType)) {
       res.status(400).json({
         message: "Invalid content type. Must be 'Movie' or 'Series'.",
       });
@@ -35,7 +36,7 @@ export const createOrUpdateReview = async (
 
     // Check if Movie or Series exists
     const content =
-      contentType === "Movie"
+      contentType === MOVIE
         ? await Movie.findById(contentId)
         : await Series.findById(contentId);
 
@@ -73,7 +74,7 @@ export const createOrUpdateReview = async (
       });
 
       // Push new reviewId inside Movie's reviews array
-      if (contentType === "Movie") {
+      if (contentType === MOVIE) {
         await Movie.findByIdAndUpdate(contentId, {
           $push: { reviews: { reviewId: newReview._id } },
         });
@@ -140,7 +141,7 @@ export const getLatestReviews = async (
     res.status(200).json({
       data: {
         contentId,
-        contentType: movie ? "Movie" : "Series",
+        contentType: movie ? MOVIE : SERIES,
         reviews: filteredReviews,
       },
     });
@@ -160,7 +161,7 @@ export const getMovieWiseReview = async (
 ): Promise<void> => {
   try {
     // Check if user is admin
-    if (!req.user || req.user.role !== "admin") {
+    if (!req.user || req.user.role !== ADMIN) {
       res.status(403).json({ message: "Access denied. Admins only." });
       return;
     }
@@ -209,6 +210,11 @@ export const deleteReview = async (
 ): Promise<void> => {
   try {
     const { reviewId } = req.params;
+
+    if (!req.user || req.user.role !== ADMIN) {
+      res.status(403).json({ message: "Access denied. Admins only." });
+      return;
+    }
 
     // Check if review exists
     const review = await Review.findById(reviewId);

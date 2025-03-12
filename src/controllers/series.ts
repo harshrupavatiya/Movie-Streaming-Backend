@@ -6,6 +6,7 @@ import Like from "../models/like";
 import mongoose from "mongoose";
 import Cast from "../models/cast";
 import Director from "../models/director";
+import { ADMIN, FREE, SERIES } from "../utils/constants";
 
 // Add series---------------------------------------------------------------------------
 export const createSeries = async (
@@ -17,7 +18,7 @@ export const createSeries = async (
     const user = req.user;
 
     // check user is admin
-    if (user?.role !== "admin") {
+    if (user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -48,7 +49,7 @@ export const deleteSeries = async (
     // getting user from req
     const user = req.user;
     // check user is admin
-    if (user?.role !== "admin") {
+    if (user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -83,7 +84,7 @@ export const updateSeries = async (
     // getting user from req
     const user = req.user;
     // check user is admin
-    if (user?.role !== "admin") {
+    if (user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -258,7 +259,7 @@ export const getSeriesById = async (
     }
 
     const aggregateArray =
-      req.user.subscription?.plan === "free"
+      req.user.subscription?.plan === FREE
         ? [
             {
               $match: {
@@ -333,7 +334,7 @@ export const getSeriesById = async (
     const isLiked = await Like.findOne({
       userId: req.user?._id.toString(),
       contentId: seriesId,
-      contentType: "Series",
+      contentType: SERIES,
     });
 
     series.isLiked = isLiked ? true : false;
@@ -702,7 +703,7 @@ export const getSeriesListBySearch = async (
   res: Response
 ): Promise<void> => {
   try {
-    if (req.user?.role !== "admin") {
+    if (req.user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only" });
       return;
     }
@@ -763,7 +764,7 @@ export const getSeriesNamesAndIdBySearch = async (
   res: Response
 ): Promise<void> => {
   try {
-    if (req.user?.role !== "admin") {
+    if (req.user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only" });
       return;
     }
@@ -829,7 +830,7 @@ export const incrementSeriesView = async (
   res: Response
 ): Promise<void> => {
   try {
-    if (!req.user || req.user.role == "admin") {
+    if (!req.user || req.user.role == ADMIN) {
       res.status(403).json({ message: "Only view incremented for users" });
       return;
     }

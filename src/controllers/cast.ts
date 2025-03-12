@@ -8,6 +8,7 @@ import { uploadImageToCloudinary } from "../utils/fileUploader";
 import { UploadedFile } from "express-fileupload";
 import fs from "fs";
 import { getValidCastPayload } from "../utils/getPayload";
+import { ADMIN } from "../utils/constants";
 
 //Get searched Cast by name--------------------------------------------------------------------------------
 export const searchCastByName = async (
@@ -53,7 +54,7 @@ export const addOrUpdateCast = async (
 ): Promise<void> => {
   try {
     // Check if the user is an admin
-    if (!req.user || req.user.role !== "admin") {
+    if (!req.user || req.user.role !== ADMIN) {
       res.status(403).json({ message: "Access denied. Admins only." });
       return;
     }
@@ -152,7 +153,7 @@ export const deleteCast = async (
 ): Promise<void> => {
   try {
     // Check if the user is an admin
-    if (!req.user || req.user.role !== "admin") {
+    if (!req.user || req.user.role !== ADMIN) {
       res.status(403).json({ message: "Access denied. Admins only." });
       return;
     }
