@@ -19,6 +19,7 @@ import seriesRouter from "./routes/series";
 import fileUpload from "express-fileupload";
 import episodeRouter from "./routes/episode";
 import continueWatchingRouter from "./routes/continueWatching";
+import homeRouter from "./routes/home";
 
 // Create Express server
 const app = express();
@@ -78,6 +79,7 @@ app.use("/cast", castRouter);
 app.use("/director", directorRouter);
 app.use("/episode", episodeRouter);
 app.use("/continue-watching", continueWatchingRouter);
+app.use("/tranding", homeRouter);
 
 
 const port = PORT || 3000;

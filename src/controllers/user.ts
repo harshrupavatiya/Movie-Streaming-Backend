@@ -8,7 +8,7 @@ import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
 import { validateFileContent } from "../validators/mediaFile";
 import User from "../models/user";
-import { Admin } from "../utils/constants";
+import { ADMIN } from "../utils/constants";
 
 export const changePassword = async (
   req: AuthRequest,
@@ -149,7 +149,7 @@ export const getUserList = async (
 ): Promise<void> => {
   try {
     // check user is admin
-    if (req.user?.role !== Admin) {
+    if (req.user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -193,7 +193,16 @@ export const getUserList = async (
         return;
       }
 
+      const userCount = await User.find({
+        name: searchRegExp,
+      }).countDocuments();
+
       res.status(200).json({
+        metadata: {
+          totalUsers: userCount,
+          currentPage: pageNumber,
+          totalPage: Math.ceil(userCount / limitNumber),
+        },
         message: `User List of page: ${pageNumber}, pageSize: ${limitNumber}`,
         data: { userList },
       });
@@ -214,7 +223,13 @@ export const getUserList = async (
       return;
     }
 
+    const userCount = await User.find({}).countDocuments();
     res.status(200).json({
+      metadata: {
+        totalUsers: userCount,
+        currentPage: pageNumber,
+        totalPage: Math.ceil(userCount / limitNumber),
+      },
       message: `User List of page: ${pageNumber}, pageSize: ${limitNumber}`,
       data: { userList },
     });
@@ -231,7 +246,7 @@ export const createAdmin = async (
 ): Promise<void> => {
   try {
     // check user is admin
-    if (req.user?.role !== "admin") {
+    if (req.user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -242,7 +257,7 @@ export const createAdmin = async (
     // update user details and get updated userInfo
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { role: "admin" },
+      { role: ADMIN},
       { new: true }
     );
 
@@ -268,7 +283,7 @@ export const toggleUserIsActive = async (
 ): Promise<void> => {
   try {
     // check user is admin
-    if (req.user?.role !== "admin") {
+    if (req.user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -294,7 +309,7 @@ export const toggleUserIsActive = async (
       return;
     }
 
-    if (user.role === "admin") {
+    if (user.role === ADMIN) {
       res
         .status(400)
         .json({ message: "Access Denied, Admin can suspend only users" });
