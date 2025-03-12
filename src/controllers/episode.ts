@@ -3,6 +3,7 @@ import { AuthRequest } from "../types/api";
 import Series from "../models/series";
 import Episode from "../models/episode";
 import { isMongoId } from "validator";
+import { ADMIN, FREE } from "../utils/constants";
 
 export const addEpisode = async (
   req: AuthRequest,
@@ -12,7 +13,7 @@ export const addEpisode = async (
     // getting user from req
     const user = req.user;
     // check user is admin
-    if (user?.role !== "admin") {
+    if (user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -55,7 +56,7 @@ export const deleteEpisode = async (
     // getting user from req
     const user = req.user;
     // check user is admin
-    if (user?.role !== "admin") {
+    if (user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -87,7 +88,7 @@ export const updateEpisode = async (
     // getting user from req
     const user = req.user;
     // check user is admin
-    if (user?.role !== "admin") {
+    if (user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -138,7 +139,7 @@ export const getEpisode = async (
 ): Promise<void> => {
   try {
     // ensire user is exists or not
-    if (req.user?.subscription?.plan === "free") {
+    if (req.user?.subscription?.plan === FREE) {
       res
         .status(400)
         .json({ message: "Please upgrade your subscription plan" });

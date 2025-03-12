@@ -9,6 +9,7 @@ import fs from "fs";
 import Like from "../models/like";
 import Cast from "../models/cast";
 import Director from "../models/director";
+import { ADMIN } from "../utils/constants";
 
 // Create a new movie (Admin only)done---------------------------------------------------------------------------
 export const createMovie = async (
@@ -18,7 +19,7 @@ export const createMovie = async (
   try {
     // Check if the user is an admin
     const user = req.user;
-    if (user?.role !== "admin") {
+    if (user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
@@ -127,10 +128,9 @@ export const getAllMovies = async (
       .sort({ releaseDate: -1 });
 
       const totalMovie = await Movie.countDocuments();
-      console.log("Total ", totalMovie);
 
     // Check user role (if authenticated)
-    const isAdmin = req.user && req.user.role === "admin";
+    const isAdmin = req.user && req.user.role === ADMIN;
 
     // Modify response based on role
     const formattedMovies = movies.map((movie) => {
@@ -237,7 +237,7 @@ export const updateMovieById = async (
     const { movieId } = req.body;
 
     // Check if user is admin
-    if (user?.role !== "admin") {
+    if (user?.role !== ADMIN) {
       res.status(403).json({ message: "Access denied. Admins only." });
       return;
     }
@@ -416,7 +416,7 @@ export const deleteMovieById = async (
     const { movieId } = req.query;
 
     // Check if user is admin
-    if (user?.role !== "admin") {
+    if (user?.role !== ADMIN) {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
@@ -543,7 +543,7 @@ export const incrementMovieView = async (
   res: Response
 ): Promise<void> => {
   try {
-    if (!req.user || req.user.role == "admin") {
+    if (!req.user || req.user.role == ADMIN) {
       res.status(403).json({ message: "Only view incremented for users" });
       return;
     }
@@ -746,7 +746,7 @@ export const searchMoviesByTitle = async (
   try {
     const { query } = req.query;
 
-    if (!req.user || req.user.role !== "admin") {
+    if (!req.user || req.user.role !== ADMIN) {
       res.status(403).json({ message: "Only for admin" });
       return;
     }

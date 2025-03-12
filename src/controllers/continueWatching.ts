@@ -1,6 +1,7 @@
 import { Response } from "express";
 import User from "../models/user";
 import { AuthRequest } from "../types/api";
+import { EPISODE, MOVIE } from "../utils/constants";
 
 // Update Watch Progress
 export const updateWatchProgress = async (
@@ -23,7 +24,7 @@ export const updateWatchProgress = async (
       return;
     }
 
-    if (contentType !== "Movie" && contentType !== "Episode") {
+    if (contentType !== MOVIE && contentType !== EPISODE) {
       res.status(400).json({ message: "Invalid content type" });
       return;
     }
