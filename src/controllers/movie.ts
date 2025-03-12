@@ -151,7 +151,7 @@ export const getAllMovies = async (
           description: movie.description,
           rating: movie.rating,
           poster: movie.poster,
-          languges: movie.languages,
+          languages: movie.languages,
           genres: movie.genres,
           releaseDate: movie.releaseDate,
         };

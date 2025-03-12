@@ -85,7 +85,10 @@ export const updateSeries = async (
 
     // get seriesId from req.body
     const { seriesId } = req.body;
-
+    if(!seriesId) { 
+      res.status(400).json({ message: "seriesId is required." });
+      return;
+    }
     // find series by id
     const series = await Series.findById(seriesId);
 
