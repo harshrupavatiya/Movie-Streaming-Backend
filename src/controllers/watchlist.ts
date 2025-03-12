@@ -66,7 +66,7 @@ export const getWatchlist = async (
       .select("watchlist")
       .populate({
         path: "watchlist.contentId",
-        select: "title poster",
+        select: "title poster description",
       });
 
     res.status(200).json({ data: { watchlist } });

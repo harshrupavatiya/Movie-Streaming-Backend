@@ -4,6 +4,8 @@ import Series from "../models/series";
 import Episode from "../models/episode";
 import Like from "../models/like";
 import mongoose from "mongoose";
+import Cast from "../models/cast";
+import Director from "../models/director";
 
 // Add series---------------------------------------------------------------------------
 export const createSeries = async (
@@ -100,6 +102,19 @@ export const updateSeries = async (
 
     // validate reqData and get editSeriesPayload
     const editSeriesPayload = req.seriesPayload;
+
+    if(editSeriesPayload?.casts) {
+      await Cast.updateMany(
+        { _id: { $in: series.casts } },
+        { $pull: { series: series._id } }
+      );
+    }
+    if(editSeriesPayload?.directors) {
+      await Director.updateMany(
+        { _id: { $in: series.directors } },
+        { $pull: { series: series._id } }
+      );
+    }
 
     // update existing series document
     Object.assign(series, editSeriesPayload);
