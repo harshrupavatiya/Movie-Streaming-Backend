@@ -1,6 +1,9 @@
 import { Response } from "express";
 import Like from "../models/like";
 import { AuthRequest } from "../types/api";
+import { isMongoId } from "validator";
+import Movie from "../models/movie";
+import Series from "../models/series";
 
 // Toggle Like (Add/Remove)--------------------------------------------------------------------------------
 export const toggleLike = async (
@@ -23,8 +26,8 @@ export const toggleLike = async (
       res.status(400).json({ message: "Invalid content  Type" });
       return;
     }
-    if (!contentId) {
-      res.status(400).json({ message: "Content ID are required" });
+    if (!contentId || !isMongoId(contentId)) {
+      res.status(400).json({ message: "Content ID are invalid" });
       return;
     }
 
@@ -38,6 +41,34 @@ export const toggleLike = async (
     console.log("2");
 
     if (likeInfo) {
+      if(contentType === "Movie") {
+        Movie.findByIdAndUpdate(contentId, {
+          $inc: { likes: -1 },
+        })
+          .then(() => {
+            console.log("like value decreamented successfully");
+          })
+          .catch((err) => {
+            console.log(
+              "Getting an error while decreamenting the value of like : ",
+              err
+            );
+          });
+      }
+      if(contentType === "Series") {
+        Series.findByIdAndUpdate(contentId, {
+          $inc: { likes: -1 },
+        })
+          .then(() => {
+            console.log("like value decreamented successfully");
+          })
+          .catch((err) => {
+            console.log(
+              "Getting an error while decreamenting the value of like : ",
+              err
+            );
+          });
+      }
       res.status(200).json({ message: "Unliked successfully" });
       return;
     }
@@ -49,6 +80,35 @@ export const toggleLike = async (
       contentType,
     });
     await newLike.save();
+
+    if(contentType === "Movie") {
+      Movie.findByIdAndUpdate(contentId, {
+        $inc: { likes: 1 },
+      })
+        .then(() => {
+          console.log("like value increamented successfully");
+        })
+        .catch((err) => {
+          console.log(
+            "Getting an error while increamenting the value of like : ",
+            err
+          );
+        });
+    }
+    if(contentType === "Series") {
+      Series.findByIdAndUpdate(contentId, {
+        $inc: { likes: 1 },
+      })
+        .then(() => {
+          console.log("like value increamented successfully");
+        })
+        .catch((err) => {
+          console.log(
+            "Getting an error while increamenting the value of like : ",
+            err
+          );
+        });
+    }
 
     res.status(201).json({
       success: true,
