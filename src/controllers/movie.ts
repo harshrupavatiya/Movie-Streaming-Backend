@@ -703,6 +703,11 @@ export const getMostLikedMoviesList = async (
           duration: 1,
         },
       },
+      {
+        $addFields: {
+          contentType: "Movie",
+        }
+      }
     ]);
 
     if (!moviesList || moviesList.length <= 0) {
