@@ -1,6 +1,7 @@
 import express from "express";
 import { changePassword, createAdmin, editProfile, getUserInfo, getUserList, toggleUserIsActive } from "../controllers/user";
 import { userAuth } from "../middlewares/Auth";
+import { getPaginationInfo } from "../middlewares/getPaginationPayload";
 
 const userRouter = express.Router();
 
@@ -10,7 +11,7 @@ userRouter.put("/changePassword", userAuth ,changePassword);
 
 userRouter.put("/editProfile", userAuth, editProfile);
 
-userRouter.get("/list", userAuth, getUserList);
+userRouter.get("/list", userAuth, getPaginationInfo , getUserList);
 
 userRouter.put("/updateRole", userAuth, createAdmin);
 

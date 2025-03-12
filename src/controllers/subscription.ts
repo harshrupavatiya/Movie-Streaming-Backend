@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import dotenv from "dotenv";
 import STRIPE_PRICE_IDS from "../config/stripe";
 import { AuthRequest } from "../types/api";
+import { ACTIVE, MONTHLY, YEARLY } from "../utils/constants";
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ export const memberSubscription = async (
     const user = req.user;
     if (!user) return;
 
-    const billingCycle = selectedPlan.type === "monthly" ? "monthly" : "yearly";
+    const billingCycle = selectedPlan.type === "monthly" ? MONTHLY : YEARLY;
     const tier = selectedPlan.tier as "basic" | "premium";
     let customer: Stripe.Customer;
 
@@ -39,7 +40,7 @@ export const memberSubscription = async (
       // Step 2: Check if the customer has an active subscription
       const activeSubscriptions = await stripe.subscriptions.list({
         customer: customer.id,
-        status: "active",
+        status: ACTIVE,
         limit: 1,
       });
 
