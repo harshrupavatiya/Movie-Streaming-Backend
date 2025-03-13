@@ -68,8 +68,8 @@ export const otpTemplate = (otp: number) => {
 	
 	<body>
 		<div class="container">
-			<a href="#"><img class="logo"
-					src="#" alt="Filmster Logo"></a>
+			<a href=${Frontend_Base_URL}><img class="logo"
+					src="https://res.cloudinary.com/dk5bnn02q/image/upload/v1741844530/filmsterLogo_ywpjgv.png" alt="Filmster Logo"></a>
 			<div class="message">OTP Verification Email</div>
 			<div class="body">
 				<p>Dear User,</p>
@@ -150,8 +150,8 @@ export const signUpSuccessTemplate = () => {
 	  
 	  <body>
 		  <div class="container">
-			  <a href="#"><img class="logo"
-					src="#" alt="Filmster Logo"></a>
+			  <a href=${Frontend_Base_URL}><img class="logo"
+					src="https://res.cloudinary.com/dk5bnn02q/image/upload/v1741844530/filmsterLogo_ywpjgv.png" alt="Filmster Logo"></a>
 			  <div class="message">Welcome to Our Platform!</div>
 			  <div class="body">
 				  <p>Dear User,</p>
@@ -247,8 +247,8 @@ export const forgotPassTemplate = (forgotPassLink: string) => {
 	  
 	  <body>
 		  <div class="container">
-			  <a href="#"><img class="logo"
-					  src="#" alt="Filmster Logo"></a>
+			  <a href=${Frontend_Base_URL}><img class="logo"
+					src="https://res.cloudinary.com/dk5bnn02q/image/upload/v1741844530/filmsterLogo_ywpjgv.png" alt="Filmster Logo"></a>
 			  <div class="message">Reset your Password</div>
 			  <div class="body">
 				  <p>Dear User,</p>
@@ -329,8 +329,8 @@ export const resetPasswordSuccessTemplate = () => {
 	  
 	  <body>
 		  <div class="container">
-			  <a href="#"><img class="logo"
-					src="#" alt="Filmster Logo"></a>
+			  <a href=${Frontend_Base_URL}><img class="logo"
+					src="https://res.cloudinary.com/dk5bnn02q/image/upload/v1741844530/filmsterLogo_ywpjgv.png" alt="Filmster Logo"></a>
 			  <div class="message">Password Reset Successful</div>
 			  <div class="body">
 				  <p>Dear User,</p>
