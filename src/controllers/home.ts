@@ -9,11 +9,6 @@ export const getTrendingContent = async (
   res: Response
 ): Promise<void> => {
   try {
-    // const [topRatedMovie, mostViewedMovie, popularMovie] = await Promise.all([
-    //   Movie.findOne().sort({ rating: -1 }).select("title description releaseDate languages genres _id trailerUrl"),
-    //   Movie.findOne().sort({ views: -1 }).select("title description releaseDate languages genres _id trailerUrl"),
-    //   Movie.findOne().sort({ likes: -1 }).select("title description releaseDate languages genres _id trailerUrl"),
-    // ]);
 
     const [resultMovie] = await Movie.aggregate([
       {

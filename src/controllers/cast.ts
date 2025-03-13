@@ -31,7 +31,7 @@ export const searchCastByName = async (
     }).select("name _id");
 
     if (castList.length <= 0) {
-      res.status(404).json({ message: "No matching cast members found." });
+      res.status(200).json({ message: "No matching cast members found." });
 
       return;
     }
