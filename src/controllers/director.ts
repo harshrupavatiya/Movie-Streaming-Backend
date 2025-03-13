@@ -30,7 +30,7 @@ export const searchDirectorByName = async (
     }).select("name _id");
 
     if (directorList.length === 0) {
-      res.status(404).json({ message: "No matching Director found." });
+      res.status(200).json({ message: "No matching Director found." });
       return;
     }
 
