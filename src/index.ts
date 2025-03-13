@@ -71,7 +71,7 @@ app.use("/movie", movieRouter);
 app.use("/user", userRouter);
 app.use("/series", seriesRouter);
 app.use("/review", reviewRouter);
-app.use("/like", likedRouter);
+app.use("/liked", likedRouter);
 app.use("/stripe", subscriptionRouter);
 app.use("/watchlist", watchlistRouter);
 app.use("/search", searchRouter);
