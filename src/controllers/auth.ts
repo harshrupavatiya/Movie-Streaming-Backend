@@ -64,8 +64,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       },
     });
     return;
-  } catch (err: any) {
-    res.status(500).json({ message: err.message });
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
     return;
   }
 };
@@ -161,8 +161,8 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({ message: "SignUp successfully" });
     return;
-  } catch (err: any) {
-    res.status(500).json({ message: err.message });
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
     return;
   }
 };
@@ -172,11 +172,16 @@ export const logout = async (
   req: AuthRequest,
   res: Response
 ): Promise<void> => {
-  // set token as null in cookie
-  res.cookie("token", null, { expires: new Date(Date.now()) });
+  try {
+    // set token as null in cookie
+    res.cookie("token", null, { expires: new Date(Date.now()) });
 
-  res.status(200).json({ message: "User logout successfully" });
-  return;
+    res.status(200).json({ message: "User logout successfully" });
+    return;
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+    return;
+  }
 };
 
 // Send mail for reset Password-------------------------------------------------------------------------------------------------
@@ -222,7 +227,7 @@ export const sendMailResetPassword = async (
     res.status(200).json({ message: "Link sent at given email address" });
     return;
   } catch (err) {
-    res.status(500).json({ message: "Something went wrong" });
+    res.status(500).json({ message: (err as Error).message });
     return;
   }
 };
