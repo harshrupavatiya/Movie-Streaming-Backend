@@ -8,7 +8,7 @@ import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
 import { validateFileContent } from "../validators/mediaFile";
 import User from "../models/user";
-import { Admin } from "../utils/constants";
+import { ADMIN, } from "../utils/constants";
 
 export const changePassword = async (
   req: AuthRequest,
@@ -149,7 +149,7 @@ export const getUserList = async (
 ): Promise<void> => {
   try {
     // check user is admin
-    if (req.user?.role !== Admin) {
+    if (req.user?.role !== ADMIN) {
       res.status(400).json({ message: "Access denied, Admins only allowed" });
       return;
     }
