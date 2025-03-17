@@ -4,8 +4,8 @@ import {
   getLatestReviews,
   getMovieWiseReview,
   deleteReview,
-} from "../controllers/review";
-import { userAuth } from "../middlewares/Auth";
+} from "../modules/review/review.controller";
+import { userAuth } from "../modules/auth/auth.middleware";
 
 const reviewRouter = express.Router();
 

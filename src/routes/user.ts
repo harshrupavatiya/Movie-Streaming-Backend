@@ -1,6 +1,6 @@
 import express from "express";
 import { changePassword, createAdmin, editProfile, getUserInfo, getUserList, toggleUserIsActive } from "../controllers/user";
-import { userAuth } from "../middlewares/Auth";
+import { userAuth } from "../modules/auth/auth.middleware";
 import { getPaginationInfo } from "../middlewares/getPaginationPayload";
 
 const userRouter = express.Router();

@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
-import { IMovie } from "../types/db.model";
+import { IMovie } from "../../types/db.model";
 import {
   isValidISODate,
   validateContentTitle,
   validateGenres,
   validateLanguage,
-} from "../validators/inputValidators";
+} from "../user/inputValidators";
 import { isMongoId, isNumeric } from "validator";
 
 interface IMovieData {

@@ -4,14 +4,14 @@ import { IEpisode } from "../types/db.model";
 import {
   isValidISOBirthDate,
   validateContentTitle,
-} from "../validators/inputValidators";
+} from "../modules/user/inputValidators";
 import { isNumeric } from "validator";
 import { AuthRequest } from "../types/api";
 import { validateFileContent } from "../validators/mediaFile";
-import { uploadImageToCloudinary } from "../utils/fileUploader";
+import { uploadImageToCloudinary } from "../modules/utils/fileUploader";
 import { UploadedFile } from "express-fileupload";
 import fs from "fs";
-import Episode from "../models/episode";
+import Episode from "../modules/episode/episode.model";
 
 interface IEpisodeReqBody {
   title?: string;

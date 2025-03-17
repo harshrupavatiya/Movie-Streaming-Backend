@@ -1,5 +1,5 @@
 import express from "express";
-import { userAuth } from "../middlewares/Auth";
+import { userAuth } from "../modules/auth/auth.middleware";
 import {
   createSeries,
   deleteSeries,

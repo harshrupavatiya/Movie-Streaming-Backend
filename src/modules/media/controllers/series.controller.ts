@@ -1,11 +1,11 @@
 import { Response } from "express";
 import { AuthRequest } from "../types/api";
-import Series from "../models/series";
-import Episode from "../models/episode";
-import Like from "../models/like";
+import Series from "../models/series.model";
+import Episode from "../modules/episode/episode.model";
+import Like from "../modules/like/like.model";
 import mongoose from "mongoose";
-import Cast from "../models/cast";
-import Director from "../models/director";
+import Cast from "../modules/cast/cast.model";
+import Director from "../modules/director/director.model";
 import { ADMIN, FREE, SERIES } from "../utils/constants";
 
 // Add series---------------------------------------------------------------------------

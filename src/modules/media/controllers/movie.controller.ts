@@ -1,15 +1,15 @@
 import { Response } from "express";
 import { AuthRequest } from "../types/api";
-import Movie from "../models/movie";
+import Media from "../media.model";
 import { getMoviePayload, getEditMoviePayload } from "../utils/movieData"; // New validator
 import { UploadedFile } from "express-fileupload";
 import { validateFileContent } from "../validators/mediaFile";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
-import Like from "../models/like";
-import Cast from "../models/cast";
-import Director from "../models/director";
+import Director from "../models/director.model";
 import { ADMIN } from "../utils/constants";
+import Cast from "../../cast/cast.model";
+import Like from "../../like/like.model";
 
 // Create a new movie (Admin only)done---------------------------------------------------------------------------
 export const createMovie = async (
@@ -90,8 +90,8 @@ export const createMovie = async (
     moviePayload.movieUrl = movieUrl;
 
     // Create and save new movie
-    const newMovie = new Movie(moviePayload);
-    await newMovie.save();
+    const newMedia = new Media(moviePayload);
+    await newMedia.save();
 
     res.status(201).json({
       message: "Movie created successfully",
@@ -114,7 +114,7 @@ export const getAllMovies = async (
     const skip = (page - 1) * limit;
 
     // Fetching movies with important fields
-    const movies = await Movie.find({})
+    const movies = await Media.find({})
       .populate({
         path: "cast",
         select: "name",
@@ -127,7 +127,7 @@ export const getAllMovies = async (
       .limit(limit)
       .sort({ releaseDate: -1 });
 
-      const totalMovie = await Movie.countDocuments();
+      const totalMovie = await Media.countDocuments();
 
     // Check user role (if authenticated)
     const isAdmin = req.user && req.user.role === ADMIN;
@@ -159,7 +159,7 @@ export const getAllMovies = async (
       }
     });
 
-    const totalMovies = await Movie.countDocuments();
+    const totalMovies = await Media.countDocuments();
     res.status(200).json({
       metadata: {
         totalMovies: totalMovies,
@@ -190,7 +190,7 @@ export const getMovieById = async (
     const { movieId } = req.params;
 
     // Find movie by ID and populate related fields
-    const movie = await Movie.findById(movieId)
+    const movie = await Media.findById(movieId)
       .populate({
         path: "cast",
         select: "name",
@@ -242,7 +242,7 @@ export const updateMovieById = async (
       return;
     }
     // Find the movie by id
-    const movie = await Movie.findById(movieId);
+    const movie = await Media.findById(movieId);
 
     // Ensure that movie exists
     if (!movie) {
@@ -421,7 +421,7 @@ export const deleteMovieById = async (
     }
 
     // Delete the movie
-    const deletedMovie = await Movie.findOneAndDelete({ _id: movieId });
+    const deletedMovie = await Media.findOneAndDelete({ _id: movieId });
 
     if (!deletedMovie) {
       return res
@@ -485,7 +485,7 @@ export const getMoviesByGenre = async (
     }
 
     // applying aggregation on movie collection
-    const movieData = await Movie.aggregate([
+    const movieData = await Media.aggregate([
       {
         $match: {
           genres: genreNumber,
@@ -519,7 +519,7 @@ export const getMoviesByGenre = async (
       return;
     }
 
-    const totalMovies = await Movie.countDocuments({ genres: genreNumber });
+    const totalMovies = await Media.countDocuments({ genres: genreNumber });
     res.status(200).json({
       metadata: {
         totalMovies: totalMovies,
@@ -550,7 +550,7 @@ export const incrementMovieView = async (
 
     const { movieId } = req.params;
 
-    const updatedMovie = await Movie.findByIdAndUpdate(
+    const updatedMovie = await Media.findByIdAndUpdate(
       movieId,
       { $inc: { views: 1 } },
       { new: true }
@@ -607,7 +607,7 @@ export const getMostViewedMoviesList = async (
       return;
     }
 
-    const moviesList = await Movie.aggregate([
+    const moviesList = await Media.aggregate([
       {
         $sort: {
           views: -1,
@@ -639,7 +639,7 @@ export const getMostViewedMoviesList = async (
       return;
     }
 
-    const totalMovies = await Movie.countDocuments();
+    const totalMovies = await Media.countDocuments();
     res.status(200).json({
       metadata: {
         totalMovies: totalMovies,
@@ -689,7 +689,7 @@ export const getMostLikedMoviesList = async (
       return;
     }
 
-    const moviesList = await Movie.aggregate([
+    const moviesList = await Media.aggregate([
       {
         $sort: {
           likes: -1,
@@ -726,7 +726,7 @@ export const getMostLikedMoviesList = async (
       return;
     }
 
-    const totalMovies = await Movie.countDocuments();
+    const totalMovies = await Media.countDocuments();
     res.status(200).json({
       metadata: {
         totalMovies: totalMovies,
@@ -765,7 +765,7 @@ export const searchMoviesByTitle = async (
       return;
     }
 
-    const movies = await Movie.find({
+    const movies = await Media.find({
       title: { $regex: `${query}`, $options: "i" },
     })
       .select("title poster description rating cast director")
@@ -774,7 +774,7 @@ export const searchMoviesByTitle = async (
       .skip(skip)
       .limit(limit);
 
-    const totalMovies = await Movie.countDocuments({
+    const totalMovies = await Media.countDocuments({
       title: { $regex: `${query}`, $options: "i" },
     });
     res.status(200).json({
@@ -825,7 +825,7 @@ export const getTopRatedMovies = async (
       return;
     }
 
-    const moviesList = await Movie.aggregate([
+    const moviesList = await Media.aggregate([
       {
         $sort: {
           rating: -1,
@@ -857,7 +857,7 @@ export const getTopRatedMovies = async (
       return;
     }
 
-    const totalMovies = await Movie.countDocuments();
+    const totalMovies = await Media.countDocuments();
     res.status(200).json({
       metadata: {
         totalMovies: totalMovies,
@@ -905,7 +905,7 @@ export const getLatestReleasedMovies = async (
 
     const skipDocNumber = (pageNumber - 1) * limitNumber;
 
-    const moviesList = await Movie.aggregate([
+    const moviesList = await Media.aggregate([
       {
         $sort: {
           releaseDate: -1,
@@ -937,7 +937,7 @@ export const getLatestReleasedMovies = async (
       return;
     }
 
-    const totalMovies = await Movie.countDocuments();
+    const totalMovies = await Media.countDocuments();
     res.status(200).json({
       metadata: {
         totalMovies: totalMovies,
@@ -985,7 +985,7 @@ export const getPopularMoviesList = async (
 
     const skipDocNumber = (pageNumber - 1) * limitNumber;
 
-    const moviesList = await Movie.aggregate([
+    const moviesList = await Media.aggregate([
       {
         $match: {
           rating: { $gte: 7.5 },
@@ -1022,7 +1022,7 @@ export const getPopularMoviesList = async (
       return;
     }
 
-    const totalMovies = await Movie.countDocuments();
+    const totalMovies = await Media.countDocuments();
     res.status(200).json({
       metadata: {
         totalMovies: totalMovies,

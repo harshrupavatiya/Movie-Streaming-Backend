@@ -1,6 +1,6 @@
 import express from "express";
-import { toggleWatchlist, getWatchlist } from "../controllers/watchlist";
-import { userAuth } from "../middlewares/Auth";
+import { toggleWatchlist, getWatchlist } from "../modules/user/watchlist.controller";
+import { userAuth } from "../modules/auth/auth.middleware";
 
 const watchlistRouter = express.Router();
 

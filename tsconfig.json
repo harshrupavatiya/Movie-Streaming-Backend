@@ -7,6 +7,6 @@
     "esModuleInterop": true,
     "strict": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/modules/auth/auth.middleware.ts", "src/modules/user/user.model.ts", "src/modules/cast/cast.model.ts", "src/modules/episode/episode.model.ts", "src/modules/like/like.model.ts", "src/modules/subscription/subscription.model.ts"],
   "exclude": ["node_modules"]
 }

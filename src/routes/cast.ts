@@ -1,6 +1,6 @@
 import express from "express";
 import {searchCastByName,  addOrUpdateCast,deleteCast,} from "../controllers/cast";
-import { userAuth } from "../middlewares/Auth";
+import { userAuth } from "../modules/auth/auth.middleware";
 const castRouter = express.Router();
 
 castRouter.get("/getCastName", userAuth, searchCastByName);

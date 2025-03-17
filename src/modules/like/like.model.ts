@@ -1,7 +1,7 @@
 import mongoose, { Model, Schema } from "mongoose";
-import { ILike } from "../types/db.model";
-import Movie from "./movie";
-import Series from "./series";
+import { ILike } from "../../types/db.model";
+import Movie from "../../models/movie.model";
+import Series from "../../models/series.model";
 
 const likeSchema = new Schema<ILike>(
   {

@@ -1,6 +1,6 @@
 import express from "express"
-import { userAuth } from "../middlewares/Auth";
-import { addEpisode, deleteEpisode, getEpisode, updateEpisode } from "../controllers/episode";
+import { userAuth } from "../modules/auth/auth.middleware";
+import { addEpisode, deleteEpisode, getEpisode, updateEpisode } from "../modules/episode/episode.controller";
 import { getEditEpisodePayload, getNewEpisodePayload } from "../middlewares/getEpisodePayload";
 
 const episodeRouter = express.Router();

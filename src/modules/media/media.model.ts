@@ -1,10 +1,11 @@
-import mongoose, { Model, ObjectId, Schema } from "mongoose";
-import { ISeries } from "../types/db.model";
-import Cast from "./cast";
-import Director from "./director";
-import Episode from "./episode";
+import mongoose, { Model, Schema } from "mongoose";
+import { IMedia } from "./media.interfaces";
+import Cast from "../cast/cast.model";
+import Director from "../director/director.model";
+import Episode from "../episode/episode.model";
+import { ADMIN } from "../utils/constants";
 
-const seriesSchema = new Schema<ISeries>(
+const mediaSchema = new Schema<IMedia>(
   {
     title: {
       type: String,
@@ -66,6 +67,18 @@ const seriesSchema = new Schema<ISeries>(
         ref: "Director",
       },
     ],
+    contentType: {
+        type: String,
+        enum: ["Movie", "Series"],
+        required: true,
+    },
+    duration: {
+        type: Number,
+    },
+    availableForStreaming: {
+      type: Boolean,
+      default: true,
+    },
     poster: {
       type: String,
       required: true,
@@ -74,16 +87,33 @@ const seriesSchema = new Schema<ISeries>(
       type: String,
       required: true,
     },
-    availableForStreaming: {
-      type: Boolean,
-      default: true,
+    movieUrl: {
+        type: String,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: ADMIN,
+      required: true,
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: ADMIN,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: ADMIN,
+      default: null,
     },
   },
   { timestamps: true }
 );
 
-seriesSchema.pre("findOneAndDelete", async function (next) {
-  // delete all episodes which has given seriesId
+mediaSchema.pre("findOneAndDelete", async function (next) {
+  // delete all episodes which has given mediaId
   Episode.deleteMany({ seriesId: this.getQuery()._id })
     .then((val) => console.log("All Episode deleted successfully. ", val))
     .catch((err) =>
@@ -93,30 +123,30 @@ seriesSchema.pre("findOneAndDelete", async function (next) {
   next();
 });
 
-seriesSchema.post("save", async function () {
-  const series = this;
+mediaSchema.post("save", async function () {
+  const media = this;
 
-  if (series.casts && series.casts.length > 0) {
+  if (media.casts && media.casts.length > 0) {
     Promise.all(
-      series.casts.map((castId) =>
+      media.casts.map((castId) =>
         Cast.findByIdAndUpdate(castId.toString(), {
-          $addToSet: { series: series._id },
+          $addToSet: { media: media._id },
         })
       )
     );
   }
 
-  if (series.directors && series.directors.length > 0) {
+  if (media.directors && media.directors.length > 0) {
     Promise.all(
-      series.directors.map((directorId) =>
+      media.directors.map((directorId) =>
         Director.findByIdAndUpdate(directorId, {
-          $addToSet: { series: series._id },
+          $addToSet: { media: media._id },
         })
       )
     );
   }
 });
 
-const Series: Model<ISeries> = mongoose.model<ISeries>("Series", seriesSchema);
+const Media: Model<IMedia> = mongoose.model<IMedia>("Media", mediaSchema);
 
-export default Series;
+export default Media;

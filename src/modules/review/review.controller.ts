@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import Review from "../models/review";
-import Movie from "../models/movie";
-import Series from "../models/series";
-import { AuthRequest } from "./../types/api";
+import Review from "./review.model";
+import Movie from "../../models/movie.model";
+import Series from "../../models/series.model";
+import { AuthRequest } from "../../types/api";
 import mongoose from "mongoose";
 import { ADMIN, MOVIE, SERIES } from "../utils/constants";
 

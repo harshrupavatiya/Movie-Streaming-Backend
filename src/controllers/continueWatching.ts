@@ -1,7 +1,7 @@
 import { Response } from "express";
-import User from "../models/user";
+import User from "../modules/user/user.model";
 import { AuthRequest } from "../types/api";
-import { EPISODE, MOVIE } from "../utils/constants";
+import { EPISODE, MOVIE } from "../modules/utils/constants";
 
 // Update Watch Progress
 export const updateWatchProgress = async (

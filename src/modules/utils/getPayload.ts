@@ -3,9 +3,9 @@ import {
   validateContactNo,
   validateGender,
   validateName,
-} from "../validators/inputValidators";
-import { IEditDetails } from "../types/api";
-import { ICast , IDirector} from "../types/db.model";
+} from "../user/inputValidators";
+import { IEditDetails } from "../../types/api";
+import { ICast , IDirector} from "../../types/db.model";
 import validator from "validator";
 
 interface IEditUserDataReqBody {

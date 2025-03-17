@@ -1,6 +1,6 @@
 import express from "express";
 import { updateWatchProgress , getContinueWatching } from "../controllers/continueWatching";
-import { userAuth } from "../middlewares/Auth";
+import { userAuth } from "../modules/auth/auth.middleware";
 
 const continueWatchingRouter = express.Router();
 

@@ -1,6 +1,6 @@
 import express from "express";
 import { createMovie, getAllMovies, getMovieById, updateMovieById, deleteMovieById, getMoviesByGenre , getMostViewedMoviesList , getMostLikedMoviesList , incrementMovieView ,searchMoviesByTitle , getTopRatedMovies , getLatestReleasedMovies ,getPopularMoviesList } from "./../controllers/movie";
-import { userAuth } from "../middlewares/Auth";
+import { userAuth } from "../modules/auth/auth.middleware";
 const movieRouter = express.Router();
 
 movieRouter.post("/createMovie", userAuth, createMovie);

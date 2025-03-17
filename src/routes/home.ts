@@ -1,6 +1,6 @@
 import express from "express";
 import {getTrendingContent} from "../controllers/home";
-import { userAuth } from "../middlewares/Auth";
+import { userAuth } from "../modules/auth/auth.middleware";
 const homeRouter = express.Router();
 
 homeRouter.get("/getTrendingContent", userAuth, getTrendingContent);

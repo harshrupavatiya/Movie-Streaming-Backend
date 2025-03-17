@@ -1,8 +1,8 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 import { IForgotPasswordToken } from "../types/db.model";
-import { Frontend_Base_URL } from "../utils/constants";
-import { forgotPassTemplate } from "../utils/mailTemplates";
-import mailSender from "../utils/mailSender";
+import { Frontend_Base_URL } from "../modules/utils/constants";
+import { forgotPassTemplate } from "../modules/utils/mailTemplates";
+import mailSender from "../modules/utils/mailSender";
 
 const forgotPasswordTokenSchema = new Schema<IForgotPasswordToken>({
   userId: {

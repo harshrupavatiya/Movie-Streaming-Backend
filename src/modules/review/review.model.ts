@@ -1,7 +1,7 @@
 import mongoose, { Schema, Model } from "mongoose";
-import { IReview } from "../types/db.model";
-import Movie from "./movie";
-import Series from "./series";
+import { IReview } from "../../types/db.model";
+import Movie from "../../models/movie.model";
+import Series from "../../models/series.model";
 
 const reviewSchema = new Schema<IReview>(
   {

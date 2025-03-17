@@ -4,7 +4,7 @@ import {
   addOrUpdateDirector,
   deleteDirector,
 } from "../controllers/director";
-import { userAuth } from "../middlewares/Auth";
+import { userAuth } from "../modules/auth/auth.middleware";
 const directorRouter = express.Router();
 
 directorRouter.get("/getDirectorNames", userAuth, searchDirectorByName);

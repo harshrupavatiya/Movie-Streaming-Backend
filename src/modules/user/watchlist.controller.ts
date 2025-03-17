@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { AuthRequest } from "../types/api";
-import User from "../models/user";
+import { AuthRequest } from "../../types/api";
+import User from "./user.model";
 
 // Toggle Watchlist (Add/Remove)--------------------------------------------------------------------------------
 export const toggleWatchlist = async (

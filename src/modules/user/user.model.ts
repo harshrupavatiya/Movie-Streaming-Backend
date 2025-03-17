@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema } from "mongoose";
-import { IUser } from "../types/db.model";
+import { IUser } from "../../types/db.model";
 import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";

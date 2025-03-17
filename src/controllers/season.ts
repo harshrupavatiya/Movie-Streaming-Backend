@@ -1,8 +1,8 @@
 import { Response } from "express";
 import { AuthRequest } from "../types/api";
-import Series from "../models/series";
-import Episode from "../models/episode";
-import { ADMIN } from "../utils/constants";
+import Series from "../models/series.model";
+import Episode from "../modules/episode/episode.model";
+import { ADMIN } from "../modules/utils/constants";
 
 export const deleteSeason = async (
   req: AuthRequest,

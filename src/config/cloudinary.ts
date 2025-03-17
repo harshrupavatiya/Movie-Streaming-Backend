@@ -3,7 +3,7 @@ import {
   CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET,
   CLOUDINARY_CLOUD_NAME,
-} from "../utils/envProvider";
+} from "../modules/utils/envProvider";
 
 async function connectCloudinary() {
   // Configuration

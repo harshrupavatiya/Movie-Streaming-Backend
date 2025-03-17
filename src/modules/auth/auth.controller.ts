@@ -19,7 +19,7 @@ import {
   signUpSuccessTemplate,
 } from "../utils/mailTemplates";
 
-// LOGIN--------------------------------------------------------------------------------------------------
+// LOGIN --------------------------------------------------------------------------------------------------
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     // Get data from req body

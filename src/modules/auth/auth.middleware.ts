@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/user";
-import { AuthRequest } from "../types/api";
+import User from "../user/user.model";
+import { AuthRequest } from "../../types/api";
 import { JWT_SIGNUP_SECRET } from "../utils/envProvider";
 
 export const userAuth = async (
