@@ -82,6 +82,7 @@ app.use("/continue-watching", continueWatchingRouter);
 app.use("/trending", homeRouter);
 
 
+
 const port = PORT || 3000;
 
 Promise.all([connectDB(), connectCloudinary()])

@@ -127,7 +127,7 @@ export const getAllMovies = async (
       .limit(limit)
       .sort({ releaseDate: -1 });
 
-      const totalMovie = await Movie.countDocuments();
+    const totalMovie = await Movie.countDocuments();
 
     // Check user role (if authenticated)
     const isAdmin = req.user && req.user.role === ADMIN;
@@ -166,7 +166,7 @@ export const getAllMovies = async (
         currentPage: page,
         totalPages: Math.ceil(totalMovie / limit),
       },
-      data: { movies: formattedMovies },
+      data: { moviesList: formattedMovies },
     });
   } catch (err) {
     res.status(500).json({
@@ -362,13 +362,13 @@ export const updateMovieById = async (
       return;
     }
 
-    if(editMoviePayload.cast) {
+    if (editMoviePayload.cast) {
       await Cast.updateMany(
         { _id: { $in: movie.cast } },
         { $pull: { movies: movie._id } }
       );
     }
-    if(editMoviePayload.director) {
+    if (editMoviePayload.director) {
       await Director.updateMany(
         { _id: { $in: movie.director } },
         { $pull: { movies: movie._id } }

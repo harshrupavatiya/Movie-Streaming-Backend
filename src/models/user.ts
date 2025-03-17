@@ -69,17 +69,17 @@ const userSchema = new Schema<IUser>(
       },
       billingCycle: {
         type: String,
-        enum: ["monthly", "yearly", ""], 
+        enum: ["monthly", "yearly", ""],
         default: "",
       },
       purchaseDate: {
-        type: Date, 
+        type: Date,
       },
       startDate: {
-        type: Date, 
+        type: Date,
       },
       endDate: {
-        type: Date, 
+        type: Date,
       },
       cancelAt: {
         type: Date,

@@ -1,5 +1,5 @@
 import express from "express";
-import { createMovie, getAllMovies, getMovieById, updateMovieById, deleteMovieById, getMoviesByGenre , getMostViewedMoviesList , getMostLikedMoviesList , incrementMovieView ,searchMoviesByTitle , getTopRatedMovies , getLatestReleasedMovies ,getPopularMoviesList } from "./../controllers/movie";
+import { createMovie, getAllMovies, getMovieById, updateMovieById, deleteMovieById, getMoviesByGenre, getMostViewedMoviesList, getMostLikedMoviesList, incrementMovieView, searchMoviesByTitle, getTopRatedMovies, getLatestReleasedMovies, getPopularMoviesList } from "./../controllers/movie";
 import { userAuth } from "../middlewares/Auth";
 const movieRouter = express.Router();
 
