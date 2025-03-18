@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema } from "mongoose";
-import { IUser } from "../../types/db.model";
+import { IUser } from "./user.interfaces";
 import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
@@ -109,6 +109,10 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     continueWatching: [
       {
         contentId: {
@@ -151,7 +155,7 @@ userSchema.methods.getJWT = async function (
     expiresIn: duration,
   };
 
-  const token = jwt.sign({ _id: user._id }, secret, options);
+  const token = jwt.sign({ id: user._id }, secret, options);
 
   return token;
 };

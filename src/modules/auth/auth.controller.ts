@@ -1,17 +1,17 @@
 import { Request, Response } from "express";
-import User from "../models/user";
+import { User } from "../user";
 import bcrypt from "bcrypt";
 import {
   validateSignUpData,
   validateUserData,
-} from "../validators/newUserData";
-import { validateEmail, validatePassword } from "../validators/inputValidators";
-import { AuthRequest } from "../types/api";
-import OTP from "../models/otp";
-import { IOTP, IUser } from "../types/db.model";
+} from "../user/newUserData";
+import { validateEmail, validatePassword } from "../user/inputValidators";
+import { AuthRequest } from "../../types/api";
+import OTP from "../otp/otp.model";
+import { IOTP, IUser } from "../../types/db.model";
 import otpGenerator from "otp-generator";
 import { JWT_SIGNUP_SECRET } from "../utils/envProvider";
-import ForgotPasswordToken from "../models/forgotPasswordToken";
+import ForgotPasswordToken from "../../models/forgotPasswordToken.model";
 import { generateResetToken } from "../utils/generateToken";
 import mailSender from "../utils/mailSender";
 import {

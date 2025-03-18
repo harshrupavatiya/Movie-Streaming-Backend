@@ -1,4 +1,4 @@
-import { validateContactNo, validateEmail, validateName, validatePassword } from "../modules/user/inputValidators";
+import { validateContactNo, validateEmail, validateName, validatePassword } from "./inputValidators";
 
 interface IUserRequiredField {
   name: string;

@@ -32,6 +32,7 @@ export interface IContinueWatching {
 
 // User
 export interface IUser extends Document {
+  isDeleted: any;
   _id: mongoose.Types.ObjectId | string;
   name: string;
   email: string;

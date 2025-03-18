@@ -1,13 +1,13 @@
 import { Response } from "express";
-import { AuthRequest } from "../types/api";
-import { validateName, validatePassword } from "../validators/inputValidators";
+import { AuthRequest } from "../../types/api";
+import { validateName, validatePassword } from "./inputValidators";
 import bcrypt from "bcrypt";
 import { getValidUserUpdatePayload } from "../utils/getPayload";
 import { UploadedFile } from "express-fileupload";
 import { uploadImageToCloudinary } from "../utils/fileUploader";
 import fs from "fs";
-import { validateFileContent } from "../validators/mediaFile";
-import User from "../models/user";
+import { validateFileContent } from "../../validators/mediaFile";
+import User from "./user.model"
 import { ADMIN } from "../utils/constants";
 
 export const changePassword = async (

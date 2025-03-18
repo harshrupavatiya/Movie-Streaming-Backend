@@ -1,5 +1,5 @@
 import { Response } from "express";
-import Like from "../models/like";
+import Like from "./like.model";
 import { AuthRequest } from "../types/api";
 import { isMongoId } from "validator";
 import Movie from "../models/movie";
