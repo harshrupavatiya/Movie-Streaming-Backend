@@ -1,5 +1,5 @@
 import { NextFunction, Response } from "express";
-import { AuthRequest } from "../../types/api";
+import { AuthRequest } from "./auth.interface";
 
 export const getPaginationInfo = async (
   req: AuthRequest,

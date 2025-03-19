@@ -1,6 +1,6 @@
 import { Response } from "express";
 import Like from "./like.model";
-import { AuthRequest } from "../../types/api";
+import { AuthRequest } from "../auth";
 import { isMongoId } from "validator";
 import { Media } from "../media";
 import { MOVIE, SERIES } from "../../utils/constants";

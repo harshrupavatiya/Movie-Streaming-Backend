@@ -6,7 +6,7 @@ import {
   validateUserData,
 } from "../validate/newUserData";
 import { validateEmail, validatePassword } from "../validate/inputValidators";
-import { AuthRequest } from "../../types/api";
+import { AuthRequest } from "./auth.interface";
 import OTP from "./otp.model";
 import { IOTP } from "./auth.interface";
 import { userInterface } from "../user";

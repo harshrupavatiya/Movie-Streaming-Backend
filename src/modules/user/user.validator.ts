@@ -1,3 +1,4 @@
+import { isValidISOBirthDate, validateContactNo, validateGender, validateName } from "../validate/inputValidators";
 import { IEditDetails, IEditUserDataReqBody } from "./user.interface";
 
 export const getValidUserUpdatePayload = (
