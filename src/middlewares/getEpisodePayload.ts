@@ -5,7 +5,7 @@ import { isValidISOBirthDate, validateContentTitle } from '../modules/validate/i
 import { isNumeric } from 'validator';
 import { AuthRequest } from '../types/api';
 import { validateFileContent } from '../modules/validate/mediaFile';
-import { uploadImageToCloudinary } from '../utils/fileUploader';
+import { uploadImageToCloudinary } from '../modules/utils/fileUploader';
 import { UploadedFile } from 'express-fileupload';
 import fs from 'fs';
 import Episode from '../modules/episode/episode.model';

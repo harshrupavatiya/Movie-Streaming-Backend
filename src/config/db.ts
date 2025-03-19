@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
-import { DB_URL } from '../utils/envProvider';
+import { MONGODB_URL } from './config';
 
 async function connectDB() {
   try {
-    await mongoose.connect(DB_URL as string);
+    await mongoose.connect(MONGODB_URL as string);
   } catch {
     throw new Error('Database connection failed.');
   }

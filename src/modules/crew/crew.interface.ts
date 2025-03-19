@@ -6,7 +6,7 @@ export interface ICrew extends Document {
   role: 'Cast' | 'Director';
   profilePicture?: string;
   dateOfBirth?: Date;
-  designation: "Cast" | "Director";
+  designation: 'Cast' | 'Director';
   nationality?: string;
   media?: mongoose.Types.ObjectId[];
 }

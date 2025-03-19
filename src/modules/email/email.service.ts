@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
-import { MailFrom } from './constants';
-import { MAIL_HOST, MAIL_PASS, MAIL_PORT, MAIL_USER } from './envProvider';
+import { MailFrom } from '../../config/constants';
+import { MAIL_HOST, MAIL_PASS, MAIL_PORT, MAIL_USER } from '../../config/config';
 
 const mailSender = (email: string, title: string, body: string): void => {
   try {

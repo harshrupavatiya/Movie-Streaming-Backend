@@ -1,9 +1,8 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import STRIPE_PRICE_IDS from '../../config/stripe';
-import { AuthRequest } from '../auth';
-import { ACTIVE, MONTHLY, YEARLY } from '../../utils/constants';
+import { ACTIVE, MONTHLY, YEARLY } from '../../config/constants';
 
 dotenv.config();
 
@@ -15,7 +14,7 @@ if (!STRIPE_SECRET_KEY) {
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
-export const memberSubscription = async (req: AuthRequest, res: Response): Promise<void> => {
+export const memberSubscription = async (req: Request, res: Response): Promise<void> => {
   try {
     const { selectedPlan } = req.body;
     const user = req.user;

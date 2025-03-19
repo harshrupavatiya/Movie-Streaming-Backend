@@ -1,12 +1,11 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import Like from './like.model';
-import { AuthRequest } from '../auth';
 import { isMongoId } from 'validator';
 import { Media } from '../media';
-import { MOVIE, SERIES } from '../../utils/constants';
+import { MOVIE, SERIES } from '../../config/constants';
 
 // Toggle Like (Add/Remove)--------------------------------------------------------------------------------
-export const toggleLike = async (req: AuthRequest, res: Response): Promise<void> => {
+export const toggleLike = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user;
 
@@ -80,7 +79,7 @@ export const toggleLike = async (req: AuthRequest, res: Response): Promise<void>
 };
 
 // Get all liked movies and series for a user--------------------------------------------------------------
-export const getLikedContent = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getLikedContent = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user;
 

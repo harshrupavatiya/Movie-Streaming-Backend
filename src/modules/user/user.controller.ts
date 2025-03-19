@@ -1,17 +1,16 @@
-import { Response } from 'express';
-import { AuthRequest } from '../auth';
+import { Request, Response } from 'express';
 import { validatePassword } from '../validate/inputValidators';
 import bcrypt from 'bcrypt';
-import { getValidUserUpdatePayload } from './user.validator';
+import { getValidUserUpdatePayload } from './user.validation';
 import { UploadedFile } from 'express-fileupload';
-import { uploadImageToCloudinary } from '../../utils/fileUploader';
+import { uploadImageToCloudinary } from '../utils/fileUploader';
 import fs from 'fs';
 import { validateFileContent } from '../validate/mediaFile';
 import User from './user.model';
-import { EPISODE, MOVIE, ADMIN } from '../../utils/constants';
+import { EPISODE, MOVIE, ADMIN } from '../../config/constants';
 import { IWatchlistContent } from './user.interface';
 
-export const changePassword = async (req: AuthRequest, res: Response): Promise<void> => {
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
   try {
     // Extract information
     const { password, newPassword } = req.body;
@@ -52,7 +51,7 @@ export const changePassword = async (req: AuthRequest, res: Response): Promise<v
   }
 };
 
-export const editProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+export const editProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     // get object of updating field
     const editData = getValidUserUpdatePayload(req.body);
@@ -131,7 +130,7 @@ export const editProfile = async (req: AuthRequest, res: Response): Promise<void
   }
 };
 
-export const getUserList = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getUserList = async (req: Request, res: Response): Promise<void> => {
   try {
     // check user is admin
     if (req.user?.role !== ADMIN) {
@@ -183,7 +182,7 @@ export const getUserList = async (req: AuthRequest, res: Response): Promise<void
   }
 };
 
-export const createAdmin = async (req: AuthRequest, res: Response): Promise<void> => {
+export const createAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
     // check user is admin
     if (req.user?.role !== ADMIN) {
@@ -211,7 +210,7 @@ export const createAdmin = async (req: AuthRequest, res: Response): Promise<void
   }
 };
 
-export const toggleUserIsActive = async (req: AuthRequest, res: Response): Promise<void> => {
+export const toggleUserIsActive = async (req: Request, res: Response): Promise<void> => {
   try {
     // check user is admin
     if (req.user?.role !== ADMIN) {
@@ -262,7 +261,7 @@ export const toggleUserIsActive = async (req: AuthRequest, res: Response): Promi
   }
 };
 
-export const getUserInfo = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getUserInfo = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user;
     if (!user) {
@@ -295,7 +294,7 @@ export const getUserInfo = async (req: AuthRequest, res: Response): Promise<void
 };
 
 // Toggle Watchlist (Add/Remove)--------------------------------------------------------------------------------
-export const toggleWatchlist = async (req: AuthRequest, res: Response): Promise<void> => {
+export const toggleWatchlist = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({ message: 'Unauthorized access' });
@@ -341,7 +340,7 @@ export const toggleWatchlist = async (req: AuthRequest, res: Response): Promise<
 };
 
 // Get all watchlisted movies and series for a user--------------------------------------------------------------
-export const getWatchlist = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getWatchlist = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({ message: 'Unauthorized' });
@@ -364,7 +363,7 @@ export const getWatchlist = async (req: AuthRequest, res: Response): Promise<voi
 };
 
 // Update Watch Progress
-export const updateWatchProgress = async (req: AuthRequest, res: Response): Promise<void> => {
+export const updateWatchProgress = async (req: Request, res: Response): Promise<void> => {
   try {
     const existingUser = req.user;
 
@@ -414,7 +413,7 @@ export const updateWatchProgress = async (req: AuthRequest, res: Response): Prom
 };
 
 // Get Continue Watching List
-export const getContinueWatching = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getContinueWatching = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user;
 

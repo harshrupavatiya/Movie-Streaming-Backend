@@ -4,7 +4,7 @@ import { userInterface } from '../user';
 import { Request } from 'express';
 import { episodeInterface } from '../episode';
 
-interface IPaginate {
+export interface IPaginate {
   skipDocNumber: number;
   limitNumber: number;
 }

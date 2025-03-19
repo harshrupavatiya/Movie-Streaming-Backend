@@ -1,7 +1,6 @@
-import { NextFunction, Response } from 'express';
-import { AuthRequest } from './auth.interface';
+import { NextFunction, Request, Response } from 'express';
 
-export const getPaginationInfo = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const getPaginationInfo = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // get page and limit from query parameters
     const { page = '1', limit = '20' } = req.query;

@@ -1,16 +1,15 @@
 // TODO: getTrendingMedia API
 
-import { Response } from 'express';
-import { AuthRequest } from '../auth';
+import { Request, Response } from 'express';
 import Media from './media.model';
 import { Episode } from '../episode';
 import { Like } from '../like';
 import mongoose from 'mongoose';
 import { Crew } from '../crew';
-import { ADMIN, FREE, SERIES } from '../../utils/constants';
+import { ADMIN, FREE, SERIES } from '../../config/constants';
 
 // Add media---------------------------------------------------------------------------
-export const createMedia = async (req: AuthRequest, res: Response): Promise<void> => {
+export const createMedia = async (req: Request, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
@@ -39,7 +38,7 @@ export const createMedia = async (req: AuthRequest, res: Response): Promise<void
 };
 
 // Delete media------------------------------------------------------------------------
-export const deleteMedia = async (req: AuthRequest, res: Response): Promise<void> => {
+export const deleteMedia = async (req: Request, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
@@ -69,7 +68,7 @@ export const deleteMedia = async (req: AuthRequest, res: Response): Promise<void
 };
 
 // Update media info-------------------------------------------------------------------
-export const updateMedia = async (req: AuthRequest, res: Response): Promise<void> => {
+export const updateMedia = async (req: Request, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
@@ -113,7 +112,7 @@ export const updateMedia = async (req: AuthRequest, res: Response): Promise<void
 };
 
 // Get media by genre------------------------------------------------------------------
-export const getMediaByGenre = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMediaByGenre = async (req: Request, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
@@ -194,7 +193,7 @@ export const getMediaByGenre = async (req: AuthRequest, res: Response): Promise<
 };
 
 // Get media by Id---------------------------------------------------------------------
-export const getMediaById = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMediaById = async (req: Request, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
@@ -319,7 +318,7 @@ export const getMediaById = async (req: AuthRequest, res: Response): Promise<voi
 };
 
 // Get most liked media list-----------------------------------------------------------
-export const getMostLikedMediaList = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMostLikedMediaList = async (req: Request, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
@@ -384,7 +383,7 @@ export const getMostLikedMediaList = async (req: AuthRequest, res: Response): Pr
 };
 
 // Get most viewed media list----------------------------------------------------------
-export const getMostViewedMediaList = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMostViewedMediaList = async (req: Request, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
@@ -449,7 +448,7 @@ export const getMostViewedMediaList = async (req: AuthRequest, res: Response): P
 };
 
 // Get top rated media list------------------------------------------------------------
-export const getTopRatedMediaList = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getTopRatedMediaList = async (req: Request, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
@@ -515,7 +514,7 @@ export const getTopRatedMediaList = async (req: AuthRequest, res: Response): Pro
 
 // Get latest released media list------------------------------------------------------
 export const getLatestReleasedMediaList = async (
-  req: AuthRequest,
+  req: Request,
   res: Response
 ): Promise<void> => {
   try {
@@ -582,7 +581,7 @@ export const getLatestReleasedMediaList = async (
 };
 
 // Get popular media list--------------------------------------------------------------
-export const getPopularMediaList = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getPopularMediaList = async (req: Request, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
@@ -651,7 +650,7 @@ export const getPopularMediaList = async (req: AuthRequest, res: Response): Prom
 };
 
 // Get media list by search------------------------------------------------------------
-export const getMediaListBySearch = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMediaListBySearch = async (req: Request, res: Response): Promise<void> => {
   try {
     if (req.user?.role !== ADMIN) {
       res.status(400).json({ message: 'Access denied, Admins only' });
@@ -706,7 +705,7 @@ export const getMediaListBySearch = async (req: AuthRequest, res: Response): Pro
 
 // Get media names and id by search----------------------------------------------------
 export const getMediaNamesAndIdBySearch = async (
-  req: AuthRequest,
+  req: Request,
   res: Response
 ): Promise<void> => {
   try {
@@ -771,7 +770,7 @@ export const getMediaNamesAndIdBySearch = async (
 };
 
 // Media view count--------------------------------------------------------------------
-export const incrementMediaView = async (req: AuthRequest, res: Response): Promise<void> => {
+export const incrementMediaView = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || req.user.role == ADMIN) {
       res.status(403).json({ message: 'Only view incremented for users' });
@@ -804,7 +803,7 @@ export const incrementMediaView = async (req: AuthRequest, res: Response): Promi
   }
 };
 
-export const deleteSeason = async (req: AuthRequest, res: Response): Promise<void> => {
+export const deleteSeason = async (req: Request, res: Response): Promise<void> => {
   try {
     // ensure user is admin
     if (req?.user?.role !== ADMIN) {
@@ -850,7 +849,7 @@ export const deleteSeason = async (req: AuthRequest, res: Response): Promise<voi
   }
 };
 
-export const searchContent = async (req: AuthRequest, res: Response): Promise<void> => {
+export const searchContent = async (req: Request, res: Response): Promise<void> => {
   try {
     const { search } = req.query;
 

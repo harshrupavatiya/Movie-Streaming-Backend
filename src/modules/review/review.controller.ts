@@ -1,12 +1,11 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import Review from './review.model';
-import { AuthRequest } from '../auth';
 import mongoose from 'mongoose';
-import { ADMIN, MOVIE, SERIES } from '../../utils/constants';
+import { ADMIN, MOVIE, SERIES } from '../../config/constants';
 import { Media } from '../media';
 
 // Create or Update Review --------------------------------------------------------------------------------
-export const createOrUpdateReview = async (req: AuthRequest, res: Response): Promise<void> => {
+export const createOrUpdateReview = async (req: Request, res: Response): Promise<void> => {
   try {
     const { contentId, contentType, rating, comment } = req.body;
 
@@ -86,7 +85,7 @@ export const createOrUpdateReview = async (req: AuthRequest, res: Response): Pro
 };
 
 //Get latest 5 review for movie/series --------------------------------------------------------------------
-export const getLatestReviews = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getLatestReviews = async (req: Request, res: Response): Promise<void> => {
   try {
     const { contentId } = req.params;
 
@@ -135,7 +134,7 @@ export const getLatestReviews = async (req: AuthRequest, res: Response): Promise
 };
 
 // Movie wise get review (Admin only)----------------------------------------------------------------------
-export const getMovieWiseReview = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMovieWiseReview = async (req: Request, res: Response): Promise<void> => {
   try {
     // Check if user is admin
     if (!req.user || req.user.role !== ADMIN) {
@@ -179,7 +178,7 @@ export const getMovieWiseReview = async (req: AuthRequest, res: Response): Promi
 };
 
 // Delete review (Admin only)------------------------------------------------------------------------------
-export const deleteReview = async (req: AuthRequest, res: Response): Promise<void> => {
+export const deleteReview = async (req: Request, res: Response): Promise<void> => {
   try {
     const { reviewId } = req.params;
 

@@ -1,16 +1,15 @@
-import { Response } from 'express';
-import { AuthRequest } from '../auth';
+import { Request, Response } from 'express';
 import Crew from './crew.model';
 import { Media } from '../media';
 import { validateFileContent } from '../validate/mediaFile';
-import { uploadImageToCloudinary } from '../../utils/fileUploader';
+import { uploadImageToCloudinary } from '../utils/fileUploader';
 import { UploadedFile } from 'express-fileupload';
 import fs from 'fs';
 import { getValidCrewPayload } from './crew.validator';
-import { ADMIN } from '../../utils/constants';
+import { ADMIN } from '../../config/constants';
 
 //Get searched Crew by name--------------------------------------------------------------------------------
-export const searchCrewByName = async (req: AuthRequest, res: Response): Promise<void> => {
+export const searchCrewByName = async (req: Request, res: Response): Promise<void> => {
   try {
     const { query } = req.query;
 
@@ -44,7 +43,7 @@ export const searchCrewByName = async (req: AuthRequest, res: Response): Promise
 };
 
 // Add or Update Crew (Admin Only)--------------------------------------------------------------------------------
-export const addOrUpdateCrew = async (req: AuthRequest, res: Response): Promise<void> => {
+export const addOrUpdateCrew = async (req: Request, res: Response): Promise<void> => {
   try {
     // Check if the user is an admin
     if (!req.user || req.user.role !== ADMIN) {
@@ -135,7 +134,7 @@ export const addOrUpdateCrew = async (req: AuthRequest, res: Response): Promise<
 };
 
 // Delete Crew (Admin Only)--------------------------------------------------------------------------------
-export const deleteCrew = async (req: AuthRequest, res: Response): Promise<void> => {
+export const deleteCrew = async (req: Request, res: Response): Promise<void> => {
   try {
     // Check if the user is an admin
     if (!req.user || req.user.role !== ADMIN) {

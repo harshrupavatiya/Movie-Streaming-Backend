@@ -1,11 +1,10 @@
-import { Response, NextFunction } from 'express';
+import { Response, NextFunction, Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../user';
 import { JWT_SIGNUP_SECRET } from '../../config/config';
-import { AuthRequest } from './auth.interface';
 
 export const userAuth = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {

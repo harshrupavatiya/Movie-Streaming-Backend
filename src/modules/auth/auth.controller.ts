@@ -3,16 +3,15 @@ import User from '../user/user.model';
 import bcrypt from 'bcrypt';
 import { validateSignUpData, validateUserData } from '../validate/newUserData';
 import { validateEmail, validatePassword } from '../validate/inputValidators';
-import { AuthRequest } from './auth.interface';
 import OTP from './otp.model';
 import { IOTP } from './auth.interface';
 import { userInterface } from '../user';
 import otpGenerator from 'otp-generator';
-import { JWT_SIGNUP_SECRET } from '../../utils/envProvider';
+import { JWT_SIGNUP_SECRET } from '../../config/config';
 import ForgotPasswordToken from './forgotPasswordToken.model';
-import { generateResetToken } from '../../utils/generateToken';
-import mailSender from '../../utils/mailSender';
-import { resetPasswordSuccessTemplate, signUpSuccessTemplate } from '../../utils/mailTemplates';
+import { generateResetToken } from '../utils';
+import mailSender from '../email/email.service';
+import { resetPasswordSuccessTemplate, signUpSuccessTemplate } from '../email/email.template';
 
 // LOGIN--------------------------------------------------------------------------------------------------
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -160,7 +159,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 };
 
 // Logout-------------------------------------------------------------------------------------------------
-export const logout = async (req: AuthRequest, res: Response): Promise<void> => {
+export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
     // set token as null in cookie
     res.cookie('token', null, { expires: new Date(Date.now()) });

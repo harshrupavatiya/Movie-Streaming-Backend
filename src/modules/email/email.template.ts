@@ -1,4 +1,4 @@
-import { contactUsEmail, Frontend_Base_URL } from './constants';
+import { contactUsEmail, Frontend_Base_URL } from '../../config/constants';
 
 export const otpTemplate = (otp: number) => {
   return `<!DOCTYPE html>

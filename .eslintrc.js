@@ -1,5 +1,4 @@
-export default 
-// {
+export default // {
 //   root: true,
 //   parser: '@typescript-eslint/parser',
 //   parserOptions: {
@@ -18,32 +17,32 @@ export default
 //   },
 // };
 {
-  "env": {
+  env: {
     es2021: true,
-    node: true
+    node: true,
   },
-  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
-  parser: "@typescript-eslint/parser",
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module"
+    ecmaVersion: 'latest',
+    sourceType: 'module',
   },
-  plugins: ["@typescript-eslint"],
+  plugins: ['@typescript-eslint'],
   rules: {
-    '@typescript-eslint/explicit-function-return-type': "error",
-    '@typescript-eslint/no-unused-vars': ["error", { "argsIgnorePattern": "^_" }],
-    '@typescript-eslint/no-explicit-any': "error",
+    '@typescript-eslint/explicit-function-return-type': 'error',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/naming-convention': [
-      "error",
+      'error',
       {
-        selector: "interface",
-        format: ["PascalCase"]
-      }
+        selector: 'interface',
+        format: ['PascalCase'],
+      },
     ],
-    'no-console': ["error", { "allow": ["warn", "error"] }],
-    eqeqeq: ["error", "always"],
-    curly: ["error", "all"],
-    'prefer-const': "error",
-    'no-var': "error"
-  }
-}
+    'no-console': ['error', { allow: ['warn', 'error'] }],
+    eqeqeq: ['error', 'always'],
+    curly: ['error', 'all'],
+    'prefer-const': 'error',
+    'no-var': 'error',
+  },
+};

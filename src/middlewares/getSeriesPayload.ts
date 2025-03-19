@@ -9,7 +9,7 @@ import {
 } from '../modules/validate/inputValidators';
 import { isMongoId, isNumeric } from 'validator';
 import { AuthRequest } from '../types/api';
-import { uploadImageToCloudinary } from '../utils/fileUploader';
+import { uploadImageToCloudinary } from '../modules/utils/fileUploader';
 import { validateFileContent } from '../modules/validate/mediaFile';
 import fs from 'fs';
 import { UploadedFile } from 'express-fileupload';

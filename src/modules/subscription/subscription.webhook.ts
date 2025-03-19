@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import { User } from '../user';
-import { MONTHLY, YEARLY } from '../../utils/constants';
+import { MONTHLY, YEARLY } from '../../config/constants';
 
 dotenv.config();
 
