@@ -1,31 +1,28 @@
-import { Response } from "express";
-import Like from "./like.model";
-import { AuthRequest } from "../auth";
-import { isMongoId } from "validator";
-import { Media } from "../media";
-import { MOVIE, SERIES } from "../../utils/constants";
+import { Response } from 'express';
+import Like from './like.model';
+import { AuthRequest } from '../auth';
+import { isMongoId } from 'validator';
+import { Media } from '../media';
+import { MOVIE, SERIES } from '../../utils/constants';
 
 // Toggle Like (Add/Remove)--------------------------------------------------------------------------------
-export const toggleLike = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const toggleLike = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: 'Unauthorized' });
       return;
     }
 
     const { contentId, contentType } = req.body;
 
     if (contentType !== MOVIE && contentType !== SERIES) {
-      res.status(400).json({ message: "Invalid content  Type" });
+      res.status(400).json({ message: 'Invalid content  Type' });
       return;
     }
     if (!contentId || !isMongoId(contentId)) {
-      res.status(400).json({ message: "Content ID are invalid" });
+      res.status(400).json({ message: 'Content ID are invalid' });
       return;
     }
 
@@ -41,15 +38,12 @@ export const toggleLike = async (
         $inc: { likes: -1 },
       })
         .then(() => {
-          console.log("like value decreamented successfully");
+          console.log('like value decreamented successfully');
         })
         .catch((err) => {
-          console.log(
-            "Getting an error while decreamenting the value of like : ",
-            err
-          );
+          console.log('Getting an error while decreamenting the value of like : ', err);
         });
-      res.status(200).json({ message: "Unliked successfully" });
+      res.status(200).json({ message: 'Unliked successfully' });
       return;
     }
 
@@ -65,18 +59,15 @@ export const toggleLike = async (
       $inc: { likes: 1 },
     })
       .then(() => {
-        console.log("like value increamented successfully");
+        console.log('like value increamented successfully');
       })
       .catch((err) => {
-        console.log(
-          "Getting an error while increamenting the value of like : ",
-          err
-        );
+        console.log('Getting an error while increamenting the value of like : ', err);
       });
 
     res.status(201).json({
       success: true,
-      message: "Liked successfully",
+      message: 'Liked successfully',
     });
     return;
   } catch (err) {
@@ -89,28 +80,25 @@ export const toggleLike = async (
 };
 
 // Get all liked movies and series for a user--------------------------------------------------------------
-export const getLikedContent = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getLikedContent = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: 'Unauthorized' });
       return;
     }
 
     const likedContent = await Like.find({ userId: user._id })
       .populate({
-        path: "contentId",
-        select: "title poster",
+        path: 'contentId',
+        select: 'title poster',
       })
       .sort({ createdAt: -1 })
       .lean();
 
     res.status(200).json({
-      message: "Liked content by user",
+      message: 'Liked content by user',
       data: { likedContent },
     });
     return;

@@ -1,5 +1,5 @@
-import { isValidISOBirthDate, validateGender, validateName } from "../validate/inputValidators";
-import { ICrew, IEditCrewReqBody } from "./crew.interface";
+import { isValidISOBirthDate, validateGender, validateName } from '../validate/inputValidators';
+import { ICrew, IEditCrewReqBody } from './crew.interface';
 import validator from 'validator';
 
 export const getValidCrewPayload = (
@@ -12,7 +12,7 @@ export const getValidCrewPayload = (
 
   if (!existingCast) {
     if (!name) {
-      throw new Error("Name field required");
+      throw new Error('Name field required');
     }
     validateName(name);
     editData.name = name;
@@ -44,8 +44,8 @@ export const getValidCrewPayload = (
     editData.dateOfBirth = new Date(dateOfBirth);
   }
   if (nationality) {
-    if(!validator.isAlpha(nationality)) {
-      throw new Error("Only alphabets are allowed in notionality");
+    if (!validator.isAlpha(nationality)) {
+      throw new Error('Only alphabets are allowed in notionality');
     }
     editData.nationality = nationality;
   }

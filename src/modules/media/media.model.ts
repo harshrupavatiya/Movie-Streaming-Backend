@@ -1,7 +1,7 @@
-import mongoose, { Model, Schema } from "mongoose";
-import { IMedia } from "./media.interface";
-import { Crew } from "../crew";
-import { Episode } from "../episode";
+import mongoose, { Model, Schema } from 'mongoose';
+import { IMedia } from './media.interface';
+import { Crew } from '../crew';
+import { Episode } from '../episode';
 
 const mediaSchema = new Schema<IMedia>(
   {
@@ -38,8 +38,8 @@ const mediaSchema = new Schema<IMedia>(
       max: 10,
     },
     contentType: {
-        type: String,
-        enum: ["Movie", "Series"],
+      type: String,
+      enum: ['Movie', 'Series'],
     },
     likes: {
       type: Number,
@@ -54,13 +54,13 @@ const mediaSchema = new Schema<IMedia>(
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Review",
+        ref: 'Review',
       },
     ],
     crew: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Crew",
+        ref: 'Crew',
       },
     ],
     poster: {
@@ -72,45 +72,41 @@ const mediaSchema = new Schema<IMedia>(
       required: true,
     },
     movieUrl: {
-        type: String,
+      type: String,
     },
     availableForStreaming: {
       type: Boolean,
       default: true,
     },
     isDeleted: {
-        type: Boolean,
-        default: false,
-    }
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-mediaSchema.pre("findOneAndDelete", async function (next) {
+mediaSchema.pre('findOneAndDelete', async function (next) {
   // delete all episodes which has given mediaId
   Episode.deleteMany({ mediaId: this.getQuery()._id })
-    .then((val) => console.log("All Episode deleted successfully. ", val))
-    .catch((err) =>
-      console.log("something qwent wrong while deleting episodes. ", err)
-    );
+    .then((val) => console.log('All Episode deleted successfully. ', val))
+    .catch((err) => console.log('something qwent wrong while deleting episodes. ', err));
 
   next();
 });
 
-mediaSchema.post("save", async function () {
-  const media = this;
-
-  if (media.crew && media.crew.length > 0) {
+mediaSchema.post('save', async function () {
+  if (this.crew && this.crew.length > 0) {
     Promise.all(
-      media.crew.map((crewId) =>
+      this.crew.map((crewId) =>
         Crew.findByIdAndUpdate(crewId.toString(), {
-          $addToSet: { media: media._id },
+          $addToSet: { media: this._id },
         })
       )
     );
   }
 });
 
-const Media: Model<IMedia> = mongoose.model<IMedia>("Media", mediaSchema);
+const Media: Model<IMedia> = mongoose.model<IMedia>('Media', mediaSchema);
 
 export default Media;

@@ -1,26 +1,23 @@
-// TODO: getTrendingMedia API 
+// TODO: getTrendingMedia API
 
-import { Response } from "express";
-import { AuthRequest } from "../auth";
-import Media from "./media.model";
-import { Episode } from "../episode";
-import { Like } from "../like";
-import mongoose from "mongoose";
-import { Crew } from "../crew";
-import { ADMIN, FREE, SERIES } from "../../utils/constants";
+import { Response } from 'express';
+import { AuthRequest } from '../auth';
+import Media from './media.model';
+import { Episode } from '../episode';
+import { Like } from '../like';
+import mongoose from 'mongoose';
+import { Crew } from '../crew';
+import { ADMIN, FREE, SERIES } from '../../utils/constants';
 
 // Add media---------------------------------------------------------------------------
-export const createMedia = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const createMedia = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
 
     // check user is admin
     if (user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      res.status(400).json({ message: 'Access denied, Admins only allowed' });
       return;
     }
 
@@ -33,7 +30,7 @@ export const createMedia = async (
     // saving media model in DB
     await newMedia.save();
 
-    res.status(200).json({ message: "Media added successfully." });
+    res.status(200).json({ message: 'Media added successfully.' });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -42,16 +39,13 @@ export const createMedia = async (
 };
 
 // Delete media------------------------------------------------------------------------
-export const deleteMedia = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const deleteMedia = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
     // check user is admin
     if (user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      res.status(400).json({ message: 'Access denied, Admins only allowed' });
       return;
     }
 
@@ -62,13 +56,11 @@ export const deleteMedia = async (
     const deletedMedia = await Media.findOneAndDelete({ _id: mediaId });
 
     if (!deletedMedia) {
-      res.status(400).json({ message: "Media not found or invalid MediaId" });
+      res.status(400).json({ message: 'Media not found or invalid MediaId' });
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Media and all Seasons & Episodes are deleted" });
+    res.status(200).json({ message: 'Media and all Seasons & Episodes are deleted' });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -77,16 +69,13 @@ export const deleteMedia = async (
 };
 
 // Update media info-------------------------------------------------------------------
-export const updateMedia = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const updateMedia = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
     // check user is admin
     if (user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      res.status(400).json({ message: 'Access denied, Admins only allowed' });
       return;
     }
 
@@ -98,18 +87,15 @@ export const updateMedia = async (
 
     // ensure that media exists
     if (!media) {
-      res.status(400).json({ message: "Invalid media Id" });
+      res.status(400).json({ message: 'Invalid media Id' });
       return;
     }
 
     // validate reqData and get editMediaPayload
     const editMediaPayload = req.mediaPayload;
 
-    if(editMediaPayload?.crew) {
-      await Crew.updateMany(
-        { _id: { $in: media.crew } },
-        { $pull: { media: media._id } }
-      );
+    if (editMediaPayload?.crew) {
+      await Crew.updateMany({ _id: { $in: media.crew } }, { $pull: { media: media._id } });
     }
 
     // update existing media document
@@ -118,7 +104,7 @@ export const updateMedia = async (
     // saving updated document
     await media.save();
 
-    res.status(200).json({ message: "media info updated successfully." });
+    res.status(200).json({ message: 'media info updated successfully.' });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -127,14 +113,11 @@ export const updateMedia = async (
 };
 
 // Get media by genre------------------------------------------------------------------
-export const getMediaByGenre = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getMediaByGenre = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
-      res.status(400).json({ message: "Access denied, Please login" });
+      res.status(400).json({ message: 'Access denied, Please login' });
       return;
     }
 
@@ -149,15 +132,13 @@ export const getMediaByGenre = async (
     const limitNumber = req.pagination?.limitNumber;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
-      res.status(400).json({ message: "pagination values missing" });
+      res.status(400).json({ message: 'pagination values missing' });
       return;
     }
 
     // Validatiing genreNumber
     if (isNaN(genreNumber) || genreNumber < 1) {
-      res
-        .status(400)
-        .json({ message: "Genre ID must be a positive integer (≥1)" });
+      res.status(400).json({ message: 'Genre ID must be a positive integer (≥1)' });
       return;
     }
 
@@ -189,9 +170,7 @@ export const getMediaByGenre = async (
 
     // if mediaData is empty then send error of invalid genreId
     if (!mediaData || mediaData.length <= 0) {
-      res
-        .status(200)
-        .json({ message: "no media available with given genreId" });
+      res.status(200).json({ message: 'no media available with given genreId' });
       return;
     }
 
@@ -204,7 +183,7 @@ export const getMediaByGenre = async (
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
         totalPages: Math.ceil(mediaCount / limitNumber),
       },
-      message: "list of media",
+      message: 'list of media',
       data: { mediaList: mediaData },
     });
     return;
@@ -215,14 +194,11 @@ export const getMediaByGenre = async (
 };
 
 // Get media by Id---------------------------------------------------------------------
-export const getMediaById = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getMediaById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
-      res.status(400).json({ message: "Access denied, Please login" });
+      res.status(400).json({ message: 'Access denied, Please login' });
       return;
     }
 
@@ -230,26 +206,24 @@ export const getMediaById = async (
 
     // get media Info
     const media = await Media.findById(mediaId)
-      .select(
-        "title description genres languages releaseDate rating likes poster trailerUrl"
-      )
+      .select('title description genres languages releaseDate rating likes poster trailerUrl')
       .populate({
-        path: "reviews",
+        path: 'reviews',
         options: { sort: { createdAt: -1 }, limit: 5 },
       })
       .populate({
-        path: "crew",
-        select: "name",
+        path: 'crew',
+        select: 'name',
       })
       .exec();
 
     // if media not present
     if (!media) {
-      res.status(400).json({ message: "Please provide valid mediaId" });
+      res.status(400).json({ message: 'Please provide valid mediaId' });
       return;
     }
 
-    const aggregateArray =
+    const aggregateArray: mongoose.PipelineStage[] =
       req.user.subscription?.plan === FREE
         ? [
             {
@@ -267,8 +241,8 @@ export const getMediaById = async (
             },
             {
               $group: {
-                _id: "$seasonNumber",
-                episodes: { $push: "$$ROOT" },
+                _id: '$seasonNumber',
+                episodes: { $push: '$$ROOT' },
               },
             },
             {
@@ -276,7 +250,7 @@ export const getMediaById = async (
             },
             {
               $addFields: {
-                season: "$_id",
+                season: '$_id',
               },
             },
             {
@@ -300,8 +274,8 @@ export const getMediaById = async (
             },
             {
               $group: {
-                _id: "$seasonNumber",
-                episodes: { $push: "$$ROOT" },
+                _id: '$seasonNumber',
+                episodes: { $push: '$$ROOT' },
               },
             },
             {
@@ -309,7 +283,7 @@ export const getMediaById = async (
             },
             {
               $addFields: {
-                season: "$_id",
+                season: '$_id',
               },
             },
             {
@@ -320,7 +294,7 @@ export const getMediaById = async (
           ];
 
     // get episode season wise
-    const seasonwiseEpisode = await Episode.aggregate(aggregateArray as any[]);
+    const seasonwiseEpisode = await Episode.aggregate(aggregateArray);
 
     const isLiked = await Like.findOne({
       userId: req.user?._id.toString(),
@@ -345,14 +319,11 @@ export const getMediaById = async (
 };
 
 // Get most liked media list-----------------------------------------------------------
-export const getMostLikedMediaList = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getMostLikedMediaList = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
-      res.status(400).json({ message: "Access denied, Please login" });
+      res.status(400).json({ message: 'Access denied, Please login' });
       return;
     }
 
@@ -361,7 +332,7 @@ export const getMostLikedMediaList = async (
     const limitNumber = req.pagination?.limitNumber;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
-      res.status(400).json({ message: "pagination values missing" });
+      res.status(400).json({ message: 'pagination values missing' });
       return;
     }
 
@@ -391,7 +362,7 @@ export const getMostLikedMediaList = async (
     ]);
 
     if (!mediaList || mediaList.length <= 0) {
-      res.status(200).json({ message: "data not available" });
+      res.status(200).json({ message: 'data not available' });
       return;
     }
 
@@ -402,7 +373,7 @@ export const getMostLikedMediaList = async (
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
         totalPages: Math.ceil(mediaCount / limitNumber),
       },
-      message: "Most Liked Media List",
+      message: 'Most Liked Media List',
       data: { mediaList },
     });
     return;
@@ -413,14 +384,11 @@ export const getMostLikedMediaList = async (
 };
 
 // Get most viewed media list----------------------------------------------------------
-export const getMostViewedMediaList = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getMostViewedMediaList = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
-      res.status(400).json({ message: "Access denied, Please login" });
+      res.status(400).json({ message: 'Access denied, Please login' });
       return;
     }
 
@@ -429,7 +397,7 @@ export const getMostViewedMediaList = async (
     const limitNumber = req.pagination?.limitNumber;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
-      res.status(400).json({ message: "pagination values missing" });
+      res.status(400).json({ message: 'pagination values missing' });
       return;
     }
 
@@ -459,7 +427,7 @@ export const getMostViewedMediaList = async (
     ]);
 
     if (!mediaList || mediaList.length <= 0) {
-      res.status(200).json({ message: "data not available" });
+      res.status(200).json({ message: 'data not available' });
       return;
     }
 
@@ -470,7 +438,7 @@ export const getMostViewedMediaList = async (
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
         totalPages: Math.ceil(mediaCount / limitNumber),
       },
-      message: "Most Viewed Media List",
+      message: 'Most Viewed Media List',
       data: { mediaList },
     });
     return;
@@ -481,14 +449,11 @@ export const getMostViewedMediaList = async (
 };
 
 // Get top rated media list------------------------------------------------------------
-export const getTopRatedMediaList = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getTopRatedMediaList = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
-      res.status(400).json({ message: "Access denied, Please login" });
+      res.status(400).json({ message: 'Access denied, Please login' });
       return;
     }
 
@@ -497,7 +462,7 @@ export const getTopRatedMediaList = async (
     const limitNumber = req.pagination?.limitNumber;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
-      res.status(400).json({ message: "pagination values missing" });
+      res.status(400).json({ message: 'pagination values missing' });
       return;
     }
 
@@ -527,7 +492,7 @@ export const getTopRatedMediaList = async (
     ]);
 
     if (!mediaList || mediaList.length <= 0) {
-      res.status(200).json({ message: "data not available" });
+      res.status(200).json({ message: 'data not available' });
       return;
     }
 
@@ -538,7 +503,7 @@ export const getTopRatedMediaList = async (
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
         totalPages: Math.ceil(mediaCount / limitNumber),
       },
-      message: "Top Rated Media List",
+      message: 'Top Rated Media List',
       data: { mediaList },
     });
     return;
@@ -556,7 +521,7 @@ export const getLatestReleasedMediaList = async (
   try {
     // Ensure that user is exists or not
     if (!req.user) {
-      res.status(400).json({ message: "Access denied, Please login" });
+      res.status(400).json({ message: 'Access denied, Please login' });
       return;
     }
 
@@ -565,7 +530,7 @@ export const getLatestReleasedMediaList = async (
     const limitNumber = req.pagination?.limitNumber;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
-      res.status(400).json({ message: "pagination values missing" });
+      res.status(400).json({ message: 'pagination values missing' });
       return;
     }
 
@@ -595,7 +560,7 @@ export const getLatestReleasedMediaList = async (
     ]);
 
     if (!mediaList || mediaList.length <= 0) {
-      res.status(200).json({ message: "data not available" });
+      res.status(200).json({ message: 'data not available' });
       return;
     }
 
@@ -606,7 +571,7 @@ export const getLatestReleasedMediaList = async (
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
         totalPages: Math.ceil(mediaCount / limitNumber),
       },
-      message: "Latest Released Media List",
+      message: 'Latest Released Media List',
       data: { mediaList },
     });
     return;
@@ -617,14 +582,11 @@ export const getLatestReleasedMediaList = async (
 };
 
 // Get popular media list--------------------------------------------------------------
-export const getPopularMediaList = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getPopularMediaList = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Ensure that user is exists or not
     if (!req.user) {
-      res.status(400).json({ message: "Access denied, Please login" });
+      res.status(400).json({ message: 'Access denied, Please login' });
       return;
     }
 
@@ -633,7 +595,7 @@ export const getPopularMediaList = async (
     const limitNumber = req.pagination?.limitNumber;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
-      res.status(400).json({ message: "pagination values missing" });
+      res.status(400).json({ message: 'pagination values missing' });
       return;
     }
 
@@ -667,7 +629,7 @@ export const getPopularMediaList = async (
     ]);
 
     if (!mediaList || mediaList.length <= 0) {
-      res.status(200).json({ message: "data not available" });
+      res.status(200).json({ message: 'data not available' });
       return;
     }
 
@@ -678,7 +640,7 @@ export const getPopularMediaList = async (
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
         totalPages: Math.ceil(mediaCount / limitNumber),
       },
-      message: "Popular Media List",
+      message: 'Popular Media List',
       data: { mediaList },
     });
     return;
@@ -689,36 +651,33 @@ export const getPopularMediaList = async (
 };
 
 // Get media list by search------------------------------------------------------------
-export const getMediaListBySearch = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getMediaListBySearch = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (req.user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only" });
+      res.status(400).json({ message: 'Access denied, Admins only' });
       return;
     }
 
     // get page and limit from query parameters
-    let { search = "" } = req.query;
+    const { search = '' } = req.query;
 
     // get pagination info from pagination payload
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
-      res.status(400).json({ message: "pagination values missing" });
+      res.status(400).json({ message: 'pagination values missing' });
       return;
     }
 
-    const searchRegExp = new RegExp(search as string, "i");
+    const searchRegExp = new RegExp(search as string, 'i');
 
     const mediaList = await Media.find({
       title: searchRegExp,
     })
       .populate({
-        path: "crew",
-        select: "name",
+        path: 'crew',
+        select: 'name',
       })
       .skip(skipDocNumber)
       .limit(limitNumber)
@@ -733,7 +692,7 @@ export const getMediaListBySearch = async (
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
         totalPages: Math.ceil(mediaCount / limitNumber),
       },
-      message: "searched media List for admin",
+      message: 'searched media List for admin',
       data: {
         mediaList,
       },
@@ -752,23 +711,23 @@ export const getMediaNamesAndIdBySearch = async (
 ): Promise<void> => {
   try {
     if (req.user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only" });
+      res.status(400).json({ message: 'Access denied, Admins only' });
       return;
     }
 
     // get page and limit from query parameters
-    let { search = "" } = req.query;
+    const { search = '' } = req.query;
 
     // get pagination info from pagination payload
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
-      res.status(400).json({ message: "pagination values missing" });
+      res.status(400).json({ message: 'pagination values missing' });
       return;
     }
 
-    const searchRegExp = new RegExp(search as string, "i");
+    const searchRegExp = new RegExp(search as string, 'i');
 
     const mediaList = await Media.aggregate([
       {
@@ -799,7 +758,7 @@ export const getMediaNamesAndIdBySearch = async (
         currentPage: Math.ceil(skipDocNumber / limitNumber) + 1,
         totalPages: Math.ceil(mediaCount / limitNumber),
       },
-      message: "searched media Name and ID for admin",
+      message: 'searched media Name and ID for admin',
       data: {
         mediaList,
       },
@@ -812,13 +771,10 @@ export const getMediaNamesAndIdBySearch = async (
 };
 
 // Media view count--------------------------------------------------------------------
-export const incrementMediaView = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const incrementMediaView = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (!req.user || req.user.role == ADMIN) {
-      res.status(403).json({ message: "Only view incremented for users" });
+      res.status(403).json({ message: 'Only view incremented for users' });
       return;
     }
 
@@ -831,12 +787,12 @@ export const incrementMediaView = async (
     );
 
     if (!updatedMedia) {
-      res.status(404).json({ message: "Media not found" });
+      res.status(404).json({ message: 'Media not found' });
       return;
     }
 
     res.status(200).json({
-      message: "View count updated",
+      message: 'View count updated',
       data: { views: updatedMedia.viewCount },
     });
     return;
@@ -848,14 +804,11 @@ export const incrementMediaView = async (
   }
 };
 
-export const deleteSeason = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const deleteSeason = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // ensure user is admin
     if (req?.user?.role !== ADMIN) {
-      res.status(400).json({ message: " Access denied, Admins only" });
+      res.status(400).json({ message: ' Access denied, Admins only' });
     }
 
     // get info from parameters
@@ -863,16 +816,14 @@ export const deleteSeason = async (
     const { season } = req.query;
 
     if (!seriesId || !season) {
-      res
-        .status(400)
-        .json({ message: "Series Id and Season both field are required." });
+      res.status(400).json({ message: 'Series Id and Season both field are required.' });
     }
 
     // find series in series collection
-    const series = await Media.findOne({_id: seriesId, contentType: "Series"});
+    const series = await Media.findOne({ _id: seriesId, contentType: 'Series' });
 
     if (!series) {
-      res.status(400).json({ message: "Invalid series ID" });
+      res.status(400).json({ message: 'Invalid series ID' });
       return;
     }
 
@@ -880,92 +831,84 @@ export const deleteSeason = async (
     const seasonNumber = parseInt(season as string, 10);
 
     if (isNaN(seasonNumber)) {
-      res.status(400).json({ message: "season should be in numeric format" });
+      res.status(400).json({ message: 'season should be in numeric format' });
       return;
     }
 
     // deleting all episode with given series ID and seasonNumber
-    const deletedEpisodes = await Episode.deleteMany({
+    await Episode.deleteMany({
       seriesId,
       seasonNumber,
     });
 
-    res
-      .status(200)
-      .json({
-        message: `All episode are deleted of season number ${seasonNumber}`,
-      });
+    res.status(200).json({
+      message: `All episode are deleted of season number ${seasonNumber}`,
+    });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
   }
 };
 
-export const searchContent = async (
-    req: AuthRequest,
-    res: Response
-  ): Promise<void> => {
-    try {
-      let { search } = req.query;
-      console.log(search, "search at line 8 search controller")
-  
-      if (!search || typeof search !== "string") {
-        res.status(400).json({ message: "Search Body is required" });
-        return;
-      }
-  
-      const searchRegex = new RegExp(search.trim(), "i"); // Case-insensitive search
-  
-      // Search movies & series by title
-      const media = await Media.find({ title: searchRegex })
-        .select(
-          "_id title description rating poster languages genres releaseDate"
-        )
-        .lean();
-  
-      // Aggregate medias by Cast & Director
-      const mediaListByCrew = await Media.aggregate([
-        {
-          $lookup: {
-            from: "crew",
-            localField: "crew",
-            foreignField: "_id",
-            as: "crewDetails",
-          },
-        },
-        {
-          $match: {
-            "crewDetails.name": searchRegex,
-          },
-        },
-        {
-          $project: {
-            _id: 1,
-            title: 1,
-            description: 1,
-            rating: 1,
-            poster: 1,
-            languages: 1,
-            genres: 1,
-            releaseDate: 1,
-          },
-        },
-      ]);
-  
-      res.status(200).json({
-        success: true,
-        message: "Search Results",
-        data: {
-          mediaList: media,
-          mediaListByCrew: mediaListByCrew,
-        },
-      });
-      return;
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: (err as Error).message,
-      });
+export const searchContent = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { search } = req.query;
+
+    if (!search || typeof search !== 'string') {
+      res.status(400).json({ message: 'Search Body is required' });
       return;
     }
-  };
+
+    const searchRegex = new RegExp(search.trim(), 'i'); // Case-insensitive search
+
+    // Search movies & series by title
+    const media = await Media.find({ title: searchRegex })
+      .select('_id title description rating poster languages genres releaseDate')
+      .lean();
+
+    // Aggregate medias by Cast & Director
+    const mediaListByCrew = await Media.aggregate([
+      {
+        $lookup: {
+          from: 'crew',
+          localField: 'crew',
+          foreignField: '_id',
+          as: 'crewDetails',
+        },
+      },
+      {
+        $match: {
+          'crewDetails.name': searchRegex,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          description: 1,
+          rating: 1,
+          poster: 1,
+          languages: 1,
+          genres: 1,
+          releaseDate: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Search Results',
+      data: {
+        mediaList: media,
+        mediaListByCrew: mediaListByCrew,
+      },
+    });
+    return;
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: (err as Error).message,
+    });
+    return;
+  }
+};

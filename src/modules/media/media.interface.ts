@@ -1,4 +1,4 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document } from 'mongoose';
 
 export interface IMedia extends Document {
   title: string;
@@ -9,7 +9,7 @@ export interface IMedia extends Document {
   likes: number;
   viewCount: number;
   rating?: number;
-  contentType: "Movie" | "Series";
+  contentType: 'Movie' | 'Series';
   crew?: mongoose.Types.ObjectId[];
   reviews?: mongoose.Types.ObjectId[];
   poster?: string;

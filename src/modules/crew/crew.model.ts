@@ -1,5 +1,5 @@
-import mongoose, { Model, Schema } from "mongoose";
-import { ICrew } from "./crew.interface";
+import mongoose, { Model, Schema } from 'mongoose';
+import { ICrew } from './crew.interface';
 
 const crewSchema = new Schema<ICrew>(
   {
@@ -13,16 +13,16 @@ const crewSchema = new Schema<ICrew>(
     },
     gender: {
       type: String,
-      enum: ["male", "female", "other", "", "prefer not to say"],
-      default: "",
+      enum: ['male', 'female', 'other', '', 'prefer not to say'],
+      default: '',
     },
-    role: {
+    designation: {
       type: String,
-      enum: ["Cast", "Director"],
+      enum: ['Cast', 'Director'],
     },
     profilePicture: {
       type: String,
-      default: "https://geographyandyou.com/images/user-profile.png"
+      default: 'https://geographyandyou.com/images/user-profile.png',
     },
     dateOfBirth: {
       type: Date,
@@ -33,7 +33,7 @@ const crewSchema = new Schema<ICrew>(
     media: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Media",
+        ref: 'Media',
         default: [],
       },
     ],
@@ -41,6 +41,6 @@ const crewSchema = new Schema<ICrew>(
   { timestamps: true }
 );
 
-const Crew: Model<ICrew> = mongoose.model<ICrew>("Crew", crewSchema);
+const Crew: Model<ICrew> = mongoose.model<ICrew>('Crew', crewSchema);
 
 export default Crew;

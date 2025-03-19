@@ -1,6 +1,6 @@
-import nodemailer from "nodemailer";
-import { MailFrom } from "./constants";
-import { MAIL_HOST, MAIL_PASS, MAIL_PORT, MAIL_USER } from "./envProvider";
+import nodemailer from 'nodemailer';
+import { MailFrom } from './constants';
+import { MAIL_HOST, MAIL_PASS, MAIL_PORT, MAIL_USER } from './envProvider';
 
 const mailSender = (email: string, title: string, body: string): void => {
   try {
@@ -24,13 +24,13 @@ const mailSender = (email: string, title: string, body: string): void => {
         html: body,
       })
       .then((val) => {
-        console.log("Email sent:", val);
+        console.log('Email sent:', val);
       })
       .catch((err) => {
-        console.log("Error : ", err.message);
+        console.log('Error : ', err.message);
       });
   } catch (error) {
-    console.error("Error sending email:", error as Error);
+    console.error('Error sending email:', error as Error);
   }
 };
 

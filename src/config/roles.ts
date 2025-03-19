@@ -1,4 +1,4 @@
-import { ADMIN_PERMISSIONS, USER_PERMISSIONS } from "./permissions";
+import { ADMIN_PERMISSIONS, USER_PERMISSIONS } from './permissions';
 
 const allRoles = {
   admin: ADMIN_PERMISSIONS,

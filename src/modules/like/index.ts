@@ -1,3 +1,3 @@
-import Like from "./like.model";
+import Like from './like.model';
 
 export { Like };

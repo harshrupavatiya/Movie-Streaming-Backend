@@ -1,4 +1,9 @@
-import { validateContactNo, validateEmail, validateName, validatePassword } from "./inputValidators";
+import {
+  validateContactNo,
+  validateEmail,
+  validateName,
+  validatePassword,
+} from './inputValidators';
 
 interface IUserRequiredField {
   name: string;
@@ -32,6 +37,6 @@ export const validateSignUpData = (reqBody: Required<IUserRequiredField>): void 
 
   // validating OTP
   if (!otpRegex.test(otp.toString())) {
-    throw new Error("Invalid OTP format");
+    throw new Error('Invalid OTP format');
   }
 };

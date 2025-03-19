@@ -1,31 +1,28 @@
-import { Response } from "express";
-import Stripe from "stripe";
-import dotenv from "dotenv";
-import STRIPE_PRICE_IDS from "../../config/stripe";
-import { AuthRequest } from "../auth";
-import { ACTIVE, MONTHLY, YEARLY } from "../../utils/constants";
+import { Response } from 'express';
+import Stripe from 'stripe';
+import dotenv from 'dotenv';
+import STRIPE_PRICE_IDS from '../../config/stripe';
+import { AuthRequest } from '../auth';
+import { ACTIVE, MONTHLY, YEARLY } from '../../utils/constants';
 
 dotenv.config();
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 if (!STRIPE_SECRET_KEY) {
-  console.error("STRIPE_SECRET_KEY is not set in environment variables.");
+  console.error('STRIPE_SECRET_KEY is not set in environment variables.');
   process.exit(1);
 }
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
-export const memberSubscription = async (
-  req: AuthRequest,
-  res: Response
-): Promise<Response | any> => {
+export const memberSubscription = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { selectedPlan } = req.body;
     const user = req.user;
     if (!user) return;
 
-    const billingCycle = selectedPlan.type === "monthly" ? MONTHLY : YEARLY;
-    const tier = selectedPlan.tier as "basic" | "premium";
+    const billingCycle = selectedPlan.type === 'monthly' ? MONTHLY : YEARLY;
+    const tier = selectedPlan.tier as 'basic' | 'premium';
     let customer: Stripe.Customer;
 
     // Step 1: Check if the customer already exists
@@ -48,12 +45,13 @@ export const memberSubscription = async (
       if (activeSubscriptions.data.length > 0) {
         const stripeSession = await stripe.billingPortal.sessions.create({
           customer: customer.id,
-          return_url: "http://localhost:3012/",
+          return_url: 'http://localhost:3012/',
         });
-        return res.status(200).json({
-          status: "existing_subscription",
+        res.status(200).json({
+          status: 'existing_subscription',
           redirectUrl: stripeSession.url,
         });
+        return;
       }
     } else {
       // Step 4: Create a new customer
@@ -74,11 +72,10 @@ export const memberSubscription = async (
 
     // Step 5: Create Stripe Checkout session
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-      success_url:
-        "http://localhost:3012/payment-success",
-      cancel_url: "http://localhost:3012/payment-cancel",
-      payment_method_types: ["card"],
-      mode: "subscription",
+      success_url: 'http://localhost:3012/payment-success',
+      cancel_url: 'http://localhost:3012/payment-cancel',
+      payment_method_types: ['card'],
+      mode: 'subscription',
       line_items: [
         {
           price: priceId,
@@ -91,19 +88,20 @@ export const memberSubscription = async (
         tier: tier,
       },
       customer: customer.id,
-      billing_address_collection: "required",
-      customer_update: { address: "auto" },
+      billing_address_collection: 'required',
+      customer_update: { address: 'auto' },
     };
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
     if (session) {
-      return res.json({ id: session.id });
+      res.json({ id: session.id });
+      return;
     }
   } catch (error: unknown) {
-    return res.status(400).json({
-      status: "error",
-      message:
-        error instanceof Error ? error.message : "Unknown error occurred",
+    res.status(400).json({
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
     });
+    return;
   }
 };

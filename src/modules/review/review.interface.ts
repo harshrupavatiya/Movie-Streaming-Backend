@@ -1,6 +1,6 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document } from 'mongoose';
 
-type ContentType = "Movie" | "Series" | "Episode";
+type ContentType = 'Movie' | 'Series' | 'Episode';
 
 export interface IReview extends Document {
   contentId: mongoose.Types.ObjectId;

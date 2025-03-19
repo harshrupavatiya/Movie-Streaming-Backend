@@ -1,7 +1,7 @@
-import mongoose, { Model, Schema } from "mongoose";
-import { IOTP } from "./auth.interface";
-import mailSender from "../../utils/mailSender";
-import { otpTemplate } from "../../utils/mailTemplates";
+import mongoose, { Model, Schema } from 'mongoose';
+import { IOTP } from './auth.interface';
+import mailSender from '../../utils/mailSender';
+import { otpTemplate } from '../../utils/mailTemplates';
 const otpSchema = new Schema<IOTP>({
   email: {
     type: String,
@@ -20,26 +20,22 @@ const otpSchema = new Schema<IOTP>({
 });
 
 // a function -->send emails
-async function sendVerificationEmail(email: string, otp: number):Promise<void> {
+async function sendVerificationEmail(email: string, otp: number): Promise<void> {
   try {
-    mailSender(
-      email,
-      "OTP verification from Filmster",
-      otpTemplate(otp)
-    );
+    mailSender(email, 'OTP verification from Filmster', otpTemplate(otp));
   } catch (error) {
-    console.log("error occurred while sending mails: ", error);
+    console.log('error occurred while sending mails: ', error);
     throw error;
   }
 }
 
 // Pre hook -> otpMail will send before saving otp in DB collection
-otpSchema.pre("save", async function (next) {
+otpSchema.pre('save', async function (next) {
   if (this.isNew) {
     await sendVerificationEmail(this.email, this.otp);
   }
   next();
 });
 
-const OTP: Model<IOTP> = mongoose.model<IOTP>("OTP", otpSchema);
+const OTP: Model<IOTP> = mongoose.model<IOTP>('OTP', otpSchema);
 export default OTP;

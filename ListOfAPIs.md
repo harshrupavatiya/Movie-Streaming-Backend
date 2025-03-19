@@ -1,6 +1,7 @@
 # Total APIs
 
 - [x] Auth
+
   - [x] login
   - [x] logout
   - [x] sign up (save userInfo after verifying received OTP from user)
@@ -8,8 +9,8 @@
   - [x] forgotPassword
 
 - [ ] User
+
   - [ ] getUserData
   - [ ] updateProfile
-
 
 - [ ] Subscription.

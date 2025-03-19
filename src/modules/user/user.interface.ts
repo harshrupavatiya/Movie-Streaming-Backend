@@ -1,14 +1,13 @@
-import mongoose, { Document } from "mongoose";
-import { StringValue } from "ms";
+import mongoose, { Document } from 'mongoose';
+import { StringValue } from 'ms';
 
-type ContentType = "Movie" | "Series" | "Episode";
+type ContentType = 'Movie' | 'Series' | 'Episode';
 
 export interface ISubscription {
-  plan: "free" | "basic" | "premium";
+  plan: 'free' | 'basic' | 'premium';
   startDate?: Date;
   endDate?: Date;
 }
-
 
 // Define Liked Content Interface
 export interface ILikedContent {
@@ -38,13 +37,13 @@ export interface IUser extends Document {
   contactNo?: string;
   password: string;
   dateOfBirth?: Date;
-  gender?: "" | "male" | "female" | "other" | "prefer not to say";
+  gender?: '' | 'male' | 'female' | 'other' | 'prefer not to say';
   profilePicture?: string;
   subscription?: ISubscription;
   watchlist: IWatchlistContent[];
   likedContent: ILikedContent[];
   continueWatching: IContinueWatching[]; // Added this field
-  role: "user" | "admin";
+  role: 'user' | 'admin';
   isActive: boolean;
   isDeleted: boolean;
   getJWT(secret: string, duration: StringValue): Promise<string>;
@@ -52,16 +51,16 @@ export interface IUser extends Document {
 }
 
 export interface IEditDetails {
-    name?: string;
-    contactNo?: string;
-    profilePicture?: string;
-    dateOfBirth?: Date;
-    gender?: "" | "male" | "female" | "other" | "prefer not to say";
-  }
+  name?: string;
+  contactNo?: string;
+  profilePicture?: string;
+  dateOfBirth?: Date;
+  gender?: '' | 'male' | 'female' | 'other' | 'prefer not to say';
+}
 
 export interface IEditUserDataReqBody {
-    name?: string;
-    contactNo?: string;
-    dateOfBirth?: string;
-    gender?: "male" | "female" | "other" | "prefer not to say";
-  }
+  name?: string;
+  contactNo?: string;
+  dateOfBirth?: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer not to say';
+}

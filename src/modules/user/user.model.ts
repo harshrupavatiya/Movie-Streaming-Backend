@@ -1,9 +1,9 @@
-import mongoose, { Model, Schema } from "mongoose";
-import { IUser } from "./user.interface";
-import jwt, { SignOptions } from "jsonwebtoken";
-import bcrypt from "bcrypt";
-import validator from "validator";
-import type { StringValue } from "ms";
+import mongoose, { Model, Schema } from 'mongoose';
+import { IUser } from './user.interface';
+import jwt, { SignOptions } from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import validator from 'validator';
+import type { StringValue } from 'ms';
 
 const userSchema = new Schema<IUser>(
   {
@@ -42,7 +42,7 @@ const userSchema = new Schema<IUser>(
     },
     profilePicture: {
       type: String,
-      default: "https://geographyandyou.com/images/user-profile.png",
+      default: 'https://geographyandyou.com/images/user-profile.png',
       validate(value: string) {
         if (!validator.isURL(value)) {
           throw new Error(`Invalid Photo URL: ${value}`);
@@ -54,36 +54,36 @@ const userSchema = new Schema<IUser>(
     },
     gender: {
       type: String,
-      default: "",
-      enum: ["male", "female", "other", "prefer not to say", ""],
+      default: '',
+      enum: ['male', 'female', 'other', 'prefer not to say', ''],
     },
     subscription: {
       plan: {
         type: String,
-        enum: ["free", "basic", "premium"],
-        default: "free",
+        enum: ['free', 'basic', 'premium'],
+        default: 'free',
       },
       status: {
         type: String,
-        default: "inactive"
+        default: 'inactive',
       },
       billingCycle: {
         type: String,
-        enum: ["monthly", "yearly", ""], 
-        default: "",
+        enum: ['monthly', 'yearly', ''],
+        default: '',
       },
       purchaseDate: {
-        type: Date, 
+        type: Date,
       },
       startDate: {
-        type: Date, 
+        type: Date,
       },
       endDate: {
-        type: Date, 
+        type: Date,
       },
       cancelAt: {
         type: Date,
-        default: null
+        default: null,
       },
     },
     watchlist: [
@@ -91,19 +91,19 @@ const userSchema = new Schema<IUser>(
         contentId: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,
-          refPath: "watchlist.contentType",
+          refPath: 'watchlist.contentType',
         },
         contentType: {
           type: String,
-          enum: ["Movie", "Series"],
+          enum: ['Movie', 'Series'],
           required: true,
         },
       },
     ],
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: ['user', 'admin'],
+      default: 'user',
     },
     isActive: {
       type: Boolean,
@@ -118,11 +118,11 @@ const userSchema = new Schema<IUser>(
         contentId: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,
-          refPath: "continueWatching.contentType",
+          refPath: 'continueWatching.contentType',
         },
         contentType: {
           type: String,
-          enum: ["Movie", "Episode"],
+          enum: ['Movie', 'Episode'],
           required: true,
         },
         progress: {
@@ -148,7 +148,7 @@ userSchema.methods.getJWT = async function (
   const user = this as IUser;
 
   if (!secret) {
-    throw new Error("Secret is not defined");
+    throw new Error('Secret is not defined');
   }
 
   const options: SignOptions = {
@@ -168,5 +168,5 @@ userSchema.methods.validatePassword = async function (
   return bcrypt.compare(passwordInputByUser, user.password);
 };
 
-const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
+const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);
 export default User;

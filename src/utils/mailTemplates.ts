@@ -1,4 +1,4 @@
-import { contactUsEmail, Frontend_Base_URL } from "./constants";
+import { contactUsEmail, Frontend_Base_URL } from './constants';
 
 export const otpTemplate = (otp: number) => {
   return `<!DOCTYPE html>
@@ -335,7 +335,7 @@ export const resetPasswordSuccessTemplate = () => {
 			  <div class="body">
 				  <p>Dear User,</p>
 				  <p>Your password has been successfully reset. You can now log in using your new password.</p>
-				  <a href=${Frontend_Base_URL + "/login"} class="cta">Login to Your Account</a>
+				  <a href=${Frontend_Base_URL + '/login'} class="cta">Login to Your Account</a>
 				  <p>If you did not request this change, please contact our support team immediately.</p>
 			  </div>
 			  <div class="support">If you have any questions or need assistance, please reach out to us at <ahref="mailto:${contactUsEmail}">${contactUsEmail}</ahref=>. We are here to help!</div>

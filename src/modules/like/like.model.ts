@@ -1,26 +1,26 @@
-import mongoose, { Model, Schema } from "mongoose";
-import { ILike } from "./like.interface";
+import mongoose, { Model, Schema } from 'mongoose';
+import { ILike } from './like.interface';
 
 const likeSchema = new Schema<ILike>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     contentId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      refPath: "contentType",
+      refPath: 'contentType',
     },
     contentType: {
       type: String,
       required: true,
-      enum: ["Movie", "Series", "Episode"],
+      enum: ['Movie', 'Series', 'Episode'],
     },
   },
   { timestamps: true }
 );
 
-const Like: Model<ILike> = mongoose.model<ILike>("Like", likeSchema);
+const Like: Model<ILike> = mongoose.model<ILike>('Like', likeSchema);
 export default Like;

@@ -1,13 +1,13 @@
-import mongoose from "mongoose";
-import { mediaInterface } from "../media";
-import { userInterface } from "../user";
-import { Request } from "express";
-import { episodeInterface } from "../episode";
+import mongoose from 'mongoose';
+import { mediaInterface } from '../media';
+import { userInterface } from '../user';
+import { Request } from 'express';
+import { episodeInterface } from '../episode';
 
 interface IPaginate {
-    skipDocNumber: number;
-    limitNumber: number;
-  }
+  skipDocNumber: number;
+  limitNumber: number;
+}
 
 export interface AuthRequest extends Request {
   user?: userInterface.IUser;

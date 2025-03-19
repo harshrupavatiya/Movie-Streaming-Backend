@@ -1,21 +1,17 @@
-import { Response } from "express";
-import { AuthRequest } from "../auth";
-import { validateName, validatePassword } from "../validate/inputValidators";
-import bcrypt from "bcrypt";
-import { getValidUserUpdatePayload } from "../../utils/getPayload";
-import { UploadedFile } from "express-fileupload";
-import { uploadImageToCloudinary } from "../../utils/fileUploader";
-import fs from "fs";
-import { validateFileContent } from "../validate/mediaFile";
-import User from "./user.model";
-import { EPISODE, MOVIE, ADMIN } from "../../utils/constants";
-import mongoose from "mongoose";
-import { IWatchlistContent } from "./user.interface";
+import { Response } from 'express';
+import { AuthRequest } from '../auth';
+import { validatePassword } from '../validate/inputValidators';
+import bcrypt from 'bcrypt';
+import { getValidUserUpdatePayload } from './user.validator';
+import { UploadedFile } from 'express-fileupload';
+import { uploadImageToCloudinary } from '../../utils/fileUploader';
+import fs from 'fs';
+import { validateFileContent } from '../validate/mediaFile';
+import User from './user.model';
+import { EPISODE, MOVIE, ADMIN } from '../../utils/constants';
+import { IWatchlistContent } from './user.interface';
 
-export const changePassword = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const changePassword = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Extract information
     const { password, newPassword } = req.body;
@@ -28,7 +24,7 @@ export const changePassword = async (
     const user = req.user;
 
     if (!user) {
-      throw new Error("User not found in middleware");
+      throw new Error('User not found in middleware');
     }
 
     // compare old password with existing password hash
@@ -36,7 +32,7 @@ export const changePassword = async (
 
     // if password is not valid
     if (!isPasswordValid) {
-      res.status(400).json({ message: "Invalid Password" });
+      res.status(400).json({ message: 'Invalid Password' });
       return;
     }
 
@@ -48,7 +44,7 @@ export const changePassword = async (
     // saving user model
     await user.save();
 
-    res.status(200).json({ message: "Password updated successfully" });
+    res.status(200).json({ message: 'Password updated successfully' });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -56,10 +52,7 @@ export const changePassword = async (
   }
 };
 
-export const editProfile = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const editProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // get object of updating field
     const editData = getValidUserUpdatePayload(req.body);
@@ -70,9 +63,7 @@ export const editProfile = async (
 
     // if file is not present and editData also empty
     if (!file && Object.keys(editData).length === 0) {
-      res
-        .status(400)
-        .json({ message: "Atleast one field required to update the data" });
+      res.status(400).json({ message: 'Atleast one field required to update the data' });
       return;
     }
 
@@ -80,18 +71,18 @@ export const editProfile = async (
     let result = null;
     if (file) {
       // validating file type
-      validateFileContent(file.mimetype, "image");
+      validateFileContent(file.mimetype, 'image');
 
       // uploading image to cloudinary
       result = await uploadImageToCloudinary(file.tempFilePath, {
-        folder: "profilePics",
+        folder: 'profilePics',
         height: 800,
         quality: 100,
       });
 
       // Delete the temporary file
       fs.unlink(file.tempFilePath, (err) => {
-        if (err) console.log("Failed to delete temp file:", err);
+        if (err) console.log('Failed to delete temp file:', err);
       });
     }
     // getting secure url from received data from cloudinary uploader
@@ -99,9 +90,7 @@ export const editProfile = async (
 
     // if url not generated
     if (file && !profilePicture) {
-      res
-        .status(400)
-        .json({ message: "Something went wrong while uploading Image" });
+      res.status(400).json({ message: 'Something went wrong while uploading Image' });
       return;
     }
 
@@ -111,8 +100,7 @@ export const editProfile = async (
     }
     if (Object.keys(editData).length === 0) {
       res.status(400).json({
-        message:
-          "It seems like we are getting an error while updating profile Image",
+        message: 'It seems like we are getting an error while updating profile Image',
       });
       return;
     }
@@ -121,19 +109,19 @@ export const editProfile = async (
     const user = req.user;
 
     if (!user) {
-      res.status(400).json({ message: "It seems like User not found" });
+      res.status(400).json({ message: 'It seems like User not found' });
       return;
     }
-    console.log(editData, "line125");
+    console.log(editData, 'line125');
 
     // assign updatedField to user model
     Object.assign(user, editData);
     // saving updated user model
     await user.save();
-    console.log(user, "346287423");
+    console.log(user, '346287423');
 
     res.status(200).json({
-      message: "User details updated successfully",
+      message: 'User details updated successfully',
       data: { user },
     });
     return;
@@ -143,38 +131,35 @@ export const editProfile = async (
   }
 };
 
-export const getUserList = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getUserList = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // check user is admin
     if (req.user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      res.status(400).json({ message: 'Access denied, Admins only allowed' });
       return;
     }
 
     // get page and limit from query parameters
-    let { search = "" } = req.query;
+    const { search = '' } = req.query;
 
     // get pagination info from pagination payload
     const skipDocNumber = req.pagination?.skipDocNumber;
     const limitNumber = req.pagination?.limitNumber;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
-      res.status(400).json({ message: "pagination values missing" });
+      res.status(400).json({ message: 'pagination values missing' });
       return;
     }
 
-    const searchRegExp = new RegExp(search as string, "i");
+    const searchRegExp = new RegExp(search as string, 'i');
 
     const userList = await User.find({ name: searchRegExp })
-      .select("name email contactNo subscription.plan role isActive")
+      .select('name email contactNo subscription.plan role isActive')
       .skip(skipDocNumber)
       .limit(limitNumber);
 
     if (!userList || userList.length <= 0) {
-      res.status(400).json({ message: "No data found" });
+      res.status(400).json({ message: 'No data found' });
       return;
     }
 
@@ -198,14 +183,11 @@ export const getUserList = async (
   }
 };
 
-export const createAdmin = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const createAdmin = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // check user is admin
     if (req.user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      res.status(400).json({ message: 'Access denied, Admins only allowed' });
       return;
     }
 
@@ -213,21 +195,15 @@ export const createAdmin = async (
     const { userId } = req.body;
 
     // update user details and get updated userInfo
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { role: ADMIN },
-      { new: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(userId, { role: ADMIN }, { new: true });
 
     // if userInfo is null so userId is not valid
     if (!updatedUser) {
-      res.status(400).json({ message: "Invalid UserId" });
+      res.status(400).json({ message: 'Invalid UserId' });
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: `User ${updatedUser.name} became Admin successfully.` });
+    res.status(200).json({ message: `User ${updatedUser.name} became Admin successfully.` });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -235,14 +211,11 @@ export const createAdmin = async (
   }
 };
 
-export const toggleUserIsActive = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const toggleUserIsActive = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // check user is admin
     if (req.user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      res.status(400).json({ message: 'Access denied, Admins only allowed' });
       return;
     }
 
@@ -250,10 +223,9 @@ export const toggleUserIsActive = async (
     const { userId, isActive } = req.body;
 
     // validate input types
-    if (typeof isActive !== "boolean" || typeof userId !== "string") {
+    if (typeof isActive !== 'boolean' || typeof userId !== 'string') {
       res.status(400).json({
-        message:
-          "Invalid data, isActive shold be boolean and userId should be string",
+        message: 'Invalid data, isActive shold be boolean and userId should be string',
       });
       return;
     }
@@ -263,20 +235,18 @@ export const toggleUserIsActive = async (
 
     // if userInfo is null means userId is invalid
     if (!user) {
-      res.status(500).json({ message: "user not exist with given userId" });
+      res.status(500).json({ message: 'user not exist with given userId' });
       return;
     }
 
     if (user.role === ADMIN) {
-      res
-        .status(400)
-        .json({ message: "Access Denied, Admin can suspend only users" });
+      res.status(400).json({ message: 'Access Denied, Admin can suspend only users' });
       return;
     }
 
     if (user.isActive === isActive) {
       res.status(400).json({
-        message: `User is already ${isActive ? "active" : "inActive"}`,
+        message: `User is already ${isActive ? 'active' : 'inActive'}`,
       });
       return;
     }
@@ -284,9 +254,7 @@ export const toggleUserIsActive = async (
     user.isActive = isActive;
     await user.save();
 
-    res
-      .status(200)
-      .json({ message: `User is now ${isActive ? "active" : "inActive"}` });
+    res.status(200).json({ message: `User is now ${isActive ? 'active' : 'inActive'}` });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -294,19 +262,16 @@ export const toggleUserIsActive = async (
   }
 };
 
-export const getUserInfo = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getUserInfo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
     if (!user) {
-      res.status(400).json({ message: "user not found" });
+      res.status(400).json({ message: 'user not found' });
       return;
     }
 
     res.status(200).json({
-      message: "User Information",
+      message: 'User Information',
       data: {
         user: {
           _id: user._id,
@@ -330,13 +295,10 @@ export const getUserInfo = async (
 };
 
 // Toggle Watchlist (Add/Remove)--------------------------------------------------------------------------------
-export const toggleWatchlist = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const toggleWatchlist = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (!req.user) {
-      res.status(401).json({ message: "Unauthorized access" });
+      res.status(401).json({ message: 'Unauthorized access' });
       return;
     }
 
@@ -344,7 +306,7 @@ export const toggleWatchlist = async (
     const userId = req.user._id;
 
     if (!contentId || !contentType) {
-      res.status(400).json({ message: "Content ID and type are required" });
+      res.status(400).json({ message: 'Content ID and type are required' });
       return;
     }
 
@@ -359,7 +321,7 @@ export const toggleWatchlist = async (
         $pull: { watchlist: { contentId } },
       });
 
-      res.status(200).json({ message: "Removed from watchlist" });
+      res.status(200).json({ message: 'Removed from watchlist' });
       return;
     } else {
       // Add to watchlist
@@ -367,7 +329,7 @@ export const toggleWatchlist = async (
         $addToSet: { watchlist: { contentId, contentType } },
       });
 
-      res.status(201).json({ message: "Added to watchlist" });
+      res.status(201).json({ message: 'Added to watchlist' });
       return;
     }
   } catch (error) {
@@ -379,22 +341,17 @@ export const toggleWatchlist = async (
 };
 
 // Get all watchlisted movies and series for a user--------------------------------------------------------------
-export const getWatchlist = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getWatchlist = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (!req.user) {
-      res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: 'Unauthorized' });
       return;
     }
 
-    const watchlist = await User.findById(req.user._id)
-      .select("watchlist")
-      .populate({
-        path: "watchlist.contentId",
-        select: "title poster description",
-      });
+    const watchlist = await User.findById(req.user._id).select('watchlist').populate({
+      path: 'watchlist.contentId',
+      select: 'title poster description',
+    });
 
     res.status(200).json({ data: { watchlist } });
     return;
@@ -407,15 +364,12 @@ export const getWatchlist = async (
 };
 
 // Update Watch Progress
-export const updateWatchProgress = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const updateWatchProgress = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const existingUser = req.user;
 
     if (!existingUser) {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: 'User not found' });
       return;
     }
 
@@ -423,12 +377,12 @@ export const updateWatchProgress = async (
     const { contentId, contentType, progress } = req.body;
 
     if (!contentId || progress === undefined) {
-      res.status(400).json({ message: "Missing required fields" });
+      res.status(400).json({ message: 'Missing required fields' });
       return;
     }
 
     if (contentType !== MOVIE && contentType !== EPISODE) {
-      res.status(400).json({ message: "Invalid content type" });
+      res.status(400).json({ message: 'Invalid content type' });
       return;
     }
 
@@ -451,7 +405,7 @@ export const updateWatchProgress = async (
     }
 
     await existingUser.save();
-    res.status(200).json({ message: "Progress updated successfully" });
+    res.status(200).json({ message: 'Progress updated successfully' });
     return;
   } catch (error) {
     res.status(500).json({ message: (error as Error).message });
@@ -460,32 +414,29 @@ export const updateWatchProgress = async (
 };
 
 // Get Continue Watching List
-export const getContinueWatching = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getContinueWatching = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: 'Unauthorized' });
       return;
     }
 
     const existingUser = await User.findById(user._id)
       .populate({
-        path: "continueWatching.contentId",
-        select: "title poster duration",
+        path: 'continueWatching.contentId',
+        select: 'title poster duration',
       })
-      .sort({ "continueWatching.lastWatched": -1 });
+      .sort({ 'continueWatching.lastWatched': -1 });
 
     if (!existingUser) {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: 'User not found' });
       return;
     }
 
     res.status(200).json({
-      message: "Continue Watching list",
+      message: 'Continue Watching list',
       data: existingUser.continueWatching,
     });
     return;

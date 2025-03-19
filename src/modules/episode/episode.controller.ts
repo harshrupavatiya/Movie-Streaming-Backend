@@ -1,34 +1,31 @@
-import { Response } from "express";
-import { AuthRequest } from "../auth";
-import { Media } from "../media";
-import Episode from "./episode.model";
-import { isMongoId } from "validator";
-import { ADMIN, FREE } from "../../utils/constants";
+import { Response } from 'express';
+import { AuthRequest } from '../auth';
+import { Media } from '../media';
+import Episode from './episode.model';
+import { isMongoId } from 'validator';
+import { ADMIN, FREE } from '../../utils/constants';
 
-export const addEpisode = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const addEpisode = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
     // check user is admin
     if (user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      res.status(400).json({ message: 'Access denied, Admins only allowed' });
       return;
     }
 
     const { seriesId } = req.body;
     // ensure seriesId is present
     if (!seriesId) {
-      res.status(400).json({ message: "Media Id is required to add episode" });
+      res.status(400).json({ message: 'Media Id is required to add episode' });
       return;
     }
 
     const series = await Media.findById(req.body.seriesId);
     // if series not exist then return error of missing field
     if (!series) {
-      res.status(400).json({ message: "Media not found of given ID" });
+      res.status(400).json({ message: 'Media not found of given ID' });
       return;
     }
 
@@ -40,7 +37,7 @@ export const addEpisode = async (
     // saving the instance of Episode
     await newEpisode.save();
 
-    res.status(200).json({ message: "Episode added successfully." });
+    res.status(200).json({ message: 'Episode added successfully.' });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -48,16 +45,13 @@ export const addEpisode = async (
   }
 };
 
-export const deleteEpisode = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const deleteEpisode = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
     // check user is admin
     if (user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      res.status(400).json({ message: 'Access denied, Admins only allowed' });
       return;
     }
 
@@ -69,10 +63,10 @@ export const deleteEpisode = async (
 
     // if episode not found
     if (!deletedEpisode) {
-      res.status(400).json({ message: "Episode id is not valid." });
+      res.status(400).json({ message: 'Episode id is not valid.' });
       return;
     }
-    res.status(200).json({ message: "Episode deleted successfully." });
+    res.status(200).json({ message: 'Episode deleted successfully.' });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -80,16 +74,13 @@ export const deleteEpisode = async (
   }
 };
 
-export const updateEpisode = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const updateEpisode = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
     // check user is admin
     if (user?.role !== ADMIN) {
-      res.status(400).json({ message: "Access denied, Admins only allowed" });
+      res.status(400).json({ message: 'Access denied, Admins only allowed' });
       return;
     }
 
@@ -98,7 +89,7 @@ export const updateEpisode = async (
     const episode = await Episode.findById(episodeId);
 
     if (!episode) {
-      res.status(400).json({ message: "Invalid Episode Id" });
+      res.status(400).json({ message: 'Invalid Episode Id' });
       return;
     }
 
@@ -125,7 +116,7 @@ export const updateEpisode = async (
     // saving updated episode
     await episode.save();
 
-    res.status(200).json({ message: "Episode has updated successfully." });
+    res.status(200).json({ message: 'Episode has updated successfully.' });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -133,16 +124,11 @@ export const updateEpisode = async (
   }
 };
 
-export const getEpisode = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getEpisode = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // ensire user is exists or not
     if (req.user?.subscription?.plan === FREE) {
-      res
-        .status(400)
-        .json({ message: "Please upgrade your subscription plan" });
+      res.status(400).json({ message: 'Please upgrade your subscription plan' });
       return;
     }
 
@@ -151,18 +137,16 @@ export const getEpisode = async (
 
     // if episode id in not valid
     if (!isMongoId(episodeId)) {
-      res.status(400).json({ message: "Invalid Episode Id" });
+      res.status(400).json({ message: 'Invalid Episode Id' });
       return;
     }
 
     // get episode info
     const episodeInfo = await Episode.findById(episodeId).select(
-      "title description seriesId seasonNumber duration episodeNumber episodeUrl releaseDate"
+      'title description seriesId seasonNumber duration episodeNumber episodeUrl releaseDate'
     );
 
-    res
-      .status(200)
-      .json({ message: "Episode Information", data: { episodeInfo } });
+    res.status(200).json({ message: 'Episode Information', data: { episodeInfo } });
     return;
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });

@@ -1,17 +1,14 @@
-import { Response, NextFunction } from "express";
-import mongoose from "mongoose";
-import { IEpisode } from "../types/db.model";
-import {
-  isValidISOBirthDate,
-  validateContentTitle,
-} from "../modules/validate/inputValidators";
-import { isNumeric } from "validator";
-import { AuthRequest } from "../types/api";
-import { validateFileContent } from "../modules/validate/mediaFile";
-import { uploadImageToCloudinary } from "../utils/fileUploader";
-import { UploadedFile } from "express-fileupload";
-import fs from "fs";
-import Episode from "../modules/episode/episode.model";
+import { Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
+import { IEpisode } from '../types/db.model';
+import { isValidISOBirthDate, validateContentTitle } from '../modules/validate/inputValidators';
+import { isNumeric } from 'validator';
+import { AuthRequest } from '../types/api';
+import { validateFileContent } from '../modules/validate/mediaFile';
+import { uploadImageToCloudinary } from '../utils/fileUploader';
+import { UploadedFile } from 'express-fileupload';
+import fs from 'fs';
+import Episode from '../modules/episode/episode.model';
 
 interface IEpisodeReqBody {
   title?: string;
@@ -23,23 +20,12 @@ interface IEpisodeReqBody {
   releaseDate?: string;
 }
 
-export const getNewEpisodePayload = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const getNewEpisodePayload = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const reqBody = req.body as IEpisodeReqBody;
 
   //   get all field values
-  const {
-    title,
-    description,
-    seriesId,
-    seasonNumber,
-    duration,
-    episodeNumber,
-    releaseDate,
-  } = reqBody;
+  const { title, description, seriesId, seasonNumber, duration, episodeNumber, releaseDate } =
+    reqBody;
 
   //   making new object for payload
   const newPayload: Partial<IEpisode> = {};
@@ -49,12 +35,9 @@ export const getNewEpisodePayload = async (
     newPayload.title = title!;
 
     // validate description
-    if (
-      description &&
-      (description.length > 300 || typeof description !== "string")
-    ) {
+    if (description && (description.length > 300 || typeof description !== 'string')) {
       res.status(400).json({
-        message: "Description should be a string of maximum 300 characters.",
+        message: 'Description should be a string of maximum 300 characters.',
       });
       return;
     }
@@ -62,34 +45,28 @@ export const getNewEpisodePayload = async (
 
     // validate seriesId
     if (!seriesId) {
-      res.status(400).json({ message: "Series ID is required." });
+      res.status(400).json({ message: 'Series ID is required.' });
       return;
     }
     newPayload.seriesId = new mongoose.Types.ObjectId(seriesId);
 
     // validate seasonNumber
     if (!seasonNumber || !isNumeric(seasonNumber)) {
-      res
-        .status(400)
-        .json({ message: "Season number must be a numeric string." });
+      res.status(400).json({ message: 'Season number must be a numeric string.' });
       return;
     }
     newPayload.seasonNumber = parseInt(seasonNumber);
 
     // validate Duration
     if (!duration || !isNumeric(duration)) {
-      res
-        .status(400)
-        .json({ message: "Duration is required and must be numeric." });
+      res.status(400).json({ message: 'Duration is required and must be numeric.' });
       return;
     }
     newPayload.duration = parseInt(duration);
 
     // validate epoisodeNumber
     if (!episodeNumber || !isNumeric(episodeNumber)) {
-      res
-        .status(400)
-        .json({ message: "Episode number must be a numeric string." });
+      res.status(400).json({ message: 'Episode number must be a numeric string.' });
       return;
     }
     const isDuplicateEpisodeNumber = await Episode.find({
@@ -115,29 +92,27 @@ export const getNewEpisodePayload = async (
     const episodeFile = req.files?.episode as UploadedFile;
 
     if (!episodeFile) {
-      res.status(400).json({ message: "Episode video is required." });
+      res.status(400).json({ message: 'Episode video is required.' });
       return;
     }
 
-    validateFileContent(episodeFile.mimetype, "video");
+    validateFileContent(episodeFile.mimetype, 'video');
 
     // uploading image to cloudinary
     const result = await uploadImageToCloudinary(episodeFile.tempFilePath, {
-      folder: "episodes",
+      folder: 'episodes',
       height: 800,
       quality: 500,
     });
 
     // Delete the temporary file
     fs.unlink(episodeFile.tempFilePath, (err) => {
-      if (err) console.log("Failed to delete temp file:", err);
+      if (err) console.log('Failed to delete temp file:', err);
     });
 
     // if URL not generated
     if (!result?.secure_url) {
-      res
-        .status(500)
-        .json({ message: "something went wrong while generating URL" });
+      res.status(500).json({ message: 'something went wrong while generating URL' });
       return;
     }
 
@@ -159,14 +134,7 @@ export const getEditEpisodePayload = async (
 ) => {
   const reqBody = req.body as IEpisodeReqBody;
 
-  const {
-    title,
-    description,
-    seasonNumber,
-    duration,
-    episodeNumber,
-    releaseDate,
-  } = reqBody;
+  const { title, description, seasonNumber, duration, episodeNumber, releaseDate } = reqBody;
 
   const newPayload: Partial<IEpisode> = {};
 
@@ -177,9 +145,9 @@ export const getEditEpisodePayload = async (
     }
 
     if (description) {
-      if (description.length > 300 || typeof description !== "string") {
+      if (description.length > 300 || typeof description !== 'string') {
         res.status(400).json({
-          message: "Description should be a string of maximum 300 characters.",
+          message: 'Description should be a string of maximum 300 characters.',
         });
         return;
       }
@@ -188,9 +156,7 @@ export const getEditEpisodePayload = async (
 
     if (seasonNumber) {
       if (!isNumeric(seasonNumber)) {
-        res
-          .status(400)
-          .json({ message: "Season number must be a numeric string." });
+        res.status(400).json({ message: 'Season number must be a numeric string.' });
         return;
       }
       newPayload.seasonNumber = parseInt(seasonNumber);
@@ -198,7 +164,7 @@ export const getEditEpisodePayload = async (
 
     if (duration) {
       if (!isNumeric(duration)) {
-        res.status(400).json({ message: "Duration must be numeric." });
+        res.status(400).json({ message: 'Duration must be numeric.' });
         return;
       }
       newPayload.duration = parseInt(duration);
@@ -206,9 +172,7 @@ export const getEditEpisodePayload = async (
 
     if (episodeNumber) {
       if (!isNumeric(episodeNumber)) {
-        res
-          .status(400)
-          .json({ message: "Episode number must be a numeric string." });
+        res.status(400).json({ message: 'Episode number must be a numeric string.' });
         return;
       }
       newPayload.episodeNumber = parseInt(episodeNumber);
@@ -223,25 +187,23 @@ export const getEditEpisodePayload = async (
     const episodeFile = req.files?.episode as UploadedFile;
 
     if (episodeFile) {
-      validateFileContent(episodeFile.mimetype, "video");
+      validateFileContent(episodeFile.mimetype, 'video');
 
       // uploading image to cloudinary
       const result = await uploadImageToCloudinary(episodeFile.tempFilePath, {
-        folder: "episodes",
+        folder: 'episodes',
         height: 800,
         quality: 500,
       });
 
       // Delete the temporary file
       fs.unlink(episodeFile.tempFilePath, (err) => {
-        if (err) console.log("Failed to delete temp file:", err);
+        if (err) console.log('Failed to delete temp file:', err);
       });
 
       // if URL not generated
       if (!result?.secure_url) {
-        res
-          .status(500)
-          .json({ message: "something went wrong while generating URL" });
+        res.status(500).json({ message: 'something went wrong while generating URL' });
         return;
       }
 
@@ -250,7 +212,7 @@ export const getEditEpisodePayload = async (
     }
 
     if (Object.keys(newPayload).length <= 0) {
-      res.status(400).json({ message: "Atleast one field required" });
+      res.status(400).json({ message: 'Atleast one field required' });
       return;
     }
 

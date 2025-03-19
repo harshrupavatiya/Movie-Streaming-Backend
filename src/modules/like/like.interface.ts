@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-type ContentType = "Movie" | "Series" | "Episode";
+type ContentType = 'Movie' | 'Series' | 'Episode';
 
 export interface ILike extends Document {
   userId: mongoose.Types.ObjectId;
