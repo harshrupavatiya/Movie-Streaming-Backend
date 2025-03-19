@@ -3,7 +3,7 @@ import {
   validateContactNo,
   validateGender,
   validateName,
-} from "../validators/inputValidators";
+} from "../modules/validate/inputValidators";
 import { IEditDetails } from "../types/api";
 import { ICast , IDirector} from "../types/db.model";
 import validator from "validator";
@@ -62,7 +62,7 @@ export const getValidUserUpdatePayload = (
   }
 };
 
-export const getValidCastPayload = (
+export const getValidCrewPayload = (
   reqBody: IEditCastReqBody,
   existingCast: boolean
 ): Partial<ICast> => {
