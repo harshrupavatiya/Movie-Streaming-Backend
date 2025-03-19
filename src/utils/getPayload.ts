@@ -1,11 +1,13 @@
+//TODO: Check getValidCrewPayload and getValidDirectorPayload and update the file
 import {
   isValidISOBirthDate,
   validateContactNo,
   validateGender,
   validateName,
 } from "../modules/validate/inputValidators";
-import { IEditDetails } from "../types/api";
-import { ICast , IDirector} from "../types/db.model";
+import { IEditDetails } from "../modules/user/user.interface";
+// import { ICast , IDirector} from "../types/db.model";
+import { ICrew } from "../modules/crew/crew.interface";
 import validator from "validator";
 
 interface IEditUserDataReqBody {
@@ -65,10 +67,10 @@ export const getValidUserUpdatePayload = (
 export const getValidCrewPayload = (
   reqBody: IEditCastReqBody,
   existingCast: boolean
-): Partial<ICast> => {
+): Partial<ICrew> => {
   const { name, gender, dateOfBirth, nationality } = reqBody;
 
-  const editData: Partial<ICast> = {};
+  const editData: Partial<ICrew> = {};
 
   if (!existingCast) {
     if (!name) {
@@ -116,10 +118,10 @@ export const getValidCrewPayload = (
 export const getValidDirectorPayload = (
   reqBody: IEditDirectorReqBody,
   existingDirector: boolean
-): Partial<IDirector> => {
+): Partial<ICrew> => {
   const { name, gender, dateOfBirth, nationality } = reqBody;
 
-  const editData: Partial<IDirector> = {};
+  const editData: Partial<ICrew> = {};
 
   if (!existingDirector) {
     if (!name) {
