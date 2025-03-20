@@ -1,22 +1,20 @@
-import { Response, NextFunction } from "express";
-import mongoose from "mongoose";
-import { ISeries } from "../types/db.model";
+import { Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
+import { ISeries } from '../types/db.model';
 import {
   isValidISOReleaseDate,
   validateContentTitle,
   validateGenres,
   validateLanguage,
-} from "../validators/inputValidators";
-import { isMongoId, isNumeric } from "validator";
-import { AuthRequest } from "../types/api";
-import { uploadImageToCloudinary } from "../utils/fileUploader";
-import { validateFileContent } from "../validators/mediaFile";
-import fs from "fs";
-import { UploadedFile } from "express-fileupload";
+} from '../modules/validate/inputValidators';
+import { isMongoId, isNumeric } from 'validator';
+import { AuthRequest } from '../types/api';
+import { uploadImageToCloudinary } from '../modules/utils/fileUploader';
+import { validateFileContent } from '../modules/validate/mediaFile';
+import fs from 'fs';
+import { UploadedFile } from 'express-fileupload';
 
-type seriesArrays = Array<
-  keyof Pick<ISeriesData, "casts" | "languages" | "genres" | "directors">
->;
+type seriesArrays = Array<keyof Pick<ISeriesData, 'casts' | 'languages' | 'genres' | 'directors'>>;
 
 interface ISeriesData {
   title: string;
@@ -31,23 +29,17 @@ interface ISeriesData {
 }
 
 // New Series Payload ------------------------------------------------------------->
-export const getNewSeriesPayload = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const getNewSeriesPayload = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const reqBody = req.body as ISeriesData;
 
   // wrapping single elements into array
-  (["casts", "languages", "genres", "directors"] as seriesArrays).forEach(
-    (key) => {
-      const value = reqBody[key];
+  (['casts', 'languages', 'genres', 'directors'] as seriesArrays).forEach((key) => {
+    const value = reqBody[key];
 
-      if (value && !Array.isArray(value)) {
-        reqBody[key] = [value as string];
-      }
+    if (value && !Array.isArray(value)) {
+      reqBody[key] = [value as string];
     }
-  );
+  });
 
   //   get all field values
   const {
@@ -71,9 +63,9 @@ export const getNewSeriesPayload = async (
 
     // validate description
     if (description) {
-      if (description.length > 300 || typeof description !== "string") {
+      if (description.length > 300 || typeof description !== 'string') {
         res.status(400).json({
-          message: "Description should be a string of maximum 300 characters.",
+          message: 'Description should be a string of maximum 300 characters.',
         });
         return;
       }
@@ -81,13 +73,13 @@ export const getNewSeriesPayload = async (
     }
 
     if (!genres || genres.length <= 0) {
-      throw new Error("Genres are required field");
+      throw new Error('Genres are required field');
     }
     validateGenres(genres);
     newPayload.genres = genres.map((genre) => parseInt(genre));
 
     if (!languages || languages.length <= 0) {
-      throw new Error("Languages are required field");
+      throw new Error('Languages are required field');
     }
     validateLanguage(languages);
     newPayload.languages = languages;
@@ -97,13 +89,9 @@ export const getNewSeriesPayload = async (
 
     // validate rating
     if (rating) {
-      if (
-        !isNumeric(rating) ||
-        parseFloat(rating) > 10 ||
-        parseFloat(rating) < 0
-      ) {
+      if (!isNumeric(rating) || parseFloat(rating) > 10 || parseFloat(rating) < 0) {
         res.status(400).json({
-          message: "Rating should be a number within the range of 0 to 10.",
+          message: 'Rating should be a number within the range of 0 to 10.',
         });
         return;
       }
@@ -112,33 +100,27 @@ export const getNewSeriesPayload = async (
 
     // validate array of castId
     if (!casts || casts.length <= 0) {
-      res.status(400).json({ message: "Casts are required." });
+      res.status(400).json({ message: 'Casts are required.' });
       return;
     }
     const isCastId = casts.every((cast) => isMongoId(cast.toString()));
     if (!isCastId) {
-      res.status(400).json({ message: "Some Cast object IDs are invalid." });
+      res.status(400).json({ message: 'Some Cast object IDs are invalid.' });
       return;
     }
     newPayload.casts = casts.map((cast) => new mongoose.Types.ObjectId(cast));
 
     // validate array of director
     if (!directors || directors.length <= 0) {
-      res.status(400).json({ message: "Directors are required." });
+      res.status(400).json({ message: 'Directors are required.' });
       return;
     }
-    const isDirId = directors.every((director) =>
-      isMongoId(director.toString())
-    );
+    const isDirId = directors.every((director) => isMongoId(director.toString()));
     if (!isDirId) {
-      res
-        .status(400)
-        .json({ message: "Some Director object IDs are invalid." });
+      res.status(400).json({ message: 'Some Director object IDs are invalid.' });
       return;
     }
-    newPayload.directors = directors.map(
-      (dir) => new mongoose.Types.ObjectId(dir)
-    );
+    newPayload.directors = directors.map((dir) => new mongoose.Types.ObjectId(dir));
 
     newPayload.availableForStreaming = availableForStreaming || true;
 
@@ -149,24 +131,24 @@ export const getNewSeriesPayload = async (
     // checking poster & trailer are present
     if (!trailerFile || !posterFile) {
       res.status(400).json({
-        message: "poster and trailer are both required for adding series.",
+        message: 'poster and trailer are both required for adding series.',
       });
       return;
     }
 
     // validating file type
-    validateFileContent(posterFile.mimetype, "image");
-    validateFileContent(trailerFile.mimetype, "video");
+    validateFileContent(posterFile.mimetype, 'image');
+    validateFileContent(trailerFile.mimetype, 'video');
 
     // uploading image to cloudinary
     const result = await Promise.all([
       uploadImageToCloudinary(posterFile.tempFilePath, {
-        folder: "posters",
+        folder: 'posters',
         height: 800,
         quality: 500,
       }),
       uploadImageToCloudinary(trailerFile.tempFilePath, {
-        folder: "trailers",
+        folder: 'trailers',
         height: 800,
         quality: 500,
       }),
@@ -175,7 +157,7 @@ export const getNewSeriesPayload = async (
     // Delete the temporary file
     [posterFile, trailerFile].map((file) =>
       fs.unlink(file.tempFilePath, (err) => {
-        if (err) console.log("Failed to delete temp file:", err);
+        if (err) console.log('Failed to delete temp file:', err);
       })
     );
 
@@ -185,9 +167,7 @@ export const getNewSeriesPayload = async (
 
     // if poster or trailer URL not present then send Error
     if (!poster || !trailerUrl) {
-      res
-        .status(500)
-        .json({ message: "something went wrong while generating URL" });
+      res.status(500).json({ message: 'something went wrong while generating URL' });
       return;
     }
 
@@ -205,22 +185,16 @@ export const getNewSeriesPayload = async (
 };
 
 // Edit Series Payload ------------------------------------------------------------>
-export const getEditSeriesPayload = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const getEditSeriesPayload = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const reqBody = req.body as Partial<ISeriesData>;
 
   // wrapping single values into array
-  (["casts", "languages", "genres", "directors"] as seriesArrays).forEach(
-    (key) => {
-      const value = reqBody[key];
-      if (value && !Array.isArray(value)) {
-        reqBody[key] = [value as string];
-      }
+  (['casts', 'languages', 'genres', 'directors'] as seriesArrays).forEach((key) => {
+    const value = reqBody[key];
+    if (value && !Array.isArray(value)) {
+      reqBody[key] = [value as string];
     }
-  );
+  });
 
   // get edit field data
   const {
@@ -247,10 +221,8 @@ export const getEditSeriesPayload = async (
 
     // for description update
     if (description) {
-      if (description.length > 300 || typeof description !== "string") {
-        throw new Error(
-          "Description should be a string of maximum 300 characters."
-        );
+      if (description.length > 300 || typeof description !== 'string') {
+        throw new Error('Description should be a string of maximum 300 characters.');
       }
       newPayload.description = description;
     }
@@ -275,14 +247,8 @@ export const getEditSeriesPayload = async (
 
     // for rating update
     if (rating) {
-      if (
-        !isNumeric(rating) ||
-        parseFloat(rating) > 10 ||
-        parseFloat(rating) < 0
-      ) {
-        throw new Error(
-          "Rating should be a number within the range of 0 to 10."
-        );
+      if (!isNumeric(rating) || parseFloat(rating) > 10 || parseFloat(rating) < 0) {
+        throw new Error('Rating should be a number within the range of 0 to 10.');
       }
       newPayload.rating = parseFloat(rating);
     }
@@ -290,7 +256,7 @@ export const getEditSeriesPayload = async (
     // for cast array update
     if (casts && casts.length > 0) {
       if (!casts.every((cast) => isMongoId(cast.toString()))) {
-        throw new Error("Some Cast object IDs are invalid.");
+        throw new Error('Some Cast object IDs are invalid.');
       }
       newPayload.casts = casts.map((cast) => new mongoose.Types.ObjectId(cast));
     }
@@ -298,11 +264,9 @@ export const getEditSeriesPayload = async (
     // for director array update
     if (directors && directors.length > 0) {
       if (!directors.every((director) => isMongoId(director.toString()))) {
-        throw new Error("Some Director object IDs are invalid.");
+        throw new Error('Some Director object IDs are invalid.');
       }
-      newPayload.directors = directors.map(
-        (dir) => new mongoose.Types.ObjectId(dir)
-      );
+      newPayload.directors = directors.map((dir) => new mongoose.Types.ObjectId(dir));
     }
 
     newPayload.availableForStreaming = availableForStreaming ?? true;
@@ -315,18 +279,18 @@ export const getEditSeriesPayload = async (
     // upload poster to cloudinary
     if (posterFile) {
       // validating file type
-      validateFileContent(posterFile.mimetype, "image");
+      validateFileContent(posterFile.mimetype, 'image');
 
       // uploading image to cloudinary
       const result = await uploadImageToCloudinary(posterFile.tempFilePath, {
-        folder: "posters",
+        folder: 'posters',
         height: 800,
         quality: 500,
       });
 
       // Delete the temporary file
       fs.unlink(posterFile.tempFilePath, (err) => {
-        if (err) console.log("Failed to delete temp file:", err);
+        if (err) console.log('Failed to delete temp file:', err);
       });
 
       // get secureURL after uploading successfully
@@ -335,7 +299,7 @@ export const getEditSeriesPayload = async (
       // if poster or trailer URL not present then send Error
       if (!poster) {
         res.status(500).json({
-          message: "something went wrong while generating URL of poster",
+          message: 'something went wrong while generating URL of poster',
         });
         return;
       }
@@ -346,18 +310,18 @@ export const getEditSeriesPayload = async (
     // upload trailer to cloudinary
     if (trailerFile) {
       // validating file type
-      validateFileContent(trailerFile.mimetype, "video");
+      validateFileContent(trailerFile.mimetype, 'video');
 
       // uploading image to cloudinary
       const result = await uploadImageToCloudinary(trailerFile.tempFilePath, {
-        folder: "trailers",
+        folder: 'trailers',
         height: 800,
         quality: 500,
       });
 
       // Delete the temporary file
       fs.unlink(trailerFile.tempFilePath, (err) => {
-        if (err) console.log("Failed to delete temp file:", err);
+        if (err) console.log('Failed to delete temp file:', err);
       });
 
       // get secureURL after uploading successfully
@@ -366,7 +330,7 @@ export const getEditSeriesPayload = async (
       // if poster or trailer URL not present then send Error
       if (!trailerUrl) {
         res.status(500).json({
-          message: "something went wrong while generating URL of trailer",
+          message: 'something went wrong while generating URL of trailer',
         });
         return;
       }
@@ -378,7 +342,7 @@ export const getEditSeriesPayload = async (
     // if newPayload in empty then send error
     if (Object.keys(newPayload).length <= 0) {
       res.status(400).json({
-        message: "Atleast one field is required to update series info.",
+        message: 'Atleast one field is required to update series info.',
       });
       return;
     }
