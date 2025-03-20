@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Crew from './crew.model';
 import { Media } from '../media';
 import { validateFileContent } from '../validate/mediaFile';
@@ -7,9 +7,10 @@ import { UploadedFile } from 'express-fileupload';
 import fs from 'fs';
 import { getValidCrewPayload } from './crew.validator';
 import { ADMIN } from '../../config/constants';
+import { AuthRequest } from '../auth';
 
 //Get searched Crew by name--------------------------------------------------------------------------------
-export const searchCrewByName = async (req: Request, res: Response): Promise<void> => {
+export const searchCrewByName = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { query } = req.query;
 
@@ -43,7 +44,7 @@ export const searchCrewByName = async (req: Request, res: Response): Promise<voi
 };
 
 // Add or Update Crew (Admin Only)--------------------------------------------------------------------------------
-export const addOrUpdateCrew = async (req: Request, res: Response): Promise<void> => {
+export const addOrUpdateCrew = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Check if the user is an admin
     if (!req.user || req.user.role !== ADMIN) {
@@ -78,7 +79,7 @@ export const addOrUpdateCrew = async (req: Request, res: Response): Promise<void
 
     // image uploading process begins from here,
     let result = null;
-    // if file(image) exists in request-files
+    // if file(image) exists in AuthRequest-files
     if (file) {
       validateFileContent(file.mimetype, 'image');
 
@@ -134,7 +135,7 @@ export const addOrUpdateCrew = async (req: Request, res: Response): Promise<void
 };
 
 // Delete Crew (Admin Only)--------------------------------------------------------------------------------
-export const deleteCrew = async (req: Request, res: Response): Promise<void> => {
+export const deleteCrew = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Check if the user is an admin
     if (!req.user || req.user.role !== ADMIN) {

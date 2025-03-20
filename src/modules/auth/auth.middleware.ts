@@ -1,10 +1,11 @@
-import { Response, NextFunction, Request } from 'express';
+import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../user';
 import { JWT_SIGNUP_SECRET } from '../../config/config';
+import { AuthRequest } from './auth.interface';
 
 export const userAuth = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -36,7 +37,6 @@ export const userAuth = async (
       res.status(500).json({ message: 'Access denied, user is inactive' });
       return;
     }
-
     // Passing user info to the next controller
     req.user = user;
     return next();

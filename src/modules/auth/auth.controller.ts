@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
-import User from '../user/user.model';
+import { User, userInterface } from '../user';
 import bcrypt from 'bcrypt';
 import { validateSignUpData, validateUserData } from '../validate/newUserData';
 import { validateEmail, validatePassword } from '../validate/inputValidators';
 import OTP from './otp.model';
 import { IOTP } from './auth.interface';
-import { userInterface } from '../user';
 import otpGenerator from 'otp-generator';
 import { JWT_SIGNUP_SECRET } from '../../config/config';
 import ForgotPasswordToken from './forgotPasswordToken.model';

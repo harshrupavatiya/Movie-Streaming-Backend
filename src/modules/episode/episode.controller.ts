@@ -1,10 +1,11 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { Media } from '../media';
 import Episode from './episode.model';
 import { isMongoId } from 'validator';
 import { ADMIN, FREE } from '../../config/constants';
+import { AuthRequest } from '../auth';
 
-export const addEpisode = async (req: Request, res: Response): Promise<void> => {
+export const addEpisode = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
@@ -44,7 +45,7 @@ export const addEpisode = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-export const deleteEpisode = async (req: Request, res: Response): Promise<void> => {
+export const deleteEpisode = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
@@ -73,7 +74,7 @@ export const deleteEpisode = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-export const updateEpisode = async (req: Request, res: Response): Promise<void> => {
+export const updateEpisode = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // getting user from req
     const user = req.user;
@@ -123,7 +124,7 @@ export const updateEpisode = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-export const getEpisode = async (req: Request, res: Response): Promise<void> => {
+export const getEpisode = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // ensire user is exists or not
     if (req.user?.subscription?.plan === FREE) {
