@@ -1,9 +1,9 @@
 import { Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-import { IEpisode } from '../types/db.model';
+import { IEpisode } from './../modules/episode/episode.interface';
 import { isValidISOBirthDate, validateContentTitle } from '../modules/validate/inputValidators';
 import { isNumeric } from 'validator';
-import { AuthRequest } from '../types/api';
+import { AuthRequest } from './../modules/auth';
 import { validateFileContent } from '../modules/validate/mediaFile';
 import { uploadImageToCloudinary } from '../modules/utils/fileUploader';
 import { UploadedFile } from 'express-fileupload';

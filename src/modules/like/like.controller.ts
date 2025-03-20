@@ -2,7 +2,7 @@ import { Response } from 'express';
 import Like from './like.model';
 import { isMongoId } from 'validator';
 import { Media } from '../media';
-import { MOVIE, SERIES } from '../../config/constants';
+import { MEDIA, MOVIE, SERIES } from '../../config/constants';
 import { AuthRequest } from '../auth';
 
 // Toggle Like (Add/Remove)--------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ export const toggleLike = async (req: AuthRequest, res: Response): Promise<void>
 
     const { contentId, contentType } = req.body;
 
-    if (contentType !== MOVIE && contentType !== SERIES) {
+    if (contentType !== MEDIA) {
       res.status(400).json({ message: 'Invalid content  Type' });
       return;
     }
@@ -83,13 +83,13 @@ export const toggleLike = async (req: AuthRequest, res: Response): Promise<void>
 export const getLikedContent = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
-
-    if (!user) {
+    
+    if (!user ) {
       res.status(401).json({ message: 'Unauthorized' });
       return;
     }
-
-    const likedContent = await Like.find({ userId: user._id })
+    const userId = user._id;
+    const likedContent = await Like.find({ userId })
       .populate({
         path: 'contentId',
         select: 'title poster',
@@ -98,8 +98,8 @@ export const getLikedContent = async (req: AuthRequest, res: Response): Promise<
       .lean();
 
     res.status(200).json({
-      message: 'Liked content by user',
-      data: { likedContent },
+      message: 'Liked content retrieved successfully',
+      likedContent: likedContent.filter(Boolean), 
     });
     return;
   } catch (error) {

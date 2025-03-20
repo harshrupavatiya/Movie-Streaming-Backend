@@ -16,7 +16,7 @@ const likeSchema = new Schema<ILike>(
     contentType: {
       type: String,
       required: true,
-      enum: ['Movie', 'Series', 'Episode'],
+      enum: ['Episode', 'Media'],
     },
   },
   { timestamps: true }

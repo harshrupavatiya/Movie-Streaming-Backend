@@ -11,3 +11,4 @@ export const FREE = 'free';
 export const MONTHLY = 'monthly';
 export const YEARLY = 'yearly';
 export const ACTIVE = 'active';
+export  const MEDIA = 'Media';

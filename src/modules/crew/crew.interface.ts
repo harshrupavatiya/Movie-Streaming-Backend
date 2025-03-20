@@ -8,6 +8,7 @@ export interface ICrew extends Document {
   dateOfBirth?: Date;
   designation: 'Cast' | 'Director';
   nationality?: string;
+  isDeleted?: boolean;
   media?: mongoose.Types.ObjectId[];
 }
 

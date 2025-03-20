@@ -30,6 +30,10 @@ const crewSchema = new Schema<ICrew>(
     nationality: {
       type: String,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     media: [
       {
         type: mongoose.Schema.Types.ObjectId,

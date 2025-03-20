@@ -10,7 +10,7 @@ import { ADMIN } from '../../config/constants';
 import { AuthRequest } from '../auth';
 
 //Get searched Crew by name--------------------------------------------------------------------------------
-export const searchCrewByName = async (req: AuthRequest, res: Response): Promise<void> => {
+export const searchCrew = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { query } = req.query;
 
@@ -51,7 +51,6 @@ export const addOrUpdateCrew = async (req: AuthRequest, res: Response): Promise<
       res.status(403).json({ message: 'Access denied. Admins only.' });
       return;
     }
-
     const { castId } = req.body;
     const file = req?.files?.image as UploadedFile;
 
