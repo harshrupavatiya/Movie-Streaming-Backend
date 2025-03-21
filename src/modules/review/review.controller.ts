@@ -1,11 +1,12 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Review from './review.model';
 import mongoose from 'mongoose';
 import { ADMIN, MOVIE, SERIES } from '../../config/constants';
 import { Media } from '../media';
+import { AuthRequest } from '../auth';
 
 // Create or Update Review --------------------------------------------------------------------------------
-export const createOrUpdateReview = async (req: Request, res: Response): Promise<void> => {
+export const createOrUpdateReview = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { contentId, contentType, rating, comment } = req.body;
 
@@ -16,7 +17,7 @@ export const createOrUpdateReview = async (req: Request, res: Response): Promise
     }
 
     // Validate contentType
-    if (![MOVIE, SERIES].includes(contentType)) {
+    if (![MOVIE, SERIES ,"Media"].includes(contentType)) {
       res.status(400).json({
         message: "Invalid content type. Must be 'Movie' or 'Series'.",
       });
@@ -67,7 +68,7 @@ export const createOrUpdateReview = async (req: Request, res: Response): Promise
 
       // Push new reviewId inside Movie's reviews array
       await Media.findByIdAndUpdate(contentId, {
-        $push: { reviews: { reviewId: newReview._id } },
+            $push: { reviews: newReview._id } 
       });
 
       res.status(201).json({
@@ -85,7 +86,7 @@ export const createOrUpdateReview = async (req: Request, res: Response): Promise
 };
 
 //Get latest 5 review for movie/series --------------------------------------------------------------------
-export const getLatestReviews = async (req: Request, res: Response): Promise<void> => {
+export const getLatestReviews = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { contentId } = req.params;
 
@@ -134,7 +135,7 @@ export const getLatestReviews = async (req: Request, res: Response): Promise<voi
 };
 
 // Movie wise get review (Admin only)----------------------------------------------------------------------
-export const getMovieWiseReview = async (req: Request, res: Response): Promise<void> => {
+export const getMovieWiseReview = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Check if user is admin
     if (!req.user || req.user.role !== ADMIN) {
@@ -178,7 +179,7 @@ export const getMovieWiseReview = async (req: Request, res: Response): Promise<v
 };
 
 // Delete review (Admin only)------------------------------------------------------------------------------
-export const deleteReview = async (req: Request, res: Response): Promise<void> => {
+export const deleteReview = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { reviewId } = req.params;
 

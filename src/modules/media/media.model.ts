@@ -107,6 +107,17 @@ mediaSchema.post('save', async function () {
   }
 });
 
+// Function to add a review properly
+mediaSchema.statics.addReview = async function (mediaId, reviewId) {
+  if (!mongoose.Types.ObjectId.isValid(mediaId) || !mongoose.Types.ObjectId.isValid(reviewId)) {
+    throw new Error('Invalid mediaId or reviewId');
+  }
+
+  return this.findByIdAndUpdate(mediaId, {
+    $push: { reviews: reviewId },
+  }, { new: true });
+};
+
 const Media: Model<IMedia> = mongoose.model<IMedia>('Media', mediaSchema);
 
 export default Media;

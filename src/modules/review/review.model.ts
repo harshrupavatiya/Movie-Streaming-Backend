@@ -45,7 +45,7 @@ reviewSchema.post('save', async function () {
       return Media.findByIdAndUpdate(
         this.contentId.toString(),
         {
-          rating: val[0].averageRating,
+          rating: val[0]?.averageRating || 0,
         },
         { new: true }
       );
@@ -53,6 +53,15 @@ reviewSchema.post('save', async function () {
     .catch(() => {
       throw new Error('average rating not calculated');
     });
+});
+
+// To remove review reference from Media when deleted
+reviewSchema.post('findOneAndDelete', async function (doc) {
+  if (doc && doc.contentId) {
+    await Media.findByIdAndUpdate(doc.contentId, {
+      $pull: { reviews: doc._id },
+    });
+  }
 });
 
 const Review: Model<IReview> = mongoose.model<IReview>('Review', reviewSchema);

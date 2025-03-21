@@ -3,12 +3,14 @@ import mongoose from 'mongoose';
 import { IEpisode } from './../modules/episode/episode.interface';
 import { isValidISOBirthDate, validateContentTitle } from '../modules/validate/inputValidators';
 import { isNumeric } from 'validator';
-import { AuthRequest } from './../modules/auth';
+
 import { validateFileContent } from '../modules/validate/mediaFile';
 import { uploadImageToCloudinary } from '../modules/utils/fileUploader';
 import { UploadedFile } from 'express-fileupload';
 import fs from 'fs';
 import Episode from '../modules/episode/episode.model';
+import { IEpisode } from '../modules/episode/episode.interface';
+import { AuthRequest } from '../modules/auth';
 
 interface IEpisodeReqBody {
   title?: string;
