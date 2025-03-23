@@ -150,8 +150,8 @@ export const getSeriesByGenre = async (
     const genreNumber: number = parseInt(genre as string, 10);
 
     // get pagination info from pagination payload
-    const skipDocNumber = req.pagination?.skipDocNumber;
-    const limitNumber = req.pagination?.limitNumber;
+    const skipDocNumber = req.pagination?.skipDocNumber || 0;
+    const limitNumber = req.pagination?.limitNumber || 10;
 
     if (skipDocNumber === undefined || skipDocNumber < 0 || !limitNumber) {
       res.status(400).json({ message: "pagination values missing" });

@@ -96,3 +96,5 @@ Promise.all([connectDB(), connectCloudinary()])
   .catch((err) => {
     console.log(`something went wrong. ${err.message}`);
   });
+
+  export default app;
