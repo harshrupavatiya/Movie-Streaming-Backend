@@ -28,7 +28,7 @@ export const searchCastByName = async (
     // Search for cast members whose names start with the given query
     const castList = await Cast.find({
       name: search,
-    }).select("name _id");
+    });
 
     if (castList.length <= 0) {
       res.status(200).json({ message: "No matching cast members found." });
