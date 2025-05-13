@@ -4,3 +4,5 @@ node_modules
 imp.txt
 tmp
 dummyDataInput.ts
+.env
+.env.local
