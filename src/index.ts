@@ -20,6 +20,10 @@ import fileUpload from "express-fileupload";
 import episodeRouter from "./routes/episode";
 import continueWatchingRouter from "./routes/continueWatching";
 import homeRouter from "./routes/home";
+import { Server } from "socket.io";
+import http from "http";
+import { setupSocketHandlers } from './socket/socketHandler';
+import parellelStreamingRoomRouter from "./routes/parellelStreamingRoom";
 
 // Create Express server
 const app = express();
@@ -38,6 +42,17 @@ const corsOptions = {
   credentials: true, // Allow cookies & authorization headers
 };
 
+const server = http.createServer(app);
+
+// Set up Socket.IO with CORS
+const io = new Server(server, {
+  cors: {
+    origin: Frontend_Base_URL || 'http://localhost:3012',
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+
 // Enable CORS with necessary headers
 app.use(cors(corsOptions));
 
@@ -46,7 +61,6 @@ app.options("*", cors(corsOptions));
 
 // The reason i wrote this here because stripe does not accept .json format so i am using this route before intializing app.use(express.json) so that it will not give error stripe expects raw format 
 app.use('/webhook', express.raw({ type: "application/json" }), subscriptionRouter);
-
 
 
 app.use(express.json());
@@ -80,7 +94,9 @@ app.use("/director", directorRouter);
 app.use("/episode", episodeRouter);
 app.use("/continue-watching", continueWatchingRouter);
 app.use("/trending", homeRouter);
+app.use('/rooms', parellelStreamingRoomRouter);
 
+setupSocketHandlers(io);
 
 
 const port = PORT || 3000;
@@ -90,7 +106,7 @@ Promise.all([connectDB(), connectCloudinary()])
     console.log("Database connected ✅ \nCloudinary configured ✅");
 
     // start server
-    app.listen(port, () => {
+    server.listen(port, () => {
       console.log(`Server is running on 👉 http://localhost:${port}`);
     });
   })

@@ -38,7 +38,7 @@ export const toggleLike = async (
     });
 
     if (likeInfo) {
-      if(contentType === MOVIE) {
+      if (contentType === MOVIE) {
         Movie.findByIdAndUpdate(contentId, {
           $inc: { likes: -1 },
         })
@@ -52,7 +52,7 @@ export const toggleLike = async (
             );
           });
       }
-      if(contentType === SERIES) {
+      if (contentType === SERIES) {
         Series.findByIdAndUpdate(contentId, {
           $inc: { likes: -1 },
         })
@@ -78,7 +78,7 @@ export const toggleLike = async (
     });
     await newLike.save();
 
-    if(contentType === MOVIE) {
+    if (contentType === MOVIE) {
       Movie.findByIdAndUpdate(contentId, {
         $inc: { likes: 1 },
       })
@@ -92,7 +92,7 @@ export const toggleLike = async (
           );
         });
     }
-    if(contentType === SERIES) {
+    if (contentType === SERIES) {
       Series.findByIdAndUpdate(contentId, {
         $inc: { likes: 1 },
       })
@@ -137,7 +137,7 @@ export const getLikedContent = async (
     const likedContent = await Like.find({ userId: user._id })
       .populate({
         path: "contentId",
-        select: "title poster",
+        select: "title poster description",
       })
       .sort({ createdAt: -1 })
       .lean();

@@ -131,17 +131,18 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 
     // Extract user details
     const { name, email, contactNo, password, otp } = req.body;
+    console.log(otp)
 
     // validate otp
     const otpInfo: IOTP | null = await OTP.findOne({ otp: otp });
-
+    console.log(otpInfo)
     if (!otpInfo) {
       res.status(500).json({ message: "Invalid OTP" });
       return;
     }
 
     // validating Email
-    if (otpInfo.email !== email) {
+    if (otpInfo?.email !== email) {
       res.status(500).json({ message: "Incorrect Email" });
       return;
     }

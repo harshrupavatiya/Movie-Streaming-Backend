@@ -7,11 +7,11 @@ import { MONTHLY, YEARLY } from "../utils/constants";
 dotenv.config();
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
+// const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 
 const signingSecret = process.env.STRIPE_SIGNING_SECRET_KEY!;
 
-const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-02-24.acacia" });
+const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-04-30.basil" });
 
 export const stripeWebhook = async (req: Request, res: Response): Promise<void> => {
 
@@ -129,10 +129,23 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 break;
             }
             try {
-                const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                const subscription = await stripe.subscriptions.retrieve(subscriptionId) as any;
                 const billingCycle = subscription.items.data[0]?.plan.interval === "month" ? MONTHLY : YEARLY;
+                console.log(subscription);
+                // Validate dates before creating them
+                if (!subscription.current_period_start || !subscription.current_period_end) {
+                    console.error("Invalid subscription period dates");
+                    break;
+                }
+
                 const startDate = new Date(subscription.current_period_start * 1000);
                 const endDate = new Date(subscription.current_period_end * 1000);
+
+                // Validate that dates are valid
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                    console.error("Invalid date conversion for subscription period");
+                    break;
+                }
 
                 const updatedUser = await User.findOneAndUpdate(
                     { email: customerEmail },

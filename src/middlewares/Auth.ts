@@ -4,6 +4,11 @@ import User from "../models/user";
 import { AuthRequest } from "../types/api";
 import { JWT_SIGNUP_SECRET } from "../utils/envProvider";
 
+export interface JwtPayload {
+  id: string;
+  username: string;
+}
+
 export const userAuth = async (
   req: AuthRequest,
   res: Response,
@@ -48,4 +53,12 @@ export const userAuth = async (
     res.status(400).json({ message: (err as Error).message });
     return;
   }
+};
+
+export const generateToken = (payload: JwtPayload): string => {
+  return jwt.sign(payload, JWT_SIGNUP_SECRET as string, { expiresIn: '24h' });
+};
+
+export const verifyToken = (token: string): JwtPayload => {
+  return jwt.verify(token, JWT_SIGNUP_SECRET as string) as JwtPayload;
 };

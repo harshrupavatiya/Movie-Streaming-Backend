@@ -71,11 +71,11 @@ export const memberSubscription = async (
     if (!priceId) {
       throw new Error(`Price ID not found for ${tier} ${billingCycle}`);
     }
+    console.log("here is the price id ", priceId);
 
     // Step 5: Create Stripe Checkout session
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-      success_url:
-        "http://localhost:3012/payment-success",
+      success_url: "http://localhost:3012/payment-success",
       cancel_url: "http://localhost:3012/payment-cancel",
       payment_method_types: ["card"],
       mode: "subscription",

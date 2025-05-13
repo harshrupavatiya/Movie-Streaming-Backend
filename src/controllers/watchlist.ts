@@ -39,11 +39,11 @@ export const toggleWatchlist = async (
       await User.findByIdAndUpdate(userId, {
         $addToSet: { watchlist: { contentId, contentType } },
       });
-
       res.status(201).json({ message: "Added to watchlist" });
       return;
     }
   } catch (error) {
+    console.log("here is the error");
     res.status(500).json({
       message: (error as Error).message,
     });
@@ -61,7 +61,6 @@ export const getWatchlist = async (
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
-
     const watchlist = await User.findById(req.user._id)
       .select("watchlist")
       .populate({
